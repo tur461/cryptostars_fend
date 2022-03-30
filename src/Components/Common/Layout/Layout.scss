@@ -1,0 +1,17 @@
+@import "../../../Assets/Scss/_var.scss";
+
+.layoutOuter {
+  &.container-fluid {
+    padding: 0;
+    background-color: #000;
+    .container {
+      max-width: 1466px;
+    }
+  }
+
+  .commonCont {
+    &.container {
+      max-width: 600px;
+    }
+  }
+}
