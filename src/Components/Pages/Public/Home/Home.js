@@ -1,12 +1,14 @@
 import React from "react";
-import { Row, Card, Button, Col, Container, Accordion } from "react-bootstrap";
-import { Layout } from "../../../Common";
+import { useNavigate } from "react-router-dom";
+import { Container, Accordion } from "react-bootstrap";
+import { FaqAccordianItem, Layout } from "../../../Common";
 import headerImg from "../../../../Assets/Images/headerImg.png";
 import draco from "../../../../Assets/Images/draco-header.png";
 import dracoroadmap from "../../../../Assets/Images/draco-roadmap.png";
 import "./Home.scss";
 
 const Home = () => {
+  const navigate = useNavigate();
   return (
     <Layout>
       <section className="header_Sec">
@@ -26,98 +28,75 @@ const Home = () => {
             ever since the 1500s, when an unknown printer took a galley of type
             and scrambled it to make a type specimen
           </p>
-          <button className="startNow">start now</button>
+          <button className="startNow" onClick={() => navigate("/swap")}>
+            start now
+          </button>
         </Container>
       </section>
       <section className="fqs_Sec">
         <Container className="commonCont">
           <h2 className="cmnHeading">FQS</h2>
           <Accordion className="customAccordian">
-            <Accordion.Item eventKey="0">
-              <Accordion.Header>
-                <span className="noList">
-                  1<span>-</span>
-                </span>
-                ¿Que es Crypto Stars y como funciona?
-              </Accordion.Header>
-              <Accordion.Body>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            <FaqAccordianItem
+              eventKey={0}
+              no="1"
+              title="¿Que es Crypto Stars y como funciona?"
+              text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
                 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
                 in reprehenderit in voluptate velit esse cillum dolore eu fugiat
                 nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="1">
-              <Accordion.Header>
-                <span className="noList">
-                  2<span>-</span>
-                </span>
-                ¿Que es Crypto Stars y como funciona?
-              </Accordion.Header>
-              <Accordion.Body>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                sunt in culpa qui officia deserunt mollit anim id est laborum."
+            />
+            <FaqAccordianItem
+              eventKey={1}
+              no="2"
+              title="¿Que es Crypto Stars y como funciona?"
+              text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
                 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
                 in reprehenderit in voluptate velit esse cillum dolore eu fugiat
                 nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="2">
-              <Accordion.Header>
-                <span className="noList">
-                  3<span>-</span>
-                </span>
-                ¿Que es Crypto Stars y como funciona?
-              </Accordion.Header>
-              <Accordion.Body>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                sunt in culpa qui officia deserunt mollit anim id est laborum."
+            />
+            <FaqAccordianItem
+              eventKey={2}
+              no="3"
+              title="¿Que es Crypto Stars y como funciona?"
+              text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
                 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
                 in reprehenderit in voluptate velit esse cillum dolore eu fugiat
                 nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="3">
-              <Accordion.Header>
-                <span className="noList">
-                  4<span>-</span>
-                </span>
-                ¿Que es Crypto Stars y como funciona?
-              </Accordion.Header>
-              <Accordion.Body>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                sunt in culpa qui officia deserunt mollit anim id est laborum."
+            />
+            <FaqAccordianItem
+              eventKey={3}
+              no="4"
+              title="¿Que es Crypto Stars y como funciona?"
+              text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
                 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
                 in reprehenderit in voluptate velit esse cillum dolore eu fugiat
                 nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="4">
-              <Accordion.Header>
-                <span className="noList">
-                  5<span>-</span>
-                </span>
-                ¿Que es Crypto Stars y como funciona?
-              </Accordion.Header>
-              <Accordion.Body>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                sunt in culpa qui officia deserunt mollit anim id est laborum."
+            />
+            <FaqAccordianItem
+              eventKey={4}
+              no="5"
+              title="¿Que es Crypto Stars y como funciona?"
+              text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
                 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
                 in reprehenderit in voluptate velit esse cillum dolore eu fugiat
                 nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-                sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </Accordion.Body>
-            </Accordion.Item>
+                sunt in culpa qui officia deserunt mollit anim id est laborum."
+            />
           </Accordion>
         </Container>
       </section>

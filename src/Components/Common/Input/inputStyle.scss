@@ -1,0 +1,81 @@
+@import "../../../Assets/Scss/_var.scss";
+
+.customInp_style {
+  &.input-group {
+    border: 2px solid $borderClr;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 20px;
+    background-color: #0e1728;
+    align-items: center;
+    z-index: 0;
+    .input-group-text {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      min-width: 320px;
+    }
+    .coinSelect_wrap {
+      display: flex;
+      align-items: center;
+      img {
+        width: 90px;
+        border-radius: 50%;
+        margin-right: 35px;
+      }
+      .coinSelect {
+        text-align: left;
+        span {
+          display: block;
+          color: #6b6e96;
+          font-size: 16px;
+          font-weight: 500;
+          padding-left: 5px;
+        }
+        .form-select {
+          line-height: normal;
+          padding: 5px;
+          border: 0;
+          background: transparent;
+          color: $primaryColor;
+          font-size: 22px;
+          font-weight: 600;
+          text-transform: uppercase;
+          background-image: url(../../../Assets/Images/arrow.png);
+          background-repeat: no-repeat;
+          background-position: center right 10px;
+          background-size: 20px 12px;
+          &:focus {
+            box-shadow: unset;
+          }
+          option {
+            padding: 5px;
+            font-size: 16px;
+            background: #0e1728;
+
+            &:hover {
+              color: $white;
+            }
+          }
+        }
+      }
+    }
+    .form-control {
+      border: 2px solid $primaryColor;
+      background: transparent;
+      border-radius: 12px !important;
+      color: $primaryColor;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 20px;
+      height: 68px;
+
+      &:focus {
+        box-shadow: unset;
+      }
+      &::placeholder {
+        color: $primaryColor;
+      }
+    }
+  }
+}

@@ -1,0 +1,172 @@
+@import "../../../../Assets/Scss/_var.scss";
+
+.swapCmn_cont {
+  &.container {
+    max-width: 940px;
+  }
+}
+.swapheader_Sec {
+  background-color: $blackBg;
+  background-image: url(../../../../Assets/Images/swapHeader.png);
+  background-repeat: no-repeat;
+  background-position: center 0;
+  background-size: 100% 100%;
+  width: 100%;
+  .container {
+    max-width: 1460px;
+  }
+
+  .swapHeader_img {
+    max-width: 390px;
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  .swapCmn_cont {
+    max-width: 940px;
+    margin: 0 auto;
+  }
+}
+
+.swapComn_Sec {
+  background-image: url(../../../../Assets/Images/swapBg.png);
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% 100%;
+  padding: 25px 0;
+
+  .connectWallet_Row {
+    .connectWallet_Right {
+      padding-top: 40px;
+      .connectWallet {
+        border: 0;
+        padding: 0 40px;
+        border-radius: 4px;
+        background-color: $primaryColor;
+        color: $goldenYellow;
+        font-size: 46px;
+        font-weight: 500;
+      }
+
+      .ctsBtn {
+        margin-top: -25px;
+        border-radius: 6px;
+        border: 0;
+        padding: 0 27px;
+        box-shadow: 0 7px 13px rgba(7, 36, 65, 0.54);
+        background-color: #ffbb14;
+        color: $secondaryColor;
+        font-size: 82px;
+        font-weight: 800;
+        text-transform: uppercase;
+        line-height: normal;
+        text-shadow: 0px 3px 10px rgba(0, 0, 0, 0.4);
+      }
+      h1 {
+        padding-top: 55px;
+        text-transform: uppercase;
+        font-size: 142px;
+        color: $primaryColor;
+        font-weight: 250;
+        filter: drop-shadow(0 0 16px rgba(0, 10, 50, 0.94));
+      }
+      p {
+        padding-top: 10px;
+        font-size: 22px;
+        letter-spacing: 1px;
+        color: $white;
+        font-weight: 400;
+        text-align: right;
+        margin-bottom: 0;
+      }
+    }
+  }
+  .swapRow {
+    padding-top: 65px;
+    .swapCard {
+      max-width: 870px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid $lightBlue;
+      background-color: #070517;
+      .swapSwitch {
+        border: 0;
+        padding: 0;
+        background: transparent;
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        position: relative;
+        z-index: 1;
+        margin: -15px 15px;
+      }
+      .swapBtn {
+        margin-top: 20px;
+        border: 1px solid;
+        width: 100%;
+        font-size: 36px;
+        font-weight: 900;
+        border-radius: 8px;
+        background: $borderClr;
+        color: #0e1728;
+        transition: all 0.3s linear;
+        &:hover {
+          background: transparent;
+          color: $borderClr;
+        }
+      }
+    }
+  }
+  .soccerPlayer_Row {
+    padding-top: 70px;
+    h2 {
+      font-size: 28px;
+      font-weight: 800;
+      text-align: center;
+      color: $primaryColor;
+      margin-bottom: 45px;
+    }
+    .cmnBorder {
+      border-radius: 16px;
+      border: 1px solid $lightBlue;
+      padding: 25px;
+    }
+    .soccerPlayer_left {
+      background-color: rgba(0, 0, 0, 0.3);
+      .playerList {
+        list-style: none;
+        padding-left: 0;
+        max-height: 820px;
+        li {
+          color: $white;
+          font-size: 18px;
+          font-weight: 500;
+          padding: 20px 0;
+          margin-bottom: 15px;
+          text-transform: capitalize;
+          strong {
+            font-weight: 900;
+            text-transform: uppercase;
+          }
+          img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+          }
+          span {
+            border-bottom: 2px solid transparent;
+            padding-bottom: 5px;
+            transition: all 0.25s linear;
+            &:hover,
+            &.active {
+              border-color: $lightBlue;
+            }
+          }
+        }
+      }
+    }
+  }
+}

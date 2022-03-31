@@ -1,6 +1,6 @@
 import Layout from "./Layout/Layout";
-import Header from "./Header/Header";
-import Footer from "./Footer/Footer";
 import LoaderComponent from "./LoaderComponent/LoaderComponent";
+import CustomInputgroup from "./Input/CustomInputgroup";
+import FaqAccordianItem from "./Accordian/FaqAccordianItem";
 
-export { Layout, Header, Footer, LoaderComponent };
+export { Layout, LoaderComponent, CustomInputgroup, FaqAccordianItem };
