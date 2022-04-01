@@ -6,7 +6,7 @@ body {
   // font-family: -apple-system, BlinkMacSystemFont,"Montserrat" "Segoe UI", "Roboto", "Oxygen",
   //   "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
   //   sans-serif;
-  font-family: 'Montserrat', sans-serif !important;
+  font-family: "Montserrat", sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -19,4 +19,18 @@ html,
 body,
 #root {
   height: 100%;
+}
+
+// animation css
+
+@keyframes dracoanimation {
+  0% {
+    transform: translateY(5px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(5px);
+  }
 }

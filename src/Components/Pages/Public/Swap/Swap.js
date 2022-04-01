@@ -9,7 +9,12 @@ import LMES from "../../../../Assets/Images/LMES.png";
 import MSAL from "../../../../Assets/Images/MSAL.png";
 import MBAP from "../../../../Assets/Images/MBAP.png";
 import HAAL from "../../../../Assets/Images/HAAL.png";
-import { CustomInputgroup, Layout } from "../../../Common";
+import {
+  CustomInputgroup,
+  Layout,
+  PlayerCard,
+  ButtonPrimary,
+} from "../../../Common";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import "./Swap.scss";
@@ -62,9 +67,12 @@ const Swap = () => {
               </Col>
               <Col xl={6} md={6} sm={12}>
                 <div className="connectWallet_Right">
-                  <button className="connectWallet">Connect Wallet</button>
+                  <ButtonPrimary
+                    title="Connect Wallet"
+                    className="connectWallet"
+                  />
                   <h1>Claim</h1>
-                  <button className="ctsBtn">1000 cts</button>
+                  <ButtonPrimary title="1000 cts" className="ctsBtn" />
                   <p>(Crypto stars tokens)</p>
                 </div>
               </Col>
@@ -85,7 +93,7 @@ const Swap = () => {
               </Col>
             </Row>
             <Row className="soccerPlayer_Row">
-              <h2>Soccer Players</h2>
+              <h2 className="playerTitle">Soccer Players</h2>
               <Col xl={6} md={6} sm={12}>
                 <div className="soccerPlayer_left cmnBorder">
                   <PerfectScrollbar>
@@ -96,7 +104,9 @@ const Swap = () => {
                 </div>
               </Col>
               <Col xl={6} md={6} sm={12}>
-                <div className="soccerPlayer_Right cmnBorder"></div>
+                <div className="soccerPlayer_Right cmnBorder">
+                  <PlayerCard />
+                </div>
               </Col>
             </Row>
           </Container>

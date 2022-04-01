@@ -37,6 +37,7 @@
       position: absolute;
       top: 25px;
       right: -100px;
+      animation: dracoanimation 2s linear infinite;
       @media (max-width: 767px) {
         max-width: 165px;
         right: 0;
@@ -133,6 +134,7 @@
       top: -150px;
       left: -160px;
       max-width: 320px;
+      animation: dracoanimation 2s linear infinite;
       @media (max-width: 767px) {
         max-width: 100px;
         top: -120px;

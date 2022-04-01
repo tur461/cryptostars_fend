@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Accordion } from "react-bootstrap";
-import { FaqAccordianItem, Layout } from "../../../Common";
+import { FaqAccordianItem, Layout, ButtonPrimary } from "../../../Common";
 import headerImg from "../../../../Assets/Images/headerImg.png";
 import draco from "../../../../Assets/Images/draco-header.png";
 import dracoroadmap from "../../../../Assets/Images/draco-roadmap.png";
@@ -28,9 +28,7 @@ const Home = () => {
             ever since the 1500s, when an unknown printer took a galley of type
             and scrambled it to make a type specimen
           </p>
-          <button className="startNow" onClick={() => navigate("/swap")}>
-            start now
-          </button>
+          <ButtonPrimary onClick={() => navigate("/swap")} title="start now" />
         </Container>
       </section>
       <section className="fqs_Sec">

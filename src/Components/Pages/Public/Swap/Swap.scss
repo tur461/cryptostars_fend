@@ -37,39 +37,64 @@
   padding: 25px 0;
 
   .connectWallet_Row {
+    .connectWallet_Left {
+      @media (max-width: 767px) {
+        text-align: center;
+      }
+      img {
+        width: 380px;
+        animation: dracoanimation 2s linear infinite;
+        @media (max-width: 880px) {
+          width: 350px;
+        }
+        @media (max-width: 467px) {
+          width: 250px;
+        }
+      }
+    }
     .connectWallet_Right {
       padding-top: 40px;
       .connectWallet {
-        border: 0;
-        padding: 0 40px;
-        border-radius: 4px;
+        width: 100%;
+        padding: 5px 15px;
         background-color: $primaryColor;
         color: $goldenYellow;
-        font-size: 46px;
         font-weight: 500;
+        text-transform: capitalize;
       }
 
       .ctsBtn {
+        width: 100%;
         margin-top: -25px;
-        border-radius: 6px;
-        border: 0;
         padding: 0 27px;
-        box-shadow: 0 7px 13px rgba(7, 36, 65, 0.54);
-        background-color: #ffbb14;
-        color: $secondaryColor;
-        font-size: 82px;
-        font-weight: 800;
-        text-transform: uppercase;
+        font-size: 72px;
         line-height: normal;
-        text-shadow: 0px 3px 10px rgba(0, 0, 0, 0.4);
+        @media (max-width: 880px) {
+          font-size: 56px;
+        }
+        @media (max-width: 467px) {
+          font-size: 40px;
+          margin-top: 0;
+        }
       }
       h1 {
         padding-top: 55px;
         text-transform: uppercase;
-        font-size: 142px;
+        font-size: 132px;
         color: $primaryColor;
         font-weight: 250;
         filter: drop-shadow(0 0 16px rgba(0, 10, 50, 0.94));
+
+        @media (max-width: 880px) {
+          font-size: 110px;
+          text-align: right;
+        }
+        @media (max-width: 767px) {
+          text-align: center;
+        }
+        @media (max-width: 467px) {
+          font-size: 75px;
+        }
       }
       p {
         padding-top: 10px;
@@ -79,14 +104,15 @@
         font-weight: 400;
         text-align: right;
         margin-bottom: 0;
+        @media (max-width: 767px) {
+          font-size: 18px;
+        }
       }
     }
   }
   .swapRow {
     padding-top: 65px;
     .swapCard {
-      max-width: 870px;
-      margin: 0 auto;
       padding: 20px;
       border-radius: 16px;
       border: 1px solid $lightBlue;
@@ -101,17 +127,32 @@
         position: relative;
         z-index: 1;
         margin: -15px 15px;
+        transition: transform 0.5s;
+        img {
+          width: 100%;
+        }
+        @media (max-width: 767px) {
+          width: 50px;
+          height: 50px;
+        }
+        &:hover {
+          transform: rotate(180deg);
+        }
       }
       .swapBtn {
         margin-top: 20px;
         border: 1px solid;
         width: 100%;
         font-size: 36px;
-        font-weight: 900;
+        font-weight: 800;
         border-radius: 8px;
         background: $borderClr;
         color: #0e1728;
         transition: all 0.3s linear;
+        @media (max-width: 767px) {
+          font-size: 28px;
+        }
+
         &:hover {
           background: transparent;
           color: $borderClr;
@@ -121,7 +162,7 @@
   }
   .soccerPlayer_Row {
     padding-top: 70px;
-    h2 {
+    .playerTitle {
       font-size: 28px;
       font-weight: 800;
       text-align: center;
@@ -129,16 +170,22 @@
       margin-bottom: 45px;
     }
     .cmnBorder {
-      border-radius: 16px;
+      border-radius: 20px;
       border: 1px solid $lightBlue;
       padding: 25px;
     }
     .soccerPlayer_left {
       background-color: rgba(0, 0, 0, 0.3);
+      @media (max-width: 767px) {
+        margin-bottom: 30px;
+      }
       .playerList {
         list-style: none;
         padding-left: 0;
         max-height: 820px;
+        @media (max-width: 767px) {
+          max-height: 550px;
+        }
         li {
           color: $white;
           font-size: 18px;
@@ -146,6 +193,11 @@
           padding: 20px 0;
           margin-bottom: 15px;
           text-transform: capitalize;
+          @media (max-width: 767px) {
+            font-size: 16px;
+            padding: 12px 0;
+            margin-bottom: 5px;
+          }
           strong {
             font-weight: 900;
             text-transform: uppercase;
@@ -155,6 +207,10 @@
             height: 50px;
             border-radius: 50%;
             margin-right: 10px;
+            @media (max-width: 767px) {
+              width: 35px;
+              height: 35px;
+            }
           }
           span {
             border-bottom: 2px solid transparent;
@@ -167,6 +223,11 @@
           }
         }
       }
+    }
+    .soccerPlayer_Right {
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
     }
   }
 }
