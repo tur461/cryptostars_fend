@@ -18,6 +18,9 @@
       .modal-title {
         color: $secondaryColor;
         font-weight: 600;
+        @media (max-width: 767px) {
+      font-size: 15px;
+        }
       }
       .btn-close {
         position: absolute;
@@ -36,10 +39,20 @@
         &:focus {
           box-shadow: unset;
         }
+
+        @media (max-width: 767px) {
+          width: 20px;
+          height: 20px;
+          right: 0;
+        }
       }
     }
     .modal-body {
       padding: 30px;
+
+      @media (max-width: 767px) {
+        padding: 20px;
+      }
     }
   }
 
@@ -62,6 +75,10 @@
             padding: 15px 30px;
             background-color: rgba(0, 214, 254, 0.2);
             transition: all 0.3s linear;
+            @media (max-width: 767px) {
+              font-size: 13px;
+              padding: 10px 20px;
+                }
 
             &:hover {
               background-color: $lightBlue;
