@@ -27,6 +27,18 @@ const EventInfo = [
     Matchday: "Round of 16-2nd leg",
     Teams: "Real Madrid vs PSC",
   },
+  {
+    Ligue: "Ligue 2",
+    Date: "15 Mar 2022",
+    Matchday: "Matchday 28",
+    Teams: "Niza vs PSG",
+  },
+  {
+    Ligue: "Ligue 2",
+    Date: "16 Mar 2022",
+    Matchday: "Matchday 29",
+    Teams: "Niza vs PSG",
+  },
 ];
 
 const EventList = () => {

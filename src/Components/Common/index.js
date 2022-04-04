@@ -4,6 +4,8 @@ import CustomInputgroup from "./Input/CustomInputgroup";
 import FaqAccordianItem from "./Accordian/FaqAccordianItem";
 import PlayerCard from "./Card/PlayerCard";
 import ButtonPrimary from "./Button/ButtonPrimary";
+import CustomModal from "./Modal/CustomModal";
+import ConnectWalletModal from "./Modal/ConnectWalletModal";
 
 export {
   Layout,
@@ -12,4 +14,6 @@ export {
   FaqAccordianItem,
   PlayerCard,
   ButtonPrimary,
+  CustomModal,
+  ConnectWalletModal,
 };

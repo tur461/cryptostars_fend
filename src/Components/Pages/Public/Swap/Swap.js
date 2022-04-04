@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Container, Row, Col, Form } from "react-bootstrap";
 import headerImg from "../../../../Assets/Images/headerImg.png";
 import draco from "../../../../Assets/Images/draco-roadmap.png";
@@ -14,6 +14,7 @@ import {
   Layout,
   PlayerCard,
   ButtonPrimary,
+  ConnectWalletModal,
 } from "../../../Common";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -44,6 +45,10 @@ const PlayerList = () => {
 };
 
 const Swap = () => {
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
   return (
     <>
       <section className="swapheader_Sec">
@@ -70,7 +75,9 @@ const Swap = () => {
                   <ButtonPrimary
                     title="Connect Wallet"
                     className="connectWallet"
+                    onClick={handleShow}
                   />
+                  <ConnectWalletModal show={show} onHide={handleClose} />
                   <h1>Claim</h1>
                   <ButtonPrimary title="1000 cts" className="ctsBtn" />
                   <p>(Crypto stars tokens)</p>
