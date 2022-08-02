@@ -58,6 +58,7 @@ import FactoryContract from '../../../../services/contracts/factory';
 import Loader from '../../../Loader';
 import log from '../../../../services/logging/logger';
 import toast from '../../../../services/logging/toast';
+import { setPriAccount, walletConnected } from '../../../features/wallet';
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -358,6 +359,13 @@ const Swap = () => {
     l_t.s('claim success!. please check your account.');
   }
 
+   //Disconnect wallet functionality
+   const disconnect = () => {
+    dispatch(walletConnected(false));
+    dispatch(setPriAccount(""));
+    setConnectTitle("Connect Wallet")
+    // window.location.reload();
+}
   // ------------------------------------------------------
 
   return (
@@ -393,6 +401,11 @@ const Swap = () => {
                     onHide={handleClose}
                     conTitleCbk={setConnectTitle}
                   />
+                  {/* Diconnect Button */}
+                  {wallet.isConnected ? 
+                    <button onClick = {disconnect}>Disconnect Wallet</button>
+                    : ''}
+
                   <h1>Claim</h1>
                   <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={claimCST} />
                   <p>(Crypto stars tokens)</p>

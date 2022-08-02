@@ -10,6 +10,8 @@ const CustomInputgroup = ({ className, icon, title, states }) => {
     states.tList.resetTList_chg();
   };
   const handleShow = () => setShow(true);
+
+  
   return (
     <InputGroup className={`customInp_style ${className}`}>
       <InputGroup.Text>
@@ -24,7 +26,7 @@ const CustomInputgroup = ({ className, icon, title, states }) => {
           <SelectTokenModal show={show} hideCbk={handleClose} state={states.tList} />
         </div>
       </InputGroup.Text>
-      <FormControl placeholder="0.00" value={states.token.val} onChange={states.token.cbk} type='text'/>
+      <FormControl placeholder="0.00" value={states.token.val} onChange={states.token.cbk} type= 'Number' />
     </InputGroup>
   );
 };
