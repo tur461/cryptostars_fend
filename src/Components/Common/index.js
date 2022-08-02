@@ -6,6 +6,9 @@ import PlayerCard from "./Card/PlayerCard";
 import ButtonPrimary from "./Button/ButtonPrimary";
 import CustomModal from "./Modal/CustomModal";
 import ConnectWalletModal from "./Modal/ConnectWalletModal";
+import SelectTokenModal from "./Modal/SelectTokenModal";
+import RecentTransactions from "./Modal/RecentTransactions";
+import SettingModal from "./Modal/SettingModal";
 
 export {
   Layout,
@@ -16,4 +19,7 @@ export {
   ButtonPrimary,
   CustomModal,
   ConnectWalletModal,
+  SelectTokenModal,
+  RecentTransactions,
+  SettingModal,
 };

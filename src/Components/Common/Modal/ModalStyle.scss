@@ -19,7 +19,7 @@
         color: $secondaryColor;
         font-weight: 600;
         @media (max-width: 767px) {
-      font-size: 15px;
+          font-size: 15px;
         }
       }
       .btn-close {
@@ -78,7 +78,7 @@
             @media (max-width: 767px) {
               font-size: 13px;
               padding: 10px 20px;
-                }
+            }
 
             &:hover {
               background-color: $lightBlue;
@@ -86,6 +86,247 @@
           }
         }
       }
+    }
+  }
+
+  // select currency modal
+  &.selectCurrency_modal {
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      padding: 0 44px 28px;
+      @media (max-width: 767px) {
+        padding: 0 20px 21px;
+      }
+    }
+    .modal-content {
+      .tokenName {
+        h4 {
+          font-size: 16px;
+          font-weight: 700;
+        }
+        hr {
+          height: 2px;
+          background: $secondaryColor;
+          margin-top: 12px;
+          margin-bottom: 25px;
+        }
+      }
+    }
+  }
+  .manageButtonStyle {
+    width: 100%;
+    height: 45px;
+  }
+}
+.gradiantWrap {
+  border-radius: 30px;
+  border: 2px solid $baseColor;
+  margin-bottom: 25px;
+  .searchInput_Style {
+    border-radius: 25px;
+    width: 100%;
+    text-align: left;
+    background: $blackBg;
+    border: 0px;
+    font-size: 14px;
+    font-weight: 500;
+    color: $baseColor;
+    height: 44px;
+    outline: none;
+    padding: 0 46px 0 20px;
+    background-image: url(../../../Assets/Images/search.svg);
+    background-repeat: no-repeat;
+    background-size: 20px;
+    background-position: center right 15px;
+    &::placeholder {
+      color: $white;
+    }
+  }
+}
+.baseToken_style {
+  padding-top: 33px;
+
+  h2 {
+    font-size: 16px;
+    margin-bottom: 22px;
+    color: rgba(189, 189, 189, 1);
+    font-weight: 400;
+    svg {
+      margin-left: 3px;
+    }
+  }
+}
+.baseToken_style ul {
+  li {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    a {
+      padding: 4px 20px 4px 10px;
+      border-radius: 20px;
+      text-decoration: none;
+      color: rgba(189, 189, 189, 1);
+      display: block;
+      font-size: 14px;
+      img {
+        margin-right: 4px;
+        width: 25px;
+      }
+    }
+  }
+}
+.coinListBlockStyle {
+  display: flex;
+  max-height: 365px;
+  flex-direction: column;
+}
+
+.coinItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  button {
+    color: $black;
+    font-weight: 700;
+    background: $primaryColor;
+    padding: .2rem;
+    border: 1px solid $black;
+    border-radius: 5px;
+    margin-top: 2rem;
+    vertical-align: middle;
+  }
+  button:hover {
+    opacity: .8;
+  }
+  
+
+  .coinItem_style {
+    *{
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+    flex-grow: 1;
+    transition: all 0.25s;
+    padding: 2px;
+    margin-bottom: 5px;
+    border-radius: 10px;
+    cursor: pointer;
+    &:hover {
+      background-color: $secondaryColor;
+    }
+    &.active {
+      cursor: not-allowed;
+      // background-color: $dimbg;
+      opacity: 0.7;
+    }
+    img {
+      width: 38px;
+      height: 38px;
+      margin-right: 20px;
+    }
+  
+    .titleStyle {
+      font-size: 1rem;
+      font-weight: 400;
+      color: $white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      img {
+        width: 1rem;
+        margin-right: .4rem;
+      }
+    }
+    .tokenDescription {
+      padding: .6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .tokenName {
+        font-size: .5rem;
+        color: $goldenYellow;
+      }
+      .tokenBalance {
+        text-align: right;
+        color: $white;
+        max-width: 4rem;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}
+
+
+
+.stting_modl {
+  .slipTolrnc_text {
+    font-size: 16px;
+    a {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      margin-left: 5px;
+      img {
+        width: 100%;
+      }
+    }
+  }
+  .selct_area {
+    margin: 25px 0;
+    button {
+      border-radius: 30px;
+      border: 0;
+      background: $secondaryColor;
+      color: $white;
+      padding: 8px 19px;
+      margin-right: 7px;
+      font-size: 14px;
+      position: relative;
+      font-weight: 600;
+      @media (max-width: 767px) {
+        padding: 8px 25px;
+        margin-bottom: 10px;
+      }
+    }
+    input {
+      background: $blackBg;
+      border: 1px solid $baseColor;
+      width: 150px;
+      color: $white;
+      border-radius: 30px;
+      padding: 0 15px;
+      height: 37px;
+      &:focus {
+        outline: 0 !important;
+      }
+      @media (max-width: 767px) {
+        width: 85%;
+        height: 35px;
+      }
+
+      &::placeholder {
+        color: $white;
+      }
+    }
+    small {
+      font-size: 11px;
+    }
+    .d-flex {
+      @media (max-width: 767px) {
+        display: block !important;
+      }
+    }
+  }
+  .dedline {
+    margin: 0;
+    button {
+      padding: 8px 19px;
+      width: 100px;
     }
   }
 }

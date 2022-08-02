@@ -1,5 +1,18 @@
 @import "../../../../Assets/Scss/_var.scss";
 
+%any-btn {
+  margin-top: 20px;
+  border: 1px solid;
+  width: 100%;
+  font-size: 36px;
+  font-weight: 800;
+  border-radius: 1rem;
+  transition: all 0.3s linear;
+  @media (max-width: 767px) {
+    font-size: 28px;
+  }
+}
+
 .swapCmn_cont {
   &.container {
     max-width: 940px;
@@ -36,6 +49,65 @@
   background-size: 100% 100%;
   padding: 25px 0;
 
+  .liquidity_Row {
+    * {
+      box-sizing: border-box;
+    }
+    .liquidity_container {
+      @media (max-width: 767px) {
+        text-align: center;
+      }
+      
+      border: 1px solid $goldenYellow;
+      border-radius: 1rem;
+      padding: 1rem;
+      div {
+        padding: .5rem;
+      }
+      span {
+        color: $goldenYellow !important;
+        padding: 10px;
+      }
+      input {
+        padding: .4rem;
+        background: transparent;
+        outline: 0;
+        color: $lime;
+        border: 1px solid $primaryColor;
+        border-radius: .3rem;
+      }
+      .liquidity_heading {
+        text-align: center;
+        color: $goldenYellow;
+        font-size: 1rem;
+        font-weight: 800;
+      }
+      .liquidity_interactions {
+        .liquidity_approvals {
+          display: flex;
+          justify-content: space-between;
+        }
+        .liquidity_add {
+          text-align: center;
+        }
+        button {
+          font-size: .65rem;
+          font-weight: 800;
+          background: $goldenYellow;
+          outline: 0;
+          border: 1px solid $goldenYellow;
+          border-radius: .4rem;
+          color: $blackBg;
+          padding: .3rem;
+        }
+        button:hover {
+          background: $blackBg;
+          border-radius: .4rem;
+          color: $goldenYellow;
+        }
+      }
+    }
+  }
   .connectWallet_Row {
     .connectWallet_Left {
       @media (max-width: 767px) {
@@ -138,24 +210,69 @@
         &:hover {
           transform: rotate(180deg);
         }
-      }
-      .swapBtn {
-        margin-top: 20px;
-        border: 1px solid;
-        width: 100%;
-        font-size: 36px;
-        font-weight: 800;
-        border-radius: 8px;
+      } 
+
+      .swap-btn {
+        @extend %any-btn;
         background: $borderClr;
         color: #0e1728;
-        transition: all 0.3s linear;
-        @media (max-width: 767px) {
-          font-size: 28px;
-        }
-
         &:hover {
           background: transparent;
           color: $borderClr;
+        }
+      }
+
+      .approve-btn {
+        @extend %any-btn;
+        background: $blueColor;
+        color: $white;
+        &:hover {
+          background: transparent;
+          color: $blueColor;
+        }
+      }
+
+        
+      .slipageText {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        color: $secondaryColor;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .tokenXchangePriceWrap {
+        text-align: center;
+        color: $goldenYellow;
+        .tokenXchangePrice span {
+          font-weight: 700;
+        }
+      }
+
+      .error-box {
+        padding: .4rem;
+        background-color: red;
+        border-radius: 1rem;
+        p {
+          padding: .4rem;
+          text-align: center;
+          color: $white;
+          font-size: 1.2rem;
+          font-weight: 700;
+        }
+      }
+
+      .settingWrap {
+        text-align: right;
+        margin-bottom: 25px;
+        span {
+          display: inline-block;
+          cursor: pointer;
+          img {
+            width: 25px;
+            height: 25px;
+          }
         }
       }
     }
@@ -232,5 +349,10 @@
       overflow: hidden;
       height: 100%;
     }
+  }
+  *:disabled {
+    background-color: $lightGrey !important;
+    color: $white !important;
+    opacity: .8 !important;
   }
 }

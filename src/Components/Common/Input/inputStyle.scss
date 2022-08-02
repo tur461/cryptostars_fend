@@ -43,16 +43,16 @@
             font-size: 13px;
           }
         }
-        .form-select {
+        .selectOption {
+          cursor: pointer;
           min-width: 110px;
           line-height: normal;
           padding: 5px;
           border: 0;
           background: transparent;
-          color: $primaryColor;
-          font-size: 22px;
-          font-weight: 600;
-          text-transform: uppercase;
+          color: $lime;
+          font-size: 10px;
+          font-weight: 700;
           background-image: url(../../../Assets/Images/arrow.png);
           background-repeat: no-repeat;
           background-position: center right 10px;

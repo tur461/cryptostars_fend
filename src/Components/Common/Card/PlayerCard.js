@@ -42,8 +42,8 @@ const EventInfo = [
 ];
 
 const EventList = () => {
-  return EventInfo.map((Event) => (
-    <li className="eventinfo">
+  return EventInfo.map((Event,index) => (
+    <li className="eventinfo" key={index}>
       <h3>
         {Event.Ligue}
         <span className="eventDate"> {Event.Date}</span>
