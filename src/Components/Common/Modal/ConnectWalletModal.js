@@ -30,17 +30,14 @@ const ConnectWalletModal = (props) => {
 
   const walletConnectCall = async (walletType, type) => {
     try {
-      Wallet.init();
-      let isValidChain = await Wallet.checkChain();
-      if(!isValidChain) {
-        props.onHide(false);
-        return;
-      }
-      let acc = await Wallet.getPriAccount();
+      await Wallet.init();
+      await Wallet.ensureChain();
+      // if(!isValidChain) return props.onHide(!1);
+      let acc = Wallet.priAccount;
 
       if (acc) {
         l_t.s('Wallet connected successfully!');
-        props.onHide(false);
+        props.onHide(!1);
         proc(acc);
       } else l_t.e('no account found!');
     } catch (error) {

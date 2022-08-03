@@ -1,5 +1,5 @@
 import {BigNumber} from '@ethersproject/bignumber';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Container, Row, Col, Form } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import headerImg from "../../../../Assets/Images/headerImg.png";
@@ -110,10 +110,15 @@ const Swap = () => {
   const settingHndShow = () => setSettingsShow(!0);
   const settingHndClose = () => setSettingsShow(!1);
 
+  const lock = useRef(!0);
+
   useEffect(_ => {
-    if(!wallet.isConnected) l_t.e('Wallet not Connected!');
-    else CommonF.init({from:wallet.priAccount});
-  }, [connectTitle]);
+    if(lock.current) {
+      if(!wallet.isConnected) l_t.e('Wallet not Connected!');
+      else CommonF.init({from:wallet.priAccount});
+      lock.current = !1;
+    }
+  }, []);
 
   useEffect(_ => {
     resetStates()
@@ -123,7 +128,7 @@ const Swap = () => {
     log.i('pair:', pair);
     log.i('is err:', isErr);
     setIsDisabled(isErr);
-  })
+  }, [])
 
 
   async function approveWithMaxAmount(e) {
@@ -193,7 +198,7 @@ const Swap = () => {
     
     log.i('TH Amount:', thresholdAmount);
 
-    RouterContract.swap_TT(
+    await RouterContract.swap_TT(
       [
         amountIn,
         thresholdAmount,
@@ -203,6 +208,7 @@ const Swap = () => {
       ],
       isExactIn
     );
+    l_t.s('Swap Success!');
   }
 
   function upsideDown(e) {
