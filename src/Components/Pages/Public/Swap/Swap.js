@@ -1,5 +1,5 @@
 import {BigNumber} from '@ethersproject/bignumber';
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Form } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import headerImg from "../../../../Assets/Images/headerImg.png";
@@ -47,7 +47,7 @@ import {
 
 import l_t from "../../../../services/logging/l_t";
 import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
-import { bigDiv, spow, toGib, isValidAddr, toStd } from "../../../../services/utils";
+import { bigDiv, spow, toGib, isValidAddr } from "../../../../services/utils";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
 
 import CommonF from "../../../../services/contracts/common";
@@ -58,6 +58,7 @@ import FactoryContract from '../../../../services/contracts/factory';
 import Loader from '../../../Loader';
 import log from '../../../../services/logging/logger';
 import toast from '../../../../services/logging/toast';
+import { setConnectTitle, setPriAccount, walletConnected } from '../../../features/wallet';
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -100,8 +101,7 @@ const Swap = () => {
   const [thresholdAmount, setThresholdAmount] = useState('0');
   const [btnText, setBtnText] = useState(INIT_VAL.SWAP_BTN[0]);
   const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
-  const [connectTitle, setConnectTitle] = useState(MISC.CONNECT_TTL);
-  
+
   // helpers
   const handleShow = () => setShow(!0);
   const handleClose = () => setShow(!1);
@@ -110,15 +110,10 @@ const Swap = () => {
   const settingHndShow = () => setSettingsShow(!0);
   const settingHndClose = () => setSettingsShow(!1);
 
-  const lock = useRef(!0);
-
   useEffect(_ => {
-    if(lock.current) {
-      if(!wallet.isConnected) l_t.e('Wallet not Connected!');
-      else CommonF.init({from:wallet.priAccount});
-      lock.current = !1;
-    }
-  }, []);
+    if(!wallet.isConnected) l_t.e('Wallet not Connected!');
+    else CommonF.init({from:wallet.priAccount}); 
+  }, [wallet.connectTitle]);
 
   useEffect(_ => {
     resetStates()
@@ -128,11 +123,10 @@ const Swap = () => {
     log.i('pair:', pair);
     log.i('is err:', isErr);
     setIsDisabled(isErr);
-  }, [])
+  })
 
 
   async function approveWithMaxAmount(e) {
-    log.i('approving..')
     e.preventDefault();
     TokenContract.init(swap.token1_addr);
     setIsFetching(!0);
@@ -167,38 +161,42 @@ const Swap = () => {
     throw new Error('"error: pair doesn\'t exist!"');
   }
 
-  async function setSwapPrerequisites(amount, pr, inOrOutAmount, xactIn) {
+  async function badSwapCheck(amount, pr, inOrOutAmount, xactIn) {
     log.i(arguments, swap.slippage);
-    const sellTokenAddr = isExactIn ? swap.token1_addr : swap.token2_addr;
-    const buyTokenAddr = isExactIn ? swap.token2_addr : swap.token1_addr;
-    TokenContract.init(sellTokenAddr);
-    const sellTokenDec = await TokenContract.decimals();
-    TokenContract.init(buyTokenAddr);
-    const buyTokenDec = await TokenContract.decimals();
-    
-    let xactAmount = toStd(amount * 10**(xactIn ? sellTokenDec : buyTokenDec));
-    log.i('inOrOutAmount:', inOrOutAmount.to);
-    let thAmount = getThresholdAmountFromTolerance(inOrOutAmount, swap.slippage, xactIn, xactIn ? buyTokenDec : sellTokenDec)
-    log.i('Final TH amount:', thAmount);
+    let addr = isExactIn ? swap.token1_addr : swap.token2_addr;
+    TokenContract.init(addr);
+    let dec = await TokenContract.decimals();
+    let p = [spow(amount, dec), pr];
+    log.i('inOrOutAmount:', inOrOutAmount.toString()/10**18,'exactIn:', xactIn);
+
+    log.i('threshold without dec', getThresholdAmountFromTolerance(amount, swap.slippage), 'slip:', swap.slippage);
+    let thresholdAmount = spow(getThresholdAmountFromTolerance(amount, swap.slippage), dec);
+    let _tmpBig = BigNumber.from(thresholdAmount);
+    let slippageGood = xactIn ? inOrOutAmount.gt(_tmpBig) : inOrOutAmount.lte(_tmpBig);
     log.s(btnText);
+    // if(!slippageGood) {
+    //   setIsErr(!0);
+    //   setErrText(isExactIn ? 'Slippage too high' : 'Slippage too low');
+    // } else setIsErr(!1);
+
+    log.i(`amounts ${isExactIn ? 'Out' : 'In'}:`, inOrOutAmount.toBigInt(), thresholdAmount, slippageGood);
     setPair(pr);
-    setAmountIn(xactAmount);
-    setThresholdAmount(thAmount.toString());
-    return !0;
+    setAmountIn(p[0]);
+    setThresholdAmount(thresholdAmount);
+    return !slippageGood;
   }
 
   async function performSwap(e) {
     e.preventDefault();
     if(isErr) return toast.e('please resolve error first!');
-    if(!wallet.priAccount.length) {
+    if(!wallet.priAccount.length && !wallet.isConnected) {
       l_t.e('please connect wallet first!');
       return;
     }
     console.log('performing swap operation');
     
-    log.i('TH Amount:', thresholdAmount);
-
-    await RouterContract.swap_TT(
+    log.i('pair:', pair);
+    RouterContract.swap_TT(
       [
         amountIn,
         thresholdAmount,
@@ -208,7 +206,6 @@ const Swap = () => {
       ],
       isExactIn
     );
-    l_t.s('Swap Success!');
   }
 
   function upsideDown(e) {
@@ -248,13 +245,13 @@ const Swap = () => {
             xch = toGib(
               spow(
                 bigDiv(
-                  inOrOutAmount, 
+                  inOrOutAmount,
                   BigNumber.from(v)
                 ), dec
               ), dec
             );
         let amt = inOrOutAmount.toString();
-        log.i('exactIn:', !(n-1), 'amount:', amt);
+
         TokenContract.init(p ? p[n-1 ? 0 : 1] : swap[`token${n-1 ? 1 : 2}_addr`]);
         dec = await TokenContract.decimals();
         let _tmpAmt = BigNumber.from(n-1 ? amt : v);
@@ -265,12 +262,8 @@ const Swap = () => {
         
         // check allowance for token 1
         let allowance = await TokenContract.allowance(wallet.priAccount, ADDRESS.ROUTER_CONTRACT);
-
         let isApproved = allowance.gt(_tmpAmt);
-         
-        // let aa =  await TokenContract.approve( ADDRESS.ROUTER_CONTRACT,approveWithMaxAmount)
-        console.log("kkkkkkkkkk",hasBal,isApproved);
-
+        
         if(!hasBal) {
           setIsErr(!0);
           setErrText('Insufficient balance for ' + swap.token1_sym);
@@ -278,7 +271,6 @@ const Swap = () => {
           setIsErr(!0);
           setErrText('Approve ' + swap.token1_sym);
         } else setIsErr(!1);
-
         //fixed the exponential value v
         if(v/10**18<0.000001)
         {
@@ -291,9 +283,7 @@ const Swap = () => {
         }
 
         // v = toGib(amt, dec);
-        const xactIn = !!!(n-1);
-        log.i('xact in:', xactIn, v, typedAmount);
-        setTimeout(async _ => await setSwapPrerequisites(typedAmount, newPair, inOrOutAmount, xactIn, n, e2), 1000);
+        setTimeout(async _ => await badSwapCheck(typedAmount, newPair, inOrOutAmount, !!!(n-1), n, e2), 1000);
         // set another token value
         dispatch(setTokenValue({v, n:n-1?1:2}));
         setXchangeEquivalent(xch);
@@ -354,18 +344,29 @@ const Swap = () => {
   // ------------------ other code ------------------------
 
   async function claimCST(e) {
-    e.preventDefault();
-    let hasClaimed = await FaucetContract.hasClaimed(wallet.priAccount);
-    if(hasClaimed) {
-      l_t.e('already claimed!');
-      return;
-    }
-    await FaucetContract.claimCST();
-    l_t.s('claim success!. please check your account.');
+    // if(!wallet.isConnected){
+
+      e.preventDefault();
+      let hasClaimed = await FaucetContract.hasClaimed(wallet.priAccount);
+      if(hasClaimed) {
+        l_t.e('already claimed!');
+        return;
+      }
+      await FaucetContract.claimCST();
+      l_t.s('claim success!. please check your account.');
+    // }
   }
 
-  // ------------------------------------------------------
+  //Disconnect wallet functionality
+  // const disconnect = () => {
+  //     dispatch(walletConnected(false));
+  //     dispatch(setPriAccount(''));
+  //     setConnectTitle("Connect Wallet")
+  //     l_t.e('Wallet Disconnected!');
+  // }
 
+  // ------------------------------------------------------
+  const connectWalletCbk = str => dispatch(setConnectTitle(str));
   return (
     <>
       <section className="swapheader_Sec">
@@ -390,15 +391,18 @@ const Swap = () => {
               <Col xl={6} md={6} sm={12}>
                 <div className="connectWallet_Right">
                   <ButtonPrimary
-                    title={connectTitle}
+                    title={wallet.connectTitle}
                     className="connectWallet"
                     onClick={handleShow}
                   />
                   <ConnectWalletModal
                     show={show}
                     onHide={handleClose}
-                    conTitleCbk={setConnectTitle}
-                  />
+                    conTitleCbk={connectWalletCbk}
+                    />
+                    {/* {wallet.isConnected ? 
+                    <button onClick = {disconnect}>Disconnect Wallet</button>
+                    : ''} */}
                   <h1>Claim</h1>
                   <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={claimCST} />
                   <p>(Crypto stars tokens)</p>
@@ -441,6 +445,7 @@ const Swap = () => {
                     <CustomInputgroup 
                       icon={cstcoin} 
                       title="Swap From"
+                      type='number'
                       states={
                         {
                           token: {
@@ -497,28 +502,29 @@ const Swap = () => {
                         <span>{swap.slippage}%</span>
                       </div>
                     </div>
-                  {console.log("jjjjjjjjjjj",isErr,errText)}
                     {
-                     
-                      isErr && tokenApproved ?
+                      isErr ?
                       <div className='error-box'>
                         <p>{errText}</p>
                       </div> :
+
+                
+                      
                       (
-                        !tokenApproved ? 
+                        !tokenApproved ?
                         <button
                           className="approve-btn" 
-                          onClick={approveWithMaxAmount}
+                          onClick={!isErr ? approveWithMaxAmount : _=>_}
                         >
                           {'Approve ' + swap.token1_sym}
                         </button> :
 
                         <button
-                          disabled={isDisabled || isFetching}
+                          disabled={isDisabled || isFetching || !wallet.isConnected}
                           className="swap-btn" 
                           onClick={!isErr ? performSwap : _=>_}
                         >
-                          {isFetching ? 'please wait..' : 'Swap'}
+                          {!wallet.isConnected ? 'wallet not connected!' : isFetching ? 'please wait..' : 'Swap'}
                         </button>
                       )
                     }

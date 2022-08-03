@@ -50,13 +50,8 @@ function evDispatch(t, d) {
     dispatchEvent(new CustomEvent(t, {detail: d}));
 }
 
-function toStd(v) {
-    return v.toLocaleString('fullwide', {useGrouping: !1});
-}
-
 export {
     spow,
-    toStd,
     toGib,
     bigDiv,
     isValidAddr,

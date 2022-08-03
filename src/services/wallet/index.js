@@ -1,55 +1,51 @@
 import { ethers } from "ethers";
-import { EVENT, MISC, URL, VALID_CHAIN_ID } from "../constants/common";
+import { EVENT, MISC, VALID_CHAIN_ID } from "../constants/common";
 import log from "../logging/logger";
 import l_t from "../logging/l_t";
 import { getAddress } from 'ethers/lib/utils';
-import { CHAIN, PARAMS, WALLET_METH, WALLET_PARAM } from "../constants/wallet";
 
 const Wallet = {
     M: window.ethereum,
     _signer: null,
     _provider: null,
-    _accounts: [],
     init: async function() {
         log.s('Wallet init..');
         if(!!!this._provider) {
-            this._provider = new ethers.providers.Web3Provider(this.M || URL.RPC.LOCAL, 'any');
-            this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS, [])).map(a => getAddress(a));
-            this._signer = await this.provider.getSigner();
-            log.i('getting provider completed.', this.priAccount);
+            this._provider = new ethers.providers.Web3Provider(this.M, 'any');
+            this._signer = this.provider.getSigner();
             this._initEvents();
             log.s('init done');
         }
         return this;
     },
     get signer() {
+        log.i('get signer');
         return this._signer;
     },
     get provider() {
+        log.i('get provider');
         return this._provider;
     },
-    get priAccount() {
-        return this._accounts[0];
-    },
-    ensureChain: async function() {
-        // debugger;
-            let chainId = (await this.provider.getNetwork()).chainId;
-            log.i('selected chain:', chainId);
-            if(chainId !== CHAIN.CRONOS_TEST.INT) {
-                l_t.e('please select cronos testnet');
-                await this.provider.send(WALLET_METH.ADD_CHAIN, [WALLET_PARAM.ADD_CHAIN]);
-            }
+    checkChain: async function() {
+        let nw = await this._provider.getNetwork()
+        if(nw.chainId !== VALID_CHAIN_ID) {
+            l_t.e('please select cronos testnet');
+            return !1;
+        }
+        return !0;
     },
     getPriAccount: async function() {
-        return this.priAccount;
+        let accounts = await this._provider.send('eth_requestAccounts', []);
+        accounts = accounts.map(a => getAddress(a));
+        return accounts[0];
     },
     _initEvents: function() {
-        this.provider.on(EVENT.CHAIN_CHANGE, async _ => {
+        window.ethereum.on('chainChanged', async _ => {
             l_t.i('chain change event');
             let isValidChain = await this.checkChain();
             window.dispatchEvent(new CustomEvent(EVENT.CHAIN_CHANGE, {detail: {isValidChain}}));
         });
-        this.provider.on(EVENT.ACC_CHANGE, _ => {
+        window.ethereum.on('accountsChanged', _ => {
             l_t.i('account change event');
             window.dispatchEvent(new Event(EVENT.ACC_CHANGE));
         });
