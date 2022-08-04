@@ -110,6 +110,7 @@ const Swap = () => {
   const settingHndShow = () => setSettingsShow(!0);
   const settingHndClose = () => setSettingsShow(!1);
 
+
   useEffect(_ => {
     if(!wallet.isConnected) l_t.e('Wallet not Connected!');
     else CommonF.init({from:wallet.priAccount}); 
@@ -226,6 +227,11 @@ const Swap = () => {
   async function setOtherTokenValue(v, n, p) {
     resetStates();
     setIsExactIn(!(n-1));
+
+    if(!/^[0-9]*[.,]?[0-9]*$/gmi.test(v)) {
+      return dispatch(setTokenValue('', n));
+    }
+
     // set current token value to what is given
     dispatch(setTokenValue({v, n}));
     setIsFetching(!0);
@@ -274,8 +280,8 @@ const Swap = () => {
         //fixed the exponential value v
         if(v/10**18<0.000001)
         {
-          console.log("vvvv",v/10**18);
-          console.log("nnnnnnnllllllllllllllll",(amt/10**18).toFixed(20));
+          // console.log("vvvv",v/10**18);
+          // console.log("nnnnnnnllllllllllllllll",(amt/10**18).toFixed(20));
           v=(amt/10**18).toFixed(20);
         }
         else{
@@ -344,7 +350,6 @@ const Swap = () => {
   // ------------------ other code ------------------------
 
   async function claimCST(e) {
-    // if(!wallet.isConnected){
 
       e.preventDefault();
       let hasClaimed = await FaucetContract.hasClaimed(wallet.priAccount);
@@ -354,16 +359,8 @@ const Swap = () => {
       }
       await FaucetContract.claimCST();
       l_t.s('claim success!. please check your account.');
-    // }
   }
 
-  //Disconnect wallet functionality
-  // const disconnect = () => {
-  //     dispatch(walletConnected(false));
-  //     dispatch(setPriAccount(''));
-  //     setConnectTitle("Connect Wallet")
-  //     l_t.e('Wallet Disconnected!');
-  // }
 
   // ------------------------------------------------------
   const connectWalletCbk = str => dispatch(setConnectTitle(str));
@@ -400,9 +397,6 @@ const Swap = () => {
                     onHide={handleClose}
                     conTitleCbk={connectWalletCbk}
                     />
-                    {/* {wallet.isConnected ? 
-                    <button onClick = {disconnect}>Disconnect Wallet</button>
-                    : ''} */}
                   <h1>Claim</h1>
                   <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={claimCST} />
                   <p>(Crypto stars tokens)</p>
@@ -430,12 +424,13 @@ const Swap = () => {
                       states={
                         {
                           dLine: {
-                            val: swap.deadLine,
-                            cbk: e => dispatch(setDeadLine(e.target.value))
+                            deadLineValue: swap.deadLine,
+                            setDeadLine: e => dispatch(setDeadLine(e.target.value))
                           },
                           slip: {
-                            val: swap.slippage,
-                            cbk: e => dispatch(setSlippage(e.target.value))
+                            slippageValue: swap.slippage,
+                            setSlippage: e => dispatch(setSlippage(e.target.value)),
+                            updateSlippageOnUI: slip => dispatch(setSlippage(slip)),
                           },
                         }
                       }
@@ -507,9 +502,6 @@ const Swap = () => {
                       <div className='error-box'>
                         <p>{errText}</p>
                       </div> :
-
-                
-                      
                       (
                         !tokenApproved ?
                         <button

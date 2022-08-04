@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import CustomModal from "./CustomModal";
 import { Toast } from "../Toast/Toast";
-import { setPriAccount, walletConnected } from "../../features/wallet";
+import { setPriAccount, walletConnected, walletDisconnected } from "../../features/wallet";
 
 import Wallet from "../../../services/wallet";
 import CommonF from "../../../services/contracts/common";
@@ -34,7 +34,7 @@ const ConnectWalletModal = (props) => {
     } else{
       props.conTitleCbk(MISC.CONNECT_TTL)
     }
-  }, [wallet.isConnected, wallet.getPriAccount])
+  }, [wallet.isConnected])
   
   
   window.addEventListener(EVENT.CHAIN_CHANGE, async e => {
@@ -54,7 +54,6 @@ const ConnectWalletModal = (props) => {
 
       if (acc) {
         l_t.s('Wallet connected successfully!');
-        console.log("aaaaaaaaaaaaaaaaaaaa",acc)
         props.onHide(false);
         proc(acc);
       } else l_t.e('no account found!');
@@ -67,7 +66,6 @@ const ConnectWalletModal = (props) => {
   const disconnect = () => {
     dispatch(walletConnected(false));
     dispatch(setPriAccount(''));
-    // l_t.s('Wallet Disconnected!');
     props.onHide(false)
 }
 

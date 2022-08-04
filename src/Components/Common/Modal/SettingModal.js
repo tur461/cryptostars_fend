@@ -33,9 +33,9 @@ const SettingModal = ({ size, show, onHide, states }) => {
         <div className="selct_area">
           <div className="d-flex">
             <span>
-              <button>0.1%</button>
-              <button>0.5%</button>
-              <button>1%</button>
+               <button onClick={_ => states.slip.updateSlippageOnUI(0.1)}>0.1%</button>
+               <button onClick={_ => states.slip.updateSlippageOnUI(0.5)}>0.5%</button>
+               <button onClick={_ => states.slip.updateSlippageOnUI(1)}>1%</button>
             </span>
             <span className="d-flex align-items-center">
               <input
@@ -43,10 +43,10 @@ const SettingModal = ({ size, show, onHide, states }) => {
                 scale="lg"
                 step={0.1}
                 min={0.1}
-                placeholder="5%"
+                placeholder="0.0"
                 className="me-1"
-                value={states.slip.val}
-                onChange={states.slip.cbk}
+                value={states.slip.slippageValue}
+                onChange={states.slip.setSlippage}
               />{" "}
               %
             </span>
@@ -60,8 +60,8 @@ const SettingModal = ({ size, show, onHide, states }) => {
               placeholder="20" 
               step="1" 
               min="1"
-              value={states.dLine.val}
-              onChange={states.dLine.cbk} 
+              value={states.dLine.deadLineValue}
+              onChange={states.dLine.setDeadLine} 
             /> &nbsp;
             <span>Minutes</span>
           </div>
