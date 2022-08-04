@@ -1,0 +1,348 @@
+@import "../../../../Assets/Scss/_var.scss";
+
+.cmnHeading {
+  text-shadow: 0 0 31px rgba(9, 17, 53, 0.94);
+  color: $baseColor;
+  font-size: 29px;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-align: center;
+  @media (max-width: 767px) {
+    font-size: 24px;
+  }
+}
+
+.header_Sec {
+  width: 100%;
+  background: url(../../../../Assets/Images/headerBg.png) no-repeat;
+  background-size: 100% 100%;
+  min-height: 290px;
+  @media (max-width: 767px) {
+    min-height: 200px;
+  }
+  .headerImg_wrap {
+    position: relative;
+    @media (max-width: 767px) {
+      max-width: 390px;
+      margin: 0 auto;
+    }
+    .cryptoStars_img {
+      max-width: 340px;
+      @media (max-width: 767px) {
+        max-width: 220px;
+      }
+    }
+    .dracoImg {
+      max-width: 330px;
+      position: absolute;
+      top: 25px;
+      right: -100px;
+      animation: dracoanimation 2s linear infinite;
+      @media (max-width: 767px) {
+        max-width: 165px;
+        right: 0;
+      }
+      @media (max-width: 580px) {
+        max-width: 100px;
+        right: 0;
+      }
+    }
+  }
+}
+
+.pilotExp_Sec {
+  background: url(../../../../Assets/Images/pilot-img-dsk.png) no-repeat;
+  min-height: fit-content;
+  background-size: 100% 100%;
+  @media (max-width: 767px) {
+    background: url(../../../../Assets/Images/pilot-img-back.png) no-repeat;
+    background-size: 100% 100%;
+  }
+  .container {
+    padding: 110px 10px;
+    text-align: center;
+    @media (max-width: 767px) {
+      padding: 50px 10px;
+    }
+    h2 {
+      margin-bottom: 48px;
+      @media (max-width: 767px) {
+        margin-bottom: 25px;
+      }
+    }
+    p {
+      color: $white;
+      font-size: 27px;
+      font-weight: 500;
+      text-align: justify;
+      line-height: normal;
+      margin-bottom: 70px;
+      @media (max-width: 767px) {
+        font-size: 20px;
+        margin-bottom: 40px;
+      }
+    }
+    .startNow {
+      margin: 0 auto;
+      border-radius: 6px;
+      border: 0;
+      min-width: 272px;
+      height: 47px;
+      box-shadow: 0 7px 13px rgba(7, 36, 65, 0.54);
+      background-color: #ffbb14;
+      color: $secondaryColor;
+      font-size: 36px;
+      font-weight: 800;
+      text-transform: uppercase;
+      line-height: normal;
+      text-shadow: 0px 3px 10px rgba(0, 0, 0, 0.4);
+      @media (max-width: 767px) {
+        font-size: 28px;
+      }
+    }
+  }
+}
+.fqs_Sec {
+  min-height: fit-content;
+  .container {
+    padding-top: 30px;
+    padding-bottom: 30px;
+    .cmnHeading {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+.roadmap_Sec {
+  background: url(../../../../Assets/Images/roadmapBg.png) no-repeat;
+  min-height: 855px;
+  background-size: 100% 100%;
+  .container {
+    padding-top: 65px;
+    padding-bottom: 65px;
+    @media (max-width: 767px) {
+      padding: 35px 0;
+    }
+    .cmnHeading {
+      margin-bottom: 80px;
+    }
+  }
+  .roadmapWrap {
+    position: relative;
+    .dracoRoadmap_img {
+      position: absolute;
+      top: -150px;
+      left: -160px;
+      max-width: 320px;
+      animation: dracoanimation 2s linear infinite;
+      @media (max-width: 767px) {
+        max-width: 100px;
+        top: -120px;
+        left: 95px;
+      }
+      @media (max-width: 580px) {
+        max-width: 75px;
+        top: -120px;
+        left: 0;
+      }
+    }
+  }
+  .commnBg {
+    max-width: fit-content;
+    background-color: $secondaryColor;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px auto 40px;
+    color: #000;
+    font-size: 22px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    @media (max-width: 767px) {
+      font-size: 16px;
+      margin: 5px 0 20px;
+    }
+    span {
+      color: $white;
+      font-size: 36px;
+      margin-right: 10px;
+      @media (max-width: 767px) {
+        font-size: 30px;
+      }
+    }
+  }
+}
+
+.customAccordian {
+  .accordion-item {
+    background-color: transparent;
+    .accordion-header {
+      .accordion-button {
+        color: $white;
+        font-size: 23px;
+        font-weight: 500;
+        background-color: transparent;
+        padding: 2px 0;
+        margin-bottom: 5px;
+        @media (max-width: 767px) {
+          font-size: 17px;
+        }
+        &::after {
+          width: 30px;
+          height: 25px;
+          background-size: 30px;
+          background-image: url(../../../../Assets/Images/arrow.png);
+          @media (max-width: 767px) {
+            width: 25px;
+            height: 20px;
+            background-size: 20px;
+          }
+        }
+        &:focus {
+          box-shadow: unset;
+        }
+
+        .noList {
+          font-weight: 800;
+          span {
+            font-weight: 500;
+            margin: 0 5px;
+          }
+        }
+      }
+    }
+    .accordion-body {
+      padding: 5px 0;
+      text-align: justify;
+      color: $white;
+      font-weight: 500;
+      font-size: 18px;
+      @media (max-width: 767px) {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+.roadmapAccordian {
+  .accordion-item {
+    max-width: fit-content;
+    min-width: 290px;
+    margin: 0 auto;
+    background-color: transparent;
+    @media (max-width: 767px) {
+      margin: 0;
+    }
+    .accordion-header {
+      .accordion-button {
+        color: $white;
+        background-color: transparent;
+        position: relative;
+        padding-left: 45px;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 32px;
+        display: block;
+        min-width: 362px;
+        @media (max-width: 767px) {
+          font-size: 18px;
+          line-height: 25px;
+          padding-left: 30px;
+        }
+        span {
+          color: $goldenYellow;
+        }
+        &::after {
+          width: 30px;
+          height: 30px;
+          background-size: 30px;
+          background-image: url(../../../../Assets/Images/right-arrow.svg);
+          position: absolute;
+          left: 0;
+          top: 20px;
+          @media (max-width: 767px) {
+            width: 20px;
+            height: 20px;
+            background-size: 20px;
+          }
+        }
+        &:focus {
+          box-shadow: unset;
+        }
+
+        &:not(.collapsed)::after {
+          transform: rotate(0deg);
+        }
+      }
+    }
+    .accordion-body {
+      max-width: fit-content;
+      padding: 5px 0;
+      text-align: left;
+      color: $white;
+      padding-left: 45px;
+      font-size: 18px;
+      font-weight: 500;
+      ul {
+        list-style: none;
+        @media (max-width: 767px) {
+          padding-left: 5px;
+        }
+        li {
+          font-size: 20px;
+          font-weight: 500;
+          margin-bottom: 15px;
+          @media (max-width: 767px) {
+            font-size: 13px;
+            margin-bottom: 5px;
+          }
+          span {
+            color: $goldenYellow;
+          }
+        }
+      }
+    }
+
+    .accordion-collapse {
+      &.collapse {
+        &.show {
+          .accordion-body {
+            position: relative;
+            &::before {
+              content: "";
+              width: 1px;
+              height: 125%;
+              position: absolute;
+              top: -72px;
+              left: 2px;
+              background: $primaryColor;
+              @media (max-width: 767px) {
+                top: -50px;
+              }
+            }
+            ul {
+              li {
+                position: relative;
+                &::before {
+                  content: "";
+                  width: 65px;
+                  height: 1px;
+                  position: absolute;
+                  top: 15px;
+                  left: -75px;
+                  background: $primaryColor;
+                  @media (max-width: 767px) {
+                    width: 35px;
+                    top: 12px;
+                    left: -48px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

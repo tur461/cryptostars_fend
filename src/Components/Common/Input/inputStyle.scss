@@ -1,0 +1,108 @@
+@import "../../../Assets/Scss/_var.scss";
+
+.customInp_style {
+  &.input-group {
+    border: 2px solid $borderClr;
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 20px;
+    background-color: #0e1728;
+    align-items: center;
+    z-index: 0;
+    .input-group-text {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      min-width: 320px;
+      @media (max-width: 767px) {
+        min-width: fit-content;
+        margin-right: 20px;
+      }
+    }
+    .coinSelect_wrap {
+      display: flex;
+      align-items: center;
+      img {
+        width: 90px;
+        border-radius: 50%;
+        margin-right: 35px;
+        @media (max-width: 767px) {
+          width: 50px;
+          margin-right: 20px;
+        }
+      }
+      .coinSelect {
+        text-align: left;
+        span {
+          display: block;
+          color: #6b6e96;
+          font-size: 16px;
+          font-weight: 500;
+          padding-left: 5px;
+          @media (max-width: 767px) {
+            font-size: 13px;
+          }
+        }
+        .selectOption {
+          cursor: pointer;
+          min-width: 110px;
+          line-height: normal;
+          padding: 5px;
+          border: 0;
+          background: transparent;
+          color: $lime;
+          font-size: 10px;
+          font-weight: 700;
+          background-image: url(../../../Assets/Images/arrow.png);
+          background-repeat: no-repeat;
+          background-position: center right 10px;
+          background-size: 20px 12px;
+          @media (max-width: 767px) {
+            font-size: 18px;
+            min-width: 90px;
+          }
+          &:focus {
+            box-shadow: unset;
+          }
+          option {
+            padding: 5px;
+            font-size: 16px;
+            background: #0e1728;
+            @media (max-width: 767px) {
+              font-size: 13px;
+            }
+            &:hover {
+              color: $white;
+            }
+          }
+        }
+      }
+    }
+    .form-control {
+      border: 2px solid $primaryColor;
+      background: transparent;
+      border-radius: 12px !important;
+      color: $primaryColor;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 20px;
+      height: 68px;
+      @media (max-width: 767px) {
+        font-size: 16px;
+        height: 50px;
+        // min-width: calc(100% - 75px);
+      }
+      @media (max-width: 467px) {
+        margin-top: 15px;
+        min-width: calc(100% - 90px);
+      }
+
+      &:focus {
+        box-shadow: unset;
+      }
+      &::placeholder {
+        color: $primaryColor;
+      }
+    }
+  }
+}

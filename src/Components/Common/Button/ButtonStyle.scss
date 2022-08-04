@@ -1,0 +1,24 @@
+@import "../../../Assets/Scss/_var.scss";
+
+.buttonStyle {
+  margin: 0 auto;
+  border-radius: 6px;
+  border: 0;
+  min-width: fit-content;
+  padding: 2px 25px;
+  box-shadow: 0 7px 13px rgba(7, 36, 65, 0.54);
+  background-color: #ffbb14;
+  color: $secondaryColor;
+  font-size: 36px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: normal;
+  text-shadow: 0px 3px 10px rgba(0, 0, 0, 0.4);
+  transition: 0.3s linear;
+  @media (max-width: 767px) {
+    font-size: 28px;
+  }
+  &:hover {
+    transform: scale(1.05);
+  }
+}
