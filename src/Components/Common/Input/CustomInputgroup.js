@@ -3,7 +3,7 @@ import { InputGroup, FormControl, Form } from "react-bootstrap";
 import SelectTokenModal from "../Modal/SelectTokenModal";
 import "./inputStyle.scss";
 
-const CustomInputgroup = ({ className, icon, title, states }) => {
+const CustomInputGroup = ({ className, icon, title, states }) => {
   const [show, setShow] = useState(false);
   const handleClose = () => {
     setShow(false);
@@ -30,4 +30,4 @@ const CustomInputgroup = ({ className, icon, title, states }) => {
   );
 };
 
-export default CustomInputgroup;
+export default CustomInputGroup;

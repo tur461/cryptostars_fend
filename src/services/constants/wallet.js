@@ -1,4 +1,5 @@
 const WALLET_TYPE = {
+    NONE: 'none',
     METAMASK: 'Metamask',
     TRUST_WALLET: 'TrustWallet',
 }

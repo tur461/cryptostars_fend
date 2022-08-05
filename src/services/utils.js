@@ -13,6 +13,8 @@ const rEqual = (a, b) => {
     typeof a == 'object' ? jString(a) === jString(b) : !1;
 }
 
+const nullFunc = _ => _.preventDefault();
+
 const notEqual = (a, b) => !rEqual(a, b);
 
 const isNaN = n => rEqual(n, NaN) || rEqual(n, 'NaN') || rEqual(`${n}`, 'NaN');
@@ -72,6 +74,7 @@ export {
     jString,
     toFixed,
     raiseBy,
+    nullFunc,
     notEmpty,
     toBigNum,
     isDefined,

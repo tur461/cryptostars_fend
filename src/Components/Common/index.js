@@ -1,6 +1,6 @@
 import Layout from "./Layout/Layout";
 import LoaderComponent from "./LoaderComponent/LoaderComponent";
-import CustomInputgroup from "./Input/CustomInputgroup";
+import CustomInputGroup from "./Input/CustomInputGroup";
 import FaqAccordianItem from "./Accordian/FaqAccordianItem";
 import PlayerCard from "./Card/PlayerCard";
 import ButtonPrimary from "./Button/ButtonPrimary";
@@ -13,7 +13,7 @@ import SettingModal from "./Modal/SettingModal";
 export {
   Layout,
   LoaderComponent,
-  CustomInputgroup,
+  CustomInputGroup,
   FaqAccordianItem,
   PlayerCard,
   ButtonPrimary,

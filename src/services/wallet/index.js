@@ -33,12 +33,12 @@ const Wallet = {
     },
     ensureChain: async function() {
         // debugger;
-            let chainId = (await this.provider.getNetwork()).chainId;
-            log.i('selected chain:', chainId);
-            if(chainId !== CHAIN.CRONOS_TEST.INT) {
-                l_t.e('please select cronos testnet');
-                await this.provider.send(WALLET_METH.ADD_CHAIN, [WALLET_PARAM.ADD_CHAIN]);
-            }
+        let chainId = (await this.provider.getNetwork()).chainId;
+        log.i('selected chain:', chainId);
+        if(chainId !== CHAIN.CRONOS_TEST.INT) {
+            // l_t.e('please select cronos testnet');
+            await this.provider.send(WALLET_METH.ADD_CHAIN, [WALLET_PARAM.ADD_CHAIN]);
+        }
     },
     getPriAccount: async function() {
         return this.priAccount;

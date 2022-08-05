@@ -1,21 +1,34 @@
-import {BigNumber} from '@ethersproject/bignumber';
-import React, { useEffect, useRef, useState } from "react";
-import { Container, Row, Col, Form } from "react-bootstrap";
-import { useDispatch, useSelector } from "react-redux";
-import headerImg from "../../../../Assets/Images/headerImg.png";
-import draco from "../../../../Assets/Images/draco-roadmap.png";
-import cstcoin from "../../../../Assets/Images/cst-coin.png";
-import lamescoin from "../../../../Assets/Images/lames-coin.png";
-import swapicon from "../../../../Assets/Images/swap-icon.png";
+import "./Swap.scss";
+import Loader from '../../../Loader';
+import l_t from "../../../../services/logging/l_t";
+import "react-perfect-scrollbar/dist/css/styles.css";
+import log from '../../../../services/logging/logger';
 import LMES from "../../../../Assets/Images/LMES.png";
 import MSAL from "../../../../Assets/Images/MSAL.png";
 import MBAP from "../../../../Assets/Images/MBAP.png";
 import HAAL from "../../../../Assets/Images/HAAL.png";
-import settings from "../../../../Assets/Images/Settings-Icon.svg";
+import toast from '../../../../services/logging/toast';
+import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useRef, useState } from "react";
+import CommonF from "../../../../services/contracts/common";
+import { Container, Row, Col, Form } from "react-bootstrap";
+import cstcoin from "../../../../Assets/Images/cst-coin.png";
+import swapicon from "../../../../Assets/Images/swap-icon.png";
+import headerImg from "../../../../Assets/Images/headerImg.png";
+import draco from "../../../../Assets/Images/draco-roadmap.png";
+import lamescoin from "../../../../Assets/Images/lames-coin.png";
+import TokenContract from "../../../../services/contracts/token";
 import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
+import RouterContract from "../../../../services/contracts/router";
+import settings from "../../../../Assets/Images/Settings-Icon.svg";
+import FaucetContract from '../../../../services/contracts/faucet';
 import GenIcon from "../../../../Assets/Images/token_icons/Gen.svg";
+import FactoryContract from '../../../../services/contracts/factory';
+import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
+import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
+import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, nullFunc } from "../../../../services/utils";
 import {
-  CustomInputgroup,
+  CustomInputGroup,
   Layout,
   PlayerCard,
   ButtonPrimary,
@@ -24,40 +37,15 @@ import {
   SettingModal,
 } from "../../../Common";
 import PerfectScrollbar from "react-perfect-scrollbar";
-import "react-perfect-scrollbar/dist/css/styles.css";
-import "./Swap.scss";
 
 import { 
-  setExactIn,
   setSlippage,
   setDeadLine,
-  setValidSwap,
-  setXchangeEq, 
   setTokenInfo,
   setTokenValue,
   changeTokenList,
   addToTokenList,
-  setToken1Approved,
 } from "../../../features/swap";
-import { 
-  setTokenValue_l, 
-  setToken_addr_l, 
-  setNeedOfAmountApp, 
-} from "../../../features/liquidity";
-
-import l_t from "../../../../services/logging/l_t";
-import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
-import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum } from "../../../../services/utils";
-import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
-
-import CommonF from "../../../../services/contracts/common";
-import TokenContract from "../../../../services/contracts/token";
-import RouterContract from "../../../../services/contracts/router";
-import FaucetContract from '../../../../services/contracts/faucet';
-import FactoryContract from '../../../../services/contracts/factory';
-import Loader from '../../../Loader';
-import log from '../../../../services/logging/logger';
-import toast from '../../../../services/logging/toast';
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -145,14 +133,10 @@ const Swap = () => {
     setTokenApproved(!0);
     setIsDisabled(!0);
     setBtnText('Swap');
-    dispatch(setTokenValue({v: '', n: 0}));
+    // dispatch(setTokenValue({v: '', n: 0}));
   }
-  // ------------------------------------------------------
-
-  // -------------------- Swap Code -----------------------
-
   // assumes Center Token is CST token
-  async function checkIfHasPair(p) {
+  async function tryNormalizePair(p) {
     let pAddr = await FactoryContract.getPair(p[0], p[1]);
     if(pAddr !== ADDRESS.ZERO) return p;
     else
@@ -240,7 +224,7 @@ const Swap = () => {
         const addrList = isUpsideDown ? 
           [swap.token2_addr, swap.token1_addr] : 
           [swap.token1_addr, swap.token2_addr];
-        const pair = await checkIfHasPair(addrList);
+        const pair = await tryNormalizePair(addrList);
         // get contract instance
         TokenContract.init(
           isUpsideDown ? // if coming from upsideDown()
@@ -452,7 +436,7 @@ const Swap = () => {
                     />
                   </div>
                   <Form>
-                    <CustomInputgroup 
+                    <CustomInputGroup 
                       icon={cstcoin} 
                       title="Swap From"
                       states={
@@ -474,7 +458,7 @@ const Swap = () => {
                     <button className="swapSwitch" onClick={upsideDown}>
                       <img src={swapicon} alt="swap_icon" />
                     </button>
-                    <CustomInputgroup
+                    <CustomInputGroup
                       icon={lamescoin}
                       title="Swap To (est.)"
                       states={
@@ -511,14 +495,13 @@ const Swap = () => {
                         <span>{swap.slippage}%</span>
                       </div>
                     </div>
-                  {console.log("jjjjjjjjjjj",isErr,errText)}
                     {
-                     
-                      isErr && tokenApproved ?
-                      <div className='error-box'>
-                        <p>{errText}</p>
-                      </div> :
-                      (
+                        isErr && tokenApproved ?
+                        <div className='error-box'>
+                          <p>{errText}</p>
+                        </div> : <></>
+                    }
+                    {
                         !tokenApproved ? 
                         <button
                           className="approve-btn" 
@@ -526,17 +509,24 @@ const Swap = () => {
                         >
                           {'Approve ' + swap.token1_sym}
                         </button> :
-
                         <button
-                          disabled={isDisabled || isFetching}
+                          disabled={
+                            isDisabled || 
+                            !wallet.isConnected || 
+                            isFetching
+                          }
                           className="swap-btn" 
-                          onClick={!isErr ? performSwap : _=>_}
+                          onClick={!isErr ? performSwap : nullFunc}
                         >
-                          {isFetching ? 'please wait..' : 'Swap'}
+                          {
+                            !wallet.isConnected ? 
+                              'wallet not connected' : 
+                              isFetching ? 
+                                'please wait..' : 
+                                'Swap'
+                          }
                         </button>
-                      )
                     }
-                    
                   </Form>
                 </div>
               </Col>
