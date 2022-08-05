@@ -46,6 +46,14 @@ import {
   changeTokenList,
   addToTokenList,
 } from "../../../features/swap";
+import { 
+  setTokenValue_l, 
+  setToken_addr_l, 
+  setNeedOfAmountApp, 
+} from "../../../features/liquidity";
+
+
+import { setPriAccount, walletConnected } from '../../../features/wallet';
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -362,6 +370,13 @@ const Swap = () => {
     l_t.s('claim success!. please check your account.');
   }
 
+   //Disconnect wallet functionality
+   const disconnect = () => {
+    dispatch(walletConnected(false));
+    dispatch(setPriAccount(""));
+    setConnectTitle("Connect Wallet")
+    // window.location.reload();
+}
   // ------------------------------------------------------
 
   return (
@@ -397,6 +412,11 @@ const Swap = () => {
                     onHide={handleClose}
                     conTitleCbk={setConnectTitle}
                   />
+                  {/* Diconnect Button */}
+                  {wallet.isConnected ? 
+                    <button onClick = {disconnect}>Disconnect Wallet</button>
+                    : ''}
+
                   <h1>Claim</h1>
                   <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={claimCST} />
                   <p>(Crypto stars tokens)</p>
