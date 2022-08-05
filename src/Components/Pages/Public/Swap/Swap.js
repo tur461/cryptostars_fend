@@ -52,6 +52,13 @@ import {
   setNeedOfAmountApp, 
 } from "../../../features/liquidity";
 
+<<<<<<< Updated upstream
+=======
+import l_t from "../../../../services/logging/l_t";
+import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
+import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, isDefined } from "../../../../services/utils";
+import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
+>>>>>>> Stashed changes
 
 import { setPriAccount, walletConnected } from '../../../features/wallet';
 
@@ -324,7 +331,11 @@ const Swap = () => {
 
   async function searchOrImportToken(v) {
     v = v.trim();
+<<<<<<< Updated upstream
     if(!v.length) v = swap.tokenList; 
+=======
+    if(!v.length) v = swap.tokenList;
+>>>>>>> Stashed changes
     else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
       
       TokenContract.init(v);
