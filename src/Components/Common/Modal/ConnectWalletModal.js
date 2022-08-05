@@ -1,9 +1,9 @@
 import React from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import CustomModal from "./CustomModal";
 import { Toast } from "../Toast/Toast";
-import { setPriAccount, walletConnected } from "../../features/wallet";
+import { setPriAccount, walletConnected, walletDisconnected } from "../../features/wallet";
 
 import Wallet from "../../../services/wallet";
 import CommonF from "../../../services/contracts/common";
@@ -12,18 +12,32 @@ import { EVENT, MISC } from "../../../services/constants/common";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { WALLET_TYPE } from "../../../services/constants/wallet";
+import { useEffect } from "react";
 
 const trunc = a => `${a.slice(0, 5)}..${a.slice(39, 42)}`;
 
 const ConnectWalletModal = (props) => {
   const dispatch = useDispatch();
-  
+  const wallet = useSelector(s => s.wallet);
+
   function proc(acc) {
     dispatch(walletConnected(acc.length ? !0 : !1));
     dispatch(setPriAccount(acc));
     CommonF.init({from: acc});
-    props.conTitleCbk(acc.length ? trunc(acc) : MISC.CONNECT_TTL);
+
+    // props.conTitleCbk(acc.length ? trunc(acc) : MISC.CONNECT_TTL);
+
   }
+
+  useEffect(async() => {
+    if(wallet.isConnected) {
+      let acc = await Wallet.getPriAccount();
+      props.conTitleCbk(trunc(acc));
+    } else{
+      props.conTitleCbk(MISC.CONNECT_TTL)
+    }
+  }, [wallet.isConnected])
+  
   
   window.addEventListener(EVENT.CHAIN_CHANGE, async e => {
     log.s(EVENT.CHAIN_CHANGE);
@@ -44,6 +58,14 @@ const ConnectWalletModal = (props) => {
       toast.e(error.message);
     }
   }
+
+  //Disconnect wallet functionality
+  const disconnect = () => {
+    dispatch(walletConnected(!1));
+    dispatch(setPriAccount(''));
+    props.onHide(!1)
+}
+
   return (
     <CustomModal
       show={props.show}
@@ -52,11 +74,24 @@ const ConnectWalletModal = (props) => {
       title="Connect To Wallet"
     >
       <ul>
+        {
         <li>
-          <button onClick={() => connect2wallet(WALLET_TYPE.METAMASK)}>Connect To Metamask</button>
-        </li>
+          <button 
+            onClick={ wallet.isConnected ?
+              _ => disconnect() :
+              _ => connect2wallet(WALLET_TYPE.METAMASK)
+            }
+          >{ wallet.isConnected ? 'Disconnect from Metamask' : 'Connect To Metamask' }</button>
+        </li> }
         <li>
-          <button>Connect To TrustWallet</button>
+          <button 
+            onClick={ wallet.isConnected ?
+              _ => disconnect() :
+              _ => connect2wallet(WALLET_TYPE.TRUST_WALLET)
+            }
+          >
+            {wallet.isConnected ? 'Disconnect from TrustWallet' : 'Connect To TrustWallet' }
+          </button>
         </li>
       </ul>
     </CustomModal>

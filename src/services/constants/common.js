@@ -18,13 +18,6 @@ export const ADDRESS = {
     CST_FAUCET_CONTRACT: '0xA189e169181b64fE5Cf152b88A455e93B5Aa5d87',
 }
 
-export const URL = {
-    RPC: {
-        LOCAL: 'http://localhost:8545',
-        REMOTE: 'https://infura.....',
-    }
-}
-
 export const MISC = {
     MAX_256: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
     BUSD_DEC: 18,

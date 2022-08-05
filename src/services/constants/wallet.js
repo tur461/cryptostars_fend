@@ -1,6 +1,6 @@
 const WALLET_TYPE = {
     METAMASK: 'Metamask',
-
+    TRUST_WALLET: 'TrustWallet',
 }
 
 const EVENT = {

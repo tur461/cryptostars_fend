@@ -39,11 +39,9 @@ const isAddr = addr => (
     ) ? !0 : !1;
 
 const trimZeroes = v => {
-    let lastI = v.length - 1, beginI = 0, i = lastI;
+    let i = v.length - 1;
     for(; i>=0 && rEqual('0', v[i]); --i);
-    lastI = i;
-    beginI = v.indexOf('.') - 1;
-    return v.substring(beginI, lastI+1);
+    return v.substring(0, i+1);
 }
 
 const evDispatch = (t, d) => dispatchEvent(new CustomEvent(t, {detail: d}));

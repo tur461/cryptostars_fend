@@ -47,7 +47,7 @@ import {
 
 import l_t from "../../../../services/logging/l_t";
 import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
-import { bigDiv, spow, toGib, isValidAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, isDefined } from "../../../../services/utils";
+import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum } from "../../../../services/utils";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
 
 import CommonF from "../../../../services/contracts/common";
@@ -230,6 +230,7 @@ const Swap = () => {
   async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
     resetStates();
     const xactIn = !(ipNum - 1);
+    const otherTokenNum = ipNum - 1 ? 1: 2;
     setIsExactIn(xactIn);
     dispatch(setTokenValue({v: typedValue, n: ipNum}));
     setIsFetching(!0);
@@ -264,6 +265,7 @@ const Swap = () => {
           fetchedAmountFraction / typedValue, 
           4
         );
+        log.i('fetched amount frac before:', fetchedAmountFraction);
         fetchedAmountFraction = toFixed(fetchedAmountFraction, 20);
         log.i('fetched amount frac:', fetchedAmountFraction);
         const buyAmountFraction = xactIn ? typedValue : fetchedAmountFraction;
@@ -286,22 +288,28 @@ const Swap = () => {
         // check balance for token 1
         let balance = await TokenContract.balanceOf(wallet.priAccount);
         
+        if(balance.lte(sellAmount)) {
+          setIsErr(!0);
+          dispatch(setTokenValue({v: '', n: otherTokenNum}));
+          return setErrText('Insufficient balance for ' + swap.token1_sym);
+        }
+        
         // check allowance for token 1
         let allowance = await TokenContract.allowance(wallet.priAccount, ADDRESS.ROUTER_CONTRACT);
         let isApproved = allowance.gt(sellAmount);
-
-        if(balance.lte(sellAmount)) {
+        
+        
+        if(!isApproved) {
           setIsErr(!0);
-          setErrText('Insufficient balance for ' + swap.token1_sym);
-        } else if(!isApproved) {
-          setIsErr(!0);
-          setErrText('Approve ' + swap.token1_sym);
-        } else setIsErr(!1);
+          dispatch(setTokenValue({v: '', n: otherTokenNum}));
+          return setErrText('Approve ' + swap.token1_sym);
+        }
+        setIsErr(!1);
 
         log.i('xact in:', xactIn, buyAmountFraction, typedValue);
         setTimeout(async _ => await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum), 1000);
         // set another token value
-        dispatch(setTokenValue({v: fetchedAmountFraction, n: ipNum - 1 ? 1: 2}));
+        dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
         setXchangeEquivalent(xchangePrice);
         setIsFetching(!1);
         setTokenApproved(isApproved);
@@ -315,7 +323,7 @@ const Swap = () => {
     }
     setIsFetching(!1);
     setIsExactIn(!0);
-    dispatch(setTokenValue({v: '', n: ipNum - 1 ? 1: 2}));
+    dispatch(setTokenValue({v: '', n: otherTokenNum}));
   }
 
   function token(addr) {
@@ -324,8 +332,8 @@ const Swap = () => {
 
   async function searchOrImportToken(v) {
     v = v.trim();
-    if(!v.length) v = swap.tokenList;
-    else if(isValidAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
+    if(!v.length) v = swap.tokenList; 
+    else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
       
       TokenContract.init(v);
       let name = await TokenContract.name();
@@ -558,3 +566,4 @@ const Swap = () => {
 };
 
 export default Swap;
+
