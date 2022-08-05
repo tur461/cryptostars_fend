@@ -47,7 +47,7 @@ import {
 
 import l_t from "../../../../services/logging/l_t";
 import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
-import { bigDiv, spow, toGib, isValidAddr, toStd } from "../../../../services/utils";
+import { bigDiv, spow, toGib, isValidAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, isDefined } from "../../../../services/utils";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
 
 import CommonF from "../../../../services/contracts/common";
@@ -167,7 +167,7 @@ const Swap = () => {
     throw new Error('"error: pair doesn\'t exist!"');
   }
 
-  async function setSwapPrerequisites(amount, pr, inOrOutAmount, xactIn) {
+  async function setSwapPrerequisites(amount, pr, fetchedAmount, xactIn) {
     log.i(arguments, swap.slippage);
     const sellTokenAddr = isExactIn ? swap.token1_addr : swap.token2_addr;
     const buyTokenAddr = isExactIn ? swap.token2_addr : swap.token1_addr;
@@ -177,8 +177,8 @@ const Swap = () => {
     const buyTokenDec = await TokenContract.decimals();
     
     let xactAmount = toStd(amount * 10**(xactIn ? sellTokenDec : buyTokenDec));
-    log.i('inOrOutAmount:', inOrOutAmount.to);
-    let thAmount = getThresholdAmountFromTolerance(inOrOutAmount, swap.slippage, xactIn, xactIn ? buyTokenDec : sellTokenDec)
+    log.i('fetchedAmount:', fetchedAmount.to);
+    let thAmount = getThresholdAmountFromTolerance(fetchedAmount, swap.slippage, xactIn, xactIn ? buyTokenDec : sellTokenDec)
     log.i('Final TH amount:', thAmount);
     log.s(btnText);
     setPair(pr);
@@ -214,64 +214,83 @@ const Swap = () => {
   function upsideDown(e) {
     e.preventDefault();
     let t = [swap.token1, swap.token2],
-        s = [swap.token1_sym, swap.token2_sym],
-        a = [swap.token1_addr, swap.token2_addr];
+        s = [swap.token1_sym, swap.token2_sym];
 
     isExactIn ? 
-    setOtherTokenValue(t[0], 2, [a[1], a[0]]) :
-    setOtherTokenValue(t[1], 1, [a[1], a[0]]);
-    
-    dispatch(setTokenInfo({sym: s[1], addr: a[1], n: 1}));
-    dispatch(setTokenInfo({sym: s[0], addr: a[0], n: 2}));
+    setOtherTokenValue(t[0], 2, !0) :
+    setOtherTokenValue(t[1], 1, !0);
+    // switch tokenInfo
+    dispatch(setTokenInfo({sym: s[1], addr: swap.token2_addr, n: 1}));
+    dispatch(setTokenInfo({sym: s[0], addr: swap.token1_addr, n: 2}));
       
   }
-
-  async function setOtherTokenValue(v, n, p) {
+  
+  // if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
+  // if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
+  async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
     resetStates();
-    setIsExactIn(!(n-1));
-    // set current token value to what is given
-    dispatch(setTokenValue({v, n}));
+    const xactIn = !(ipNum - 1);
+    setIsExactIn(xactIn);
+    dispatch(setTokenValue({v: typedValue, n: ipNum}));
     setIsFetching(!0);
     // check if given value is non-zero
-    if(v.length && parseFloat(v) > 0) {
-      // if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
-      // if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
+    if(notEmpty(typedValue)) {
       try {
-        p = p || [swap.token1_addr, swap.token2_addr];
-        let newPair = await checkIfHasPair(p), e1='', e2='';
-        TokenContract.init(p ? p[n-1] : swap[`token${n}_addr`]);
+        const addrList = isUpsideDown ? 
+          [swap.token2_addr, swap.token1_addr] : 
+          [swap.token1_addr, swap.token2_addr];
+        const pair = await checkIfHasPair(addrList);
+        // get contract instance
+        TokenContract.init(
+          isUpsideDown ? // if coming from upsideDown()
+          addrList[ipNum - 1] : // select addr of second token 
+          swap[`token${ipNum}_addr`] // otherwise addr of exact token
+        );
         let dec = await TokenContract.decimals();
-        let typedAmount = v;
-        v = spow(v, dec);
-        let amounts = n-1 ? await RouterContract.getAmountsIn([v, newPair]) : await RouterContract.getAmountsOut([v, newPair]) ;
-        let inOrOutAmount = n-1 ? amounts[0] : amounts[amounts.length-1], 
-            xch = toGib(
-              spow(
-                bigDiv(
-                  inOrOutAmount, 
-                  BigNumber.from(v)
-                ), dec
-              ), dec
-            );
-        let amt = inOrOutAmount.toString();
-        log.i('exactIn:', !(n-1), 'amount:', amt);
-        TokenContract.init(p ? p[n-1 ? 0 : 1] : swap[`token${n-1 ? 1 : 2}_addr`]);
+        const param = [stdRaiseBy(typedValue, dec), pair];
+        let fetchedAmounts = await (
+          xactIn ? 
+          RouterContract.getAmountsOut(param) : 
+          RouterContract.getAmountsIn(param)
+        );
+        const fetchedAmount = xactIn ? 
+          fetchedAmounts[fetchedAmounts.length - 1] : 
+          fetchedAmounts[0]; 
+        log.i('fetched amount:', fetchedAmount);
+        let fetchedAmountFraction = toDec(fetchedAmount, dec);
+        const xchangePrice = toFixed(
+          xactIn ? 
+          typedValue / fetchedAmountFraction : 
+          fetchedAmountFraction / typedValue, 
+          4
+        );
+        fetchedAmountFraction = toFixed(fetchedAmountFraction, 20);
+        log.i('fetched amount frac:', fetchedAmountFraction);
+        const buyAmountFraction = xactIn ? typedValue : fetchedAmountFraction;
+        
+        TokenContract.init(
+          isUpsideDown ? // if coming from upsideDown()! 
+          addrList[xactIn ? 1 : 0] : 
+          swap[`token${xactIn ? 2 : 1}_addr`]);
+        
         dec = await TokenContract.decimals();
-        let _tmpAmt = BigNumber.from(n-1 ? amt : v);
+        
+        let sellAmount = toBigNum(
+          xactIn ? // if exact amount is in top input
+          param[0] : // typed exact ip amount 
+          fetchedAmount // fetched ip amount (in top input)
+        );
+        log.i('sell Amount frac:', sellAmount);
+        log.i('buy Amount frac:', buyAmountFraction);
         TokenContract.init(swap.token1_addr);
         // check balance for token 1
-        let bal = await TokenContract.balanceOf(wallet.priAccount);
-        let hasBal = bal.gt(_tmpAmt);
+        let balance = await TokenContract.balanceOf(wallet.priAccount);
         
         // check allowance for token 1
         let allowance = await TokenContract.allowance(wallet.priAccount, ADDRESS.ROUTER_CONTRACT);
+        let isApproved = allowance.gt(sellAmount);
 
-        let isApproved = allowance.gt(_tmpAmt);
-         
-        // let aa =  await TokenContract.approve( ADDRESS.ROUTER_CONTRACT,approveWithMaxAmount)
-        console.log("kkkkkkkkkk",hasBal,isApproved);
-
-        if(!hasBal) {
+        if(balance.lte(sellAmount)) {
           setIsErr(!0);
           setErrText('Insufficient balance for ' + swap.token1_sym);
         } else if(!isApproved) {
@@ -279,24 +298,11 @@ const Swap = () => {
           setErrText('Approve ' + swap.token1_sym);
         } else setIsErr(!1);
 
-        //fixed the exponential value v
-        if(v/10**18<0.000001)
-        {
-          console.log("vvvv",v/10**18);
-          console.log("nnnnnnnllllllllllllllll",(amt/10**18).toFixed(20));
-          v=(amt/10**18).toFixed(20);
-        }
-        else{
-        v = toGib(amt, dec);
-        }
-
-        // v = toGib(amt, dec);
-        const xactIn = !!!(n-1);
-        log.i('xact in:', xactIn, v, typedAmount);
-        setTimeout(async _ => await setSwapPrerequisites(typedAmount, newPair, inOrOutAmount, xactIn, n, e2), 1000);
+        log.i('xact in:', xactIn, buyAmountFraction, typedValue);
+        setTimeout(async _ => await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum), 1000);
         // set another token value
-        dispatch(setTokenValue({v, n:n-1?1:2}));
-        setXchangeEquivalent(xch);
+        dispatch(setTokenValue({v: fetchedAmountFraction, n: ipNum - 1 ? 1: 2}));
+        setXchangeEquivalent(xchangePrice);
         setIsFetching(!1);
         setTokenApproved(isApproved);
       } catch(e) {
@@ -305,11 +311,11 @@ const Swap = () => {
       }
       return;
     } else {
-      dispatch(setTokenValue({v, n:0}));
+      dispatch(setTokenValue({v: typedValue, n: 0}));
     }
     setIsFetching(!1);
     setIsExactIn(!0);
-    dispatch(setTokenValue({v:'', n:n-1?1:2}));
+    dispatch(setTokenValue({v: '', n: ipNum - 1 ? 1: 2}));
   }
 
   function token(addr) {
@@ -445,7 +451,7 @@ const Swap = () => {
                         {
                           token: {
                             val: swap.token1, 
-                            cbk: e => setOtherTokenValue(e.target.value, 1)
+                            cbk: e => setOtherTokenValue(e.target.value, 1, !1)
                           },
                           tList: {
                             val: swap.token1_sym,
@@ -467,7 +473,7 @@ const Swap = () => {
                         {
                           token: {
                             val: swap.token2, 
-                            cbk: e => setOtherTokenValue(e.target.value, 2)
+                            cbk: e => setOtherTokenValue(e.target.value, 2, !1)
                           },
                           tList: {
                             val: swap.token2_sym,

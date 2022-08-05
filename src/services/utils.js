@@ -1,64 +1,83 @@
 import { ADDRESS, MISC } from "./constants/common";
 import {BigNumber} from '@ethersproject/bignumber';
 
-function spow(s, e) {
-    s = s[0] === '.' ? '0' + s : s;
-    let i = s.indexOf('.');
-    i = i > 0 ? i : s.length;
-    let int = s.slice(0, i);
-    let dec = s.slice(i+1);
-    let l = dec.length;
-    i = {
-        int: int,
-        dec: dec,
-        pow: e - l,
-    };
 
-    return `${i.int}${i.dec}${'0'.repeat(i.pow)}`;
+const jString = o => JSON.stringify(o);
+
+const jObject = s => JSON.parse(s);
+
+const rEqual = (a, b) => {
+    return typeof a == 'string' ? 
+    a.toLowerCase() === b.toLowerCase() :
+    typeof a == 'number' ? a === b :
+    typeof a == 'object' ? jString(a) === jString(b) : !1;
 }
 
-function toGib(s, dec) {
-    let d = s.length - dec,
-        i = d<=0 ? 0 : d,
-        l = s.slice(0, i),
-        r = s.slice(i);
-    if(!i) {
-        r = '0'.repeat(d*-1) + r;
-        l = '0';
-    }
-    return `${parseFloat(`${l}.${r}`)}`;
+const notEqual = (a, b) => !rEqual(a, b);
+
+const isNaN = n => rEqual(n, NaN) || rEqual(n, 'NaN') || rEqual(`${n}`, 'NaN');
+
+const isDefined = v => notEqual(v, null) || notEqual(v, 'undefined') || notEqual(v, undefined);
+
+const notDefined = v => !isDefined(v);
+
+const notEmpty = v => typeof v == 'string' ? 
+        notEqual(v, '') && notEqual(v, '0') : 
+        v instanceof Array ? v.length :
+        typeof v == 'object' ? 
+        Object.entries(v).length : 
+        !!v;
+
+const isEmpty = v => !notEmpty(v);
+
+const isAddr = addr => (
+    isDefined(addr) &&
+    notEmpty(addr) && 
+    rEqual(addr.length, 42) && 
+    rEqual(addr.substring(0,2), '0x') && 
+    notEqual(addr, ADDRESS.ZERO)
+    ) ? !0 : !1;
+
+const trimZeroes = v => {
+    let lastI = v.length - 1, beginI = 0, i = lastI;
+    for(; i>=0 && rEqual('0', v[i]); --i);
+    lastI = i;
+    beginI = v.indexOf('.') - 1;
+    return v.substring(beginI, lastI+1);
 }
 
+const evDispatch = (t, d) => dispatchEvent(new CustomEvent(t, {detail: d}));
 
-function bigDiv(N, D) {
-    let x = BigNumber.from(Math.pow(10, MISC.DIV_DEC_PLACES));
-    return `${toGib(N.mul(x).div(D).toBigInt().toString(), MISC.DIV_DEC_PLACES)}`;
+const toDec = (v, dec) => {
+    if(v instanceof BigNumber) v = v.toString(); 
+    return v / 10 ** (isDefined(dec) && notEmpty(dec) ? dec : 18);
 }
 
-function isValidAddr(address) {
-    if(
-        address &&
-        address.length && 
-        address.length == 42 && 
-        address.substring(0,2) === '0x' && 
-        address !== ADDRESS.ZERO
-    ) return true;
-    return false;
-}
+const toStd = v => v.toLocaleString('fullwide', {useGrouping: !1});
 
-function evDispatch(t, d) {
-    dispatchEvent(new CustomEvent(t, {detail: d}));
-}
+const toFixed = (v, by) => trimZeroes(Number(v).toFixed(isDefined(by) && notEmpty(by) ? by : 0));
 
-function toStd(v) {
-    return v.toLocaleString('fullwide', {useGrouping: !1});
-}
+const raiseBy = (v, dec) => Number(v) * 10 ** (isDefined(dec) && notEmpty(dec) ? dec : 18);
+
+const stdRaiseBy = (v, dec) => toStd(raiseBy(v, dec));
+
+const toBigNum = v => v instanceof BigNumber ? v : BigNumber.from(v);
 
 export {
-    spow,
+    isNaN,
     toStd,
-    toGib,
-    bigDiv,
-    isValidAddr,
+    toDec,
+    rEqual,
+    isAddr,
+    isEmpty,
+    jObject,
+    jString,
+    toFixed,
+    raiseBy,
+    notEmpty,
+    toBigNum,
+    isDefined,
+    notDefined,
+    stdRaiseBy,
     evDispatch,
 }

@@ -2,7 +2,7 @@ import React from "react";
 import { Modal } from "react-bootstrap";
 import "./ModalStyle.scss";
 
-const CustomModal = ({ show, onHide, children, title, size, classname }) => {
+const CustomModal = ({ show, onHide, children, title, size, clsName }) => {
   return (
     <>
       <Modal
@@ -10,7 +10,7 @@ const CustomModal = ({ show, onHide, children, title, size, classname }) => {
         show={show}
         onHide={onHide}
         centered
-        className={`modalStyle ${classname}`}
+        className={`modalStyle ${clsName}`}
       >
         <Modal.Header closeButton>
           <Modal.Title>{title}</Modal.Title>

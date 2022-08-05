@@ -10,6 +10,8 @@ import CommonF from "../../../services/contracts/common";
 import l_t from "../../../services/logging/l_t";
 import { EVENT, MISC } from "../../../services/constants/common";
 import log from "../../../services/logging/logger";
+import toast from "../../../services/logging/toast";
+import { WALLET_TYPE } from "../../../services/constants/wallet";
 
 const trunc = a => `${a.slice(0, 5)}..${a.slice(39, 42)}`;
 
@@ -28,32 +30,30 @@ const ConnectWalletModal = (props) => {
     if(!e.detail.isValidChain) proc('');
   });
 
-  const walletConnectCall = async (walletType, type) => {
+  const connect2wallet = async walletType => {
     try {
       await Wallet.init();
       await Wallet.ensureChain();
-      // if(!isValidChain) return props.onHide(!1);
       let acc = Wallet.priAccount;
-
       if (acc) {
         l_t.s('Wallet connected successfully!');
         props.onHide(!1);
         proc(acc);
       } else l_t.e('no account found!');
     } catch (error) {
-      Toast.error(error.message);
+      toast.e(error.message);
     }
   }
   return (
     <CustomModal
       show={props.show}
       onHide={props.onHide}
-      classname="ConctModl_Style"
+      clsName="connect-modal"
       title="Connect To Wallet"
     >
       <ul>
         <li>
-          <button onClick={() => walletConnectCall('Metamask', 'Metamask')}>Connect To Metamask</button>
+          <button onClick={() => connect2wallet(WALLET_TYPE.METAMASK)}>Connect To Metamask</button>
         </li>
         <li>
           <button>Connect To TrustWallet</button>

@@ -72,21 +72,21 @@ export const TOKEN_LIST_STATIC = [
     {
         imported: !0,
         icon: GEN_ICON,
-        sym: "tk",
-        name: 'token1',
+        sym: "TUR",
+        name: 'TUR',
         bal: '0',
         dec: 18,
-        addr: '0xAeD9eB10741eEe2340A308029D1A905F1F2a4625',
+        addr: '0x283260A3461A435faa5dc30cc8F3B16445eD5cc5',
     
     },
     {
         imported: !0,
         icon: BUSD,
-        sym: "ioi",
-        name: 'IOI',
+        sym: "DIY",
+        name: 'DIY',
         bal: '0',
         dec: 18,
-        addr: '0xBA32Ed7CceF304fF9DFF35e23AE4fb91BD194B71',
+        addr: '0x2969ff4c56D5f33A8Bf36F20150f82B2a2a1F52C',
     },
     // {
     //     imported: !0,
