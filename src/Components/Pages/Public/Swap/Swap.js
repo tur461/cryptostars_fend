@@ -47,7 +47,11 @@ import {
 
 import l_t from "../../../../services/logging/l_t";
 import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
+<<<<<<< Updated upstream
 import { bigDiv, spow, toGib, isValidAddr } from "../../../../services/utils";
+=======
+import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, isDefined } from "../../../../services/utils";
+>>>>>>> Stashed changes
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
 
 import CommonF from "../../../../services/contracts/common";
@@ -315,7 +319,7 @@ const Swap = () => {
   async function searchOrImportToken(v) {
     v = v.trim();
     if(!v.length) v = swap.tokenList;
-    else if(isValidAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
+    else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
       
       TokenContract.init(v);
       let name = await TokenContract.name();
