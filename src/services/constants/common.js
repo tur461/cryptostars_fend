@@ -34,6 +34,14 @@ export const MISC = {
     APPROVAL_AMOUNT: '', 
 }
 
+export const URL = {
+    RPC: {
+        LOCAL: 'http://localhost:8545',
+        REMOTE: 'https://infura.....',
+    }
+}
+
+
 export const VALID_CHAIN_ID = MISC.CHAIN_ID.CRO_TEST;
 
 // export const NUM = {
