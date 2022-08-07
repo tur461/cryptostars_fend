@@ -27,7 +27,7 @@ const rEqual = (a, b) => {
     a === b;
 }
 
-const nullFunc = _ => _.preventDefault();
+const nullFunc = _ => { _.preventDefault(); console.log('null function'); }
 
 const notEqual = (a, b) => !rEqual(a, b);
 

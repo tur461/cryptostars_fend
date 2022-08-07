@@ -273,6 +273,7 @@ const Swap = () => {
         
         if(balance.lte(sellAmount)) {
           setIsErr(!0);
+          setIsFetching(!1);
           dispatch(setTokenValue({v: '', n: otherTokenNum}));
           return setErrText('Insufficient balance for ' + swap.token1_sym);
         }
@@ -284,18 +285,18 @@ const Swap = () => {
         
         if(!isApproved) {
           setIsErr(!0);
+          setTokenApproved(!1);
+          setErrText('Approve ' + swap.token1_sym);
           dispatch(setTokenValue({v: '', n: otherTokenNum}));
-          return setErrText('Approve ' + swap.token1_sym);
+        } else {
+          setIsErr(!1);
         }
         
-        log.i('xact in:', xactIn, buyAmountFraction, typedValue);
-        setTimeout(async _ => await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum), 1000);
+        await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum)
         // set another token value
-        dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
         setXchangeEquivalent(xchangePrice);
-        setIsErr(!1);
         setIsFetching(!1);
-        setTokenApproved(isApproved);
+        dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
       } catch(e) {
         log.e(e);
       }
@@ -501,7 +502,7 @@ const Swap = () => {
                       </div>
                     </div>
                     {
-                        isErr && tokenApproved ?
+                        isErr && !tokenApproved ?
                         <div className='error-box'>
                           <p>{errText}</p>
                         </div> : <></>
@@ -520,12 +521,18 @@ const Swap = () => {
                             isFetching
                           }
                           className="swap-btn" 
-                          onClick={!isErr ? performSwap : nullFunc}
+                          onClick={
+                            !isErr &&
+                            !isFetching &&
+                            walletConnected ?
+                            performSwap :
+                            nullFunc
+                          }
                         >
                           {
-                            !wallet.isConnected ? 
-                              'wallet not connected' : 
-                              isFetching ? 
+                            !wallet.isConnected ?
+                              'wallet not connected' :
+                              isFetching ?
                                 'please wait..' : 
                                 'Swap'
                           }
