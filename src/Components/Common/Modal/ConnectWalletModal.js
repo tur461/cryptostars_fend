@@ -2,8 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import CustomModal from "./CustomModal";
-import { Toast } from "../Toast/Toast";
-import { setPriAccount, setWalletType, walletConnected, walletDisconnected } from "../../features/wallet";
+import { setPriAccount, setWalletType, walletConnected } from "../../features/wallet";
 
 import Wallet from "../../../services/wallet";
 import CommonF from "../../../services/contracts/common";
@@ -21,12 +20,11 @@ const ConnectWalletModal = (props) => {
   const dispatch = useDispatch();
   const wallet = useSelector(s => s.wallet);
 
-  function proc(acc) {
-    dispatch(setPriAccount(acc));
-    dispatch(walletConnected(isAddr(acc)));
-    CommonF.init({from: acc});
-    l_t.s('SUCCESS '+ acc);
-    props.conTitleCbk(acc.length ? trunc(acc) : MISC.CONNECT_TTL);
+  function postWalletConnection(addr) {
+    CommonF.init({from: addr});
+    dispatch(setPriAccount(addr));
+    dispatch(walletConnected(isAddr(addr)));
+    props.conTitleCbk(isAddr(addr) ? trunc(addr) : MISC.CONNECT_TTL);
 
   }
 
@@ -42,7 +40,7 @@ const ConnectWalletModal = (props) => {
   
   window.addEventListener(EVENT.CHAIN_CHANGE, async e => {
     log.s(EVENT.CHAIN_CHANGE);
-    if(!e.detail.isValidChain) proc('');
+    if(!e.detail.isValidChain) postWalletConnection('');
   });
 
   const connect2wallet = async walletType => {
@@ -54,8 +52,8 @@ const ConnectWalletModal = (props) => {
         l_t.s('Wallet connected successfully!');
         dispatch(setWalletType(walletType));
         props.onHide(!1);
-        proc(acc);
-      } else l_t.e('no account found!');
+        postWalletConnection(acc);
+      }
     } catch (error) {
       toast.e(error.message);
     }
@@ -81,8 +79,14 @@ const ConnectWalletModal = (props) => {
           <button 
             onClick={ 
               wallet.isConnected ?
-                _ => disconnect() :
-                _ => connect2wallet(WALLET_TYPE.METAMASK)
+                _ => {
+                  _.preventDefault(); 
+                  disconnect();
+                } :
+                _ => {
+                  _.preventDefault();
+                  connect2wallet(WALLET_TYPE.METAMASK);
+                }
             }
           >
             { 
@@ -96,8 +100,14 @@ const ConnectWalletModal = (props) => {
           <button 
             onClick={ 
               wallet.isConnected ?
-                _ => disconnect() :
-                _ => connect2wallet(WALLET_TYPE.TRUST_WALLET)
+              _ => {
+                _.preventDefault(); 
+                disconnect();
+              } :
+              _ => {
+                _.preventDefault();
+                connect2wallet(WALLET_TYPE.TRUST_WALLET);
+              }
             }
           >
             {

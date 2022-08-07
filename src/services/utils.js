@@ -1,16 +1,30 @@
 import { ADDRESS, MISC } from "./constants/common";
 import {BigNumber} from '@ethersproject/bignumber';
+import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber";
 
+
+const isNumInput = v => /^[0-9]*[.,]?[0-9]*$/gmi.test(v);
+
+const notNumInput = v => !isNumInput(v);
 
 const jString = o => JSON.stringify(o);
 
 const jObject = s => JSON.parse(s);
 
+const isStr = s => typeof s === 'string';
+
+const isObj = o => typeof o === 'object';
+
+const isArr = v => v instanceof Array;
+
+const isNum = n => typeof n === 'number';
+
 const rEqual = (a, b) => {
-    return typeof a == 'string' ? 
+    return isStr(a) && isStr(b) ? 
     a.toLowerCase() === b.toLowerCase() :
-    typeof a == 'number' ? a === b :
-    typeof a == 'object' ? jString(a) === jString(b) : !1;
+    isNum(a) && isNum(b) ? a === b :
+    isObj(a) && isObj(b) ? jString(a) === jString(b) : 
+    a === b;
 }
 
 const nullFunc = _ => _.preventDefault();
@@ -25,9 +39,8 @@ const notDefined = v => !isDefined(v);
 
 const notEmpty = v => typeof v == 'string' ? 
         notEqual(v, '') && notEqual(v, '0') : 
-        v instanceof Array ? v.length :
-        typeof v == 'object' ? 
-        Object.entries(v).length : 
+        isArr(v) ? v.length :
+        isObj(v) ? Object.entries(v).length : 
         !!v;
 
 const isEmpty = v => !notEmpty(v);
@@ -40,16 +53,33 @@ const isAddr = addr => (
     notEqual(addr, ADDRESS.ZERO)
     ) ? !0 : !1;
 
-const trimZeroes = v => {
+/*
+    for 0000001234.5678000000
+    right: 0000001234.
+    left: .5678000000
+
+*/
+
+const rTrimZeroes = v => {
+    let i = 0;
+    for(; i < v.length  && notEqual('.', v[i]) && rEqual('0', v[i]); ++i);
+    i -= rEqual('.', v[i]) ? 1 : 0;
+    return v.substring(i);
+}
+
+const lTrimZeroes = v => {
     let i = v.length - 1;
-    for(; i>=0 && rEqual('0', v[i]); --i);
+    for(; i>=0 && notEqual('.', v[i]) && rEqual('0', v[i]); --i);
+    i += rEqual('.', v[i]) ? 1 : 0;
     return v.substring(0, i+1);
 }
 
-const evDispatch = (t, d) => dispatchEvent(new CustomEvent(t, {detail: d}));
+const trimZeroes = v => rTrimZeroes(lTrimZeroes(v));
+
+const evDispatch = (eName, d) => dispatchEvent(new CustomEvent(eName, {detail: d}));
 
 const toDec = (v, dec) => {
-    if(v instanceof BigNumber) v = v.toString(); 
+    if(isBigNumberish(v)) v = v.toString(); 
     return v / 10 ** (isDefined(dec) && notEmpty(dec) ? dec : 18);
 }
 
@@ -61,9 +91,11 @@ const raiseBy = (v, dec) => Number(v) * 10 ** (isDefined(dec) && notEmpty(dec) ?
 
 const stdRaiseBy = (v, dec) => toStd(raiseBy(v, dec));
 
-const toBigNum = v => v instanceof BigNumber ? v : BigNumber.from(v);
+const toBigNum = v => isBigNumberish(v) ? v : BigNumber.from(v);
+
 
 export {
+    isNum,
     isNaN,
     toStd,
     toDec,
@@ -79,6 +111,8 @@ export {
     toBigNum,
     isDefined,
     notDefined,
+    isNumInput,
     stdRaiseBy,
     evDispatch,
+    notNumInput,
 }

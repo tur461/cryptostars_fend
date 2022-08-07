@@ -40,13 +40,13 @@ export const swapSlice = createSlice({
             state.tokenList_chg = [...state.tokenList];
         },
 
-        setToken1Approved: (s, a) => s.token1_approved = a.payload,
-        setExactIn: (state, action) => state.isExactIn = action.payload,
-        setDeadLine: (state, action) => state.deadLine = action.payload,
-        setSlippage: (state, action) => state.slippage = action.payload,
-        setXchangeEq: (state, action) => state.xchangeEq = action.payload,
-        setValidSwap: (state, action) => state.validSwap = action.payload,
-        changeTokenList: (state, action) => state.tokenList_chg = [...action.payload],
+        setExactIn: (state, action) => { state.isExactIn = action.payload },
+        setDeadLine: (state, action) => { state.deadLine = action.payload },
+        setSlippage: (state, action) => { state.slippage = action.payload },
+        setXchangeEq: (state, action) => { state.xchangeEq = action.payload },
+        setValidSwap: (state, action) => { state.validSwap = action.payload },
+        setToken1Approved: (state, action) => { state.token1_approved = action.payload },
+        changeTokenList: (state, action) => { state.tokenList_chg = [...action.payload] },
         
     }
 });

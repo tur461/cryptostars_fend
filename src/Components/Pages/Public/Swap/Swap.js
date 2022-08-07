@@ -26,15 +26,15 @@ import GenIcon from "../../../../Assets/Images/token_icons/Gen.svg";
 import FactoryContract from '../../../../services/contracts/factory';
 import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
-import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, nullFunc } from "../../../../services/utils";
+import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, nullFunc, notNumInput } from "../../../../services/utils";
 import {
-  CustomInputGroup,
   Layout,
   PlayerCard,
+  SettingModal,
   ButtonPrimary,
+  CustomInputGroup,
   ConnectWalletModal,
   RecentTransactions,
-  SettingModal,
 } from "../../../Common";
 import PerfectScrollbar from "react-perfect-scrollbar";
 
@@ -43,24 +43,11 @@ import {
   setDeadLine,
   setTokenInfo,
   setTokenValue,
-  changeTokenList,
   addToTokenList,
+  changeTokenList,
 } from "../../../features/swap";
-import { 
-  setTokenValue_l, 
-  setToken_addr_l, 
-  setNeedOfAmountApp, 
-} from "../../../features/liquidity";
 
-<<<<<<< Updated upstream
-=======
-import l_t from "../../../../services/logging/l_t";
-import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
-import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, isDefined } from "../../../../services/utils";
-import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
->>>>>>> Stashed changes
-
-import { setPriAccount, walletConnected } from '../../../features/wallet';
+import {  setConnectTitle, setPriAccount, walletConnected } from '../../../features/wallet';
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -103,7 +90,6 @@ const Swap = () => {
   const [thresholdAmount, setThresholdAmount] = useState('0');
   const [btnText, setBtnText] = useState(INIT_VAL.SWAP_BTN[0]);
   const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
-  const [connectTitle, setConnectTitle] = useState(MISC.CONNECT_TTL);
   
   // helpers
   const handleShow = () => setShow(!0);
@@ -113,14 +99,8 @@ const Swap = () => {
   const settingHndShow = () => setSettingsShow(!0);
   const settingHndClose = () => setSettingsShow(!1);
 
-  const lock = useRef(!0);
-
   useEffect(_ => {
-    if(lock.current) {
-      if(!wallet.isConnected) l_t.e('Wallet not Connected!');
-      else CommonF.init({from:wallet.priAccount});
-      lock.current = !1;
-    }
+    wallet.isConnected && CommonF.init({from: wallet.priAccount})
   }, []);
 
   useEffect(_ => {
@@ -140,6 +120,7 @@ const Swap = () => {
     TokenContract.init(swap.token1_addr);
     setIsFetching(!0);
     await TokenContract.approve(MISC.MAX_256, ADDRESS.ROUTER_CONTRACT);
+    setIsErr(!1);
     setIsFetching(!1);
     setTokenApproved(!0);
   }
@@ -231,6 +212,9 @@ const Swap = () => {
     const xactIn = !(ipNum - 1);
     const otherTokenNum = ipNum - 1 ? 1: 2;
     setIsExactIn(xactIn);
+    // CHheck for invalid input
+    if(notNumInput(typedValue)) return dispatch(setTokenValue({ V: '', n: ipNum }));
+
     dispatch(setTokenValue({v: typedValue, n: ipNum}));
     setIsFetching(!0);
     // check if given value is non-zero
@@ -303,18 +287,17 @@ const Swap = () => {
           dispatch(setTokenValue({v: '', n: otherTokenNum}));
           return setErrText('Approve ' + swap.token1_sym);
         }
-        setIsErr(!1);
-
+        
         log.i('xact in:', xactIn, buyAmountFraction, typedValue);
         setTimeout(async _ => await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum), 1000);
         // set another token value
         dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
         setXchangeEquivalent(xchangePrice);
+        setIsErr(!1);
         setIsFetching(!1);
         setTokenApproved(isApproved);
       } catch(e) {
         log.e(e);
-        try{e = e.toString().match(/\"(.*?)\"/)[1].split(':')[1].trim(); l_t.e(e);}catch(ee){};
       }
       return;
     } else {
@@ -331,11 +314,7 @@ const Swap = () => {
 
   async function searchOrImportToken(v) {
     v = v.trim();
-<<<<<<< Updated upstream
-    if(!v.length) v = swap.tokenList; 
-=======
     if(!v.length) v = swap.tokenList;
->>>>>>> Stashed changes
     else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
       
       TokenContract.init(v);
@@ -382,12 +361,12 @@ const Swap = () => {
   }
 
    //Disconnect wallet functionality
-   const disconnect = () => {
-    dispatch(walletConnected(false));
-    dispatch(setPriAccount(""));
-    setConnectTitle("Connect Wallet")
+  const disconnect = () => {
+    dispatch(setPriAccount(''));
+    dispatch(walletConnected(!1));
+    dispatch(setConnectTitle(MISC.CONNECT_TTL))
     // window.location.reload();
-}
+  }
   // ------------------------------------------------------
 
   return (
@@ -414,20 +393,15 @@ const Swap = () => {
               <Col xl={6} md={6} sm={12}>
                 <div className="connectWallet_Right">
                   <ButtonPrimary
-                    title={connectTitle}
+                    title={wallet.connectTitle}
                     className="connectWallet"
                     onClick={handleShow}
                   />
                   <ConnectWalletModal
                     show={show}
                     onHide={handleClose}
-                    conTitleCbk={setConnectTitle}
+                    conTitleCbk={t => dispatch(setConnectTitle(t))}
                   />
-                  {/* Diconnect Button */}
-                  {wallet.isConnected ? 
-                    <button onClick = {disconnect}>Disconnect Wallet</button>
-                    : ''}
-
                   <h1>Claim</h1>
                   <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={claimCST} />
                   <p>(Crypto stars tokens)</p>
@@ -542,7 +516,6 @@ const Swap = () => {
                         </button> :
                         <button
                           disabled={
-                            isDisabled || 
                             !wallet.isConnected || 
                             isFetching
                           }
