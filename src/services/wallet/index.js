@@ -10,6 +10,7 @@ const Wallet = {
     _provider: null,
     init: async function() {
         log.s('Wallet init..');
+        // console.log("HITTTTTTTTTTTTTTTTTTTTT")
         if(!!!this._provider) {
             this._provider = new ethers.providers.Web3Provider(this.M, 'any');
             this._signer = this.provider.getSigner();

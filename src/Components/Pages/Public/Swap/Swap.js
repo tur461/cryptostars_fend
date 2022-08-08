@@ -114,7 +114,7 @@ const Swap = () => {
   useEffect(_ => {
     if(!wallet.isConnected) l_t.e('Wallet not Connected!');
     else CommonF.init({from:wallet.priAccount}); 
-  }, [wallet.connectTitle]);
+  }, []);
 
   useEffect(_ => {
     resetStates()
@@ -364,6 +364,7 @@ const Swap = () => {
 
   // ------------------------------------------------------
   const connectWalletCbk = str => dispatch(setConnectTitle(str));
+  
   return (
     <>
       <section className="swapheader_Sec">
@@ -497,7 +498,7 @@ const Swap = () => {
                         <span>{swap.slippage}%</span>
                       </div>
                     </div>
-                    {
+                    {/* {
                       isErr ?
                       <div className='error-box'>
                         <p>{errText}</p>
@@ -519,7 +520,32 @@ const Swap = () => {
                           {!wallet.isConnected ? 'wallet not connected!' : isFetching ? 'please wait..' : 'Swap'}
                         </button>
                       )
-                    }
+                    } */}
+
+                      {
+                     
+                     isErr && tokenApproved ?
+                     <div className='error-box'>
+                       <p>{errText}</p>
+                     </div> :
+                     (
+                       !tokenApproved ? 
+                       <button
+                         className="approve-btn" 
+                         onClick={approveWithMaxAmount}
+                       >
+                         {'Approve ' + swap.token1_sym}
+                       </button> :
+
+                       <button
+                         disabled={isDisabled || isFetching}
+                         className="swap-btn" 
+                         onClick={!isErr ? performSwap : _=>_}
+                       >
+                         {isFetching ? 'please wait..' : 'Swap'}
+                       </button>
+                     )
+                   }
                     
                   </Form>
                 </div>
