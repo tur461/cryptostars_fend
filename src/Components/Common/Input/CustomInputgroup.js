@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { InputGroup, FormControl, Form } from "react-bootstrap";
+import log from "../../../services/logging/logger";
 import SelectTokenModal from "../Modal/SelectTokenModal";
 import "./inputStyle.scss";
 
 const CustomInputGroup = ({ className, icon, title, states }) => {
   const [show, setShow] = useState(false);
+  
   const handleClose = () => {
     setShow(false);
     states.tList.resetTList_chg();
@@ -16,7 +18,7 @@ const CustomInputGroup = ({ className, icon, title, states }) => {
     <InputGroup className={`customInp_style ${className}`}>
       <InputGroup.Text>
         <div className="coinSelect_wrap">
-          <img src={icon} alt="coin_icon" />
+          <img src={icon} alt={`coin_icon ${icon}`} className='img--token_icon' />
           <div className="coinSelect">
             <span>{title} </span>
             <span className="selectOption" onClick={handleShow}>

@@ -12,6 +12,7 @@ const EVENT = {
 
 const WALLET_METH = {
     REQ_ACCOUNTS: 'eth_requestAccounts',
+    REQ_ACCOUNTS_INFURA: 'eth_accounts',
     ADD_CHAIN: 'wallet_addEthereumChain',
     SWITCH_CHAIN: 'wallet_switchEthereumChain',
 }
@@ -40,9 +41,12 @@ const WALLET_PARAM = {
     }
 }
 
+const INFURA_ID = 'e9ef53e4b59f472b892524a49146d3b1';
+
 export {
     CHAIN,
     EVENT,
+    INFURA_ID,
     WALLET_METH,
     WALLET_TYPE,
     WALLET_PARAM,

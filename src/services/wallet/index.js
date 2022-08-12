@@ -3,7 +3,7 @@ import l_t from "../logging/l_t";
 import log from "../logging/logger";
 import { getAddress } from 'ethers/lib/utils';
 import { EVENT, URL } from "../constants/common";
-import { CHAIN, WALLET_METH, WALLET_PARAM, WALLET_TYPE } from "../constants/wallet";
+import { CHAIN, INFURA_ID, WALLET_METH, WALLET_PARAM, WALLET_TYPE } from "../constants/wallet";
 import { notDefined, notEqual, rEqual } from "../utils";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
@@ -15,6 +15,9 @@ let Wallet = {
     // getters
     get signer() {
         return this._signer;
+    },
+    get accounts() {
+        return this._accounts;
     },
     get provider() {
         return this._provider;
@@ -32,19 +35,23 @@ let Wallet = {
             if(rEqual(walletType, WALLET_TYPE.METAMASK)) {
 
                 this._provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+                this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS, [])).map(a => getAddress(a));
+                this._signer = await this.provider.getSigner();
             }
             else if(rEqual(walletType, WALLET_TYPE.WALLET_CONNECT)) {
+                log.i('infura id:', INFURA_ID);
                 const wcProvider = new WalletConnectProvider({
                     rpc: {
                         [CHAIN.CRONOS_TEST.INT] : CHAIN.CRONOS_TEST.URL
                     },
+                    infuraId: INFURA_ID,
                 });
                 // show qr-code
                 await wcProvider.enable();
-                this._provider = new ethers.providers.Web3Provider(wcProvider, 'any');
+                this._provider = this._provider = new ethers.providers.Web3Provider(wcProvider, 'any');;
+                this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS_INFURA, [])).map(a => getAddress(a));
+                log.i('accounts:', this.accounts);
             }
-            this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS, [])).map(a => getAddress(a));
-            this._signer = await this.provider.getSigner();
             this._initEvents();
             this._walletType = walletType;
             log.s('init done', this._accounts, this.priAccount);
@@ -52,7 +59,13 @@ let Wallet = {
         return this;
     },
     ensureChain: async function() {
-        let chainId = (await this.provider.getNetwork()).chainId;
+        // debugger;
+        let chainId = -1;
+        if(rEqual(this.walletType, WALLET_TYPE.WALLET_CONNECT)) {
+            chainId = (await this.provider.getNetwork()).chainId;
+        } else {
+            chainId = (await this.provider.getNetwork()).chainId;
+        }
         log.i('selected chain:', chainId);
         if(chainId !== CHAIN.CRONOS_TEST.INT) {
             log.i('switching to cronos chain');

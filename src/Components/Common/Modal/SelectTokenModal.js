@@ -64,7 +64,7 @@ const CoinItem = ({
       onClick={
         data.disabled ? 
         nullFunc : 
-        _ => cbk(title, data.addr, hideCbk(!0))
+        _ => cbk(title, data.addr, data.icon, hideCbk(!0))
       }
     >
       <div className={`coinItem_style ${className}`}>

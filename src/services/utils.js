@@ -23,10 +23,13 @@ const isNull = v => rEqual(`${v}`, 'null');
 
 const notNull = v => !isNull(v);
 
+// for time being it works only with depth 1
+// for depth>1 we need to recursively 
+// check keys as well as values
 const compare2objs = (a, b) => {
     a = notNull(a) ? Object.keys(a).sort() : a;
     b = notNull(b) ? Object.keys(b).sort() : b;
-    return jString(a) === jString(b); 
+    return jString(a) === jString(b);
 }
 
 const rEqual = (a, b) => {
@@ -117,9 +120,11 @@ export {
     toStd,
     toDec,
     rEqual,
+    isNull,
     isAddr,
     isEmpty,
     jObject,
+    notNull,
     jString,
     toFixed,
     raiseBy,

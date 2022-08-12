@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import CustomModal from "./CustomModal";
@@ -7,13 +7,13 @@ import { setPriAccount, setWalletType, walletConnected } from "../../features/wa
 import Wallet from "../../../services/wallet";
 import CommonF from "../../../services/contracts/common";
 import l_t from "../../../services/logging/l_t";
-import { EVENT, MISC } from "../../../services/constants/common";
+import { EVENT, LS_KEYS, MISC } from "../../../services/constants/common";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { WALLET_TYPE } from "../../../services/constants/wallet";
 import { useEffect } from "react";
 import { isAddr, rEqual } from "../../../services/utils";
-import { Err } from "../../../services/xtras";
+import { Err, LocalStore } from "../../../services/xtras";
 
 const trunc = a => `${a.slice(0, 5)}..${a.slice(39, 42)}`;
 
@@ -29,12 +29,21 @@ const ConnectWalletModal = (props) => {
 
   }
 
+  const lock = useRef(!0);
+
   useEffect(async() => {
-    if(wallet.isConnected) {
-      let acc = Wallet.priAccount;
-      props.conTitleCbk(trunc(acc));
-    } else{
-      props.conTitleCbk(MISC.CONNECT_TTL)
+    if(lock.current) {
+      if(wallet.isConnected) {
+        log.i('pri account', Wallet);
+        if(LocalStore.has(LS_KEYS.WALLET_TYPE)) {
+          await connect2wallet(LocalStore.get(LS_KEYS.WALLET_TYPE));
+          let acc = Wallet.priAccount;
+          props.conTitleCbk(trunc(acc));
+        }
+      } else{
+        props.conTitleCbk(MISC.CONNECT_TTL)
+      }
+      lock.current = !1;
     }
   }, [wallet.isConnected])
   
@@ -45,12 +54,18 @@ const ConnectWalletModal = (props) => {
   });
 
   const connect2wallet = async walletType => {
+    // if(wallet.isConnected) {
+    //   disconnect();
+    // }
     try {
       await Wallet.init(walletType);
       await Wallet.ensureChain();
-      let acc = Wallet.priAccount;
+      const acc = Wallet.priAccount;
+      const provider = Wallet.provider;
       if (acc) {
         l_t.s(walletType + ' Wallet connected successfully!');
+        LocalStore.add(LS_KEYS.WALLET_TYPE, walletType);
+        dispatch(setPriAccount(acc));
         dispatch(setWalletType(walletType));
         props.onHide(!1);
         postWalletConnection(acc);
@@ -61,10 +76,16 @@ const ConnectWalletModal = (props) => {
   }
 
   //Disconnect wallet functionality
-  const disconnect = () => {
+  const disconnect = (walletType) => {
+    // add functionality for disconnecting from WalletConnect, using walletType param
+    // ...
+    // ...
+    LocalStore.del(LS_KEYS.WALLET_TYPE);
+    props.conTitleCbk(MISC.CONNECT_TTL);
     dispatch(walletConnected(!1));
     dispatch(setPriAccount(''));
-    props.onHide(!1)
+    props.onHide(!1);
+    l_t.s('Wallet disconnection success!');
 }
 
   return (
@@ -81,10 +102,12 @@ const ConnectWalletModal = (props) => {
               wallet.isConnected ?
                 _ => {
                   _.preventDefault(); 
+                  _.stopPropagation();
                   disconnect();
                 } :
                 _ => {
                   _.preventDefault();
+                  _.stopPropagation();
                   connect2wallet(WALLET_TYPE.METAMASK);
                 }
             }
@@ -92,20 +115,22 @@ const ConnectWalletModal = (props) => {
             { 
               wallet.isConnected && rEqual(WALLET_TYPE.METAMASK, wallet.walletType) ? 
                 'Disconnect from Metamask' : 
-                'Connect To Metamask' 
+                'Metamask' 
             }
           </button>
         </li>
-        <li>
+        {/* <li>
           <button 
             onClick={ 
               wallet.isConnected ?
               _ => {
                 _.preventDefault(); 
+                _.stopPropagation();
                 disconnect();
               } :
               _ => {
                 _.preventDefault();
+                _.stopPropagation();
                 connect2wallet(WALLET_TYPE.TRUST_WALLET);
               }
             }
@@ -116,7 +141,7 @@ const ConnectWalletModal = (props) => {
                 'Connect To TrustWallet' 
             }
           </button>
-        </li>
+        </li> */}
         <li>
           <button 
             onClick={ 
@@ -134,7 +159,7 @@ const ConnectWalletModal = (props) => {
             {
               wallet.isConnected && rEqual(WALLET_TYPE.WALLET_CONNECT, wallet.walletType) ? 
                 'Disconnect from WalletConnect' : 
-                'Connect To WalletConnect' 
+                'WalletConnect' 
             }
           </button>
         </li>

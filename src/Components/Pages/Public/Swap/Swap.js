@@ -3,6 +3,7 @@ import Loader from '../../../Loader';
 import l_t from "../../../../services/logging/l_t";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import log from '../../../../services/logging/logger';
+import GEN_ICON from "../../../../Assets/Images/token_icons/Gen.svg";
 import LMES from "../../../../Assets/Images/LMES.png";
 import MSAL from "../../../../Assets/Images/MSAL.png";
 import MBAP from "../../../../Assets/Images/MBAP.png";
@@ -77,6 +78,8 @@ const Swap = () => {
   const swap = useSelector(s => s.swap);
   const wallet = useSelector(s => s.wallet);
 
+  log.i('custom ip grp icon:', swap.token1_icon);
+
     // non-redux states
   const [show, setShow] = useState(!1);
   const [pair, setPair] = useState([]);
@@ -106,7 +109,16 @@ const Swap = () => {
   useEffect(_ => {
     if(lock.current) {
       // reset token values
-      dispatch(setTokenValue({v: '', n: 0}));
+      dispatch(setTokenValue({
+        v: '', 
+        n: 0
+      }));
+      dispatch(setTokenInfo({
+        n: 0,
+        addr: '', 
+        icon: GEN_ICON,
+        sym: MISC.SEL_TOKEN, 
+      }));
       lock.current = !1;
     }
   }, [])
@@ -189,20 +201,23 @@ const Swap = () => {
     console.log('performing swap operation');
     
     log.i('TH Amount:', thresholdAmount);
-    try {
-      await RouterContract.swap_TT(
-        [
-          amountIn,
-          thresholdAmount,
-          pair,
-          wallet.priAccount,
-          getDeadline(swap.deadLine),
-        ],
-        isExactIn
-      );
+    setIsFetching(!0);
+    RouterContract.swap_TT(
+      [
+        amountIn,
+        thresholdAmount,
+        pair,
+        wallet.priAccount,
+        getDeadline(swap.deadLine),
+      ],
+      isExactIn,
+    ).then(_ => {
+      setIsFetching(!1);
       l_t.s('Swap Success!');
-    } catch(e) {Err.handle(e)} 
-    finally {}
+    }).catch(e => {
+      Err.handle(e);
+      setIsFetching(!1);
+    }) 
   }
 
   async function upsideDown(e) {
@@ -216,8 +231,7 @@ const Swap = () => {
     await setOtherTokenValue(t[0], 2, !0) :
     await setOtherTokenValue(t[1], 1, !0);
     // switch tokenInfo
-    dispatch(setTokenInfo({sym: s[1], addr: a[1], n: 1, icon: icn[1]}));
-    dispatch(setTokenInfo({sym: s[0], addr: a[0], n: 2, icon: icn[0]}));
+    dispatch(setTokenInfo({sym: [s[1], s[0]], addr: [a[1], a[0]], n: 0, icon: [icn[1], icn[0]], isUpDown: !0}));
   }
   
   // if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
@@ -472,7 +486,7 @@ const Swap = () => {
                             importCbk: _ => importToken(),
                             scbk: v => searchOrImportToken(v),
                             resetTList_chg: _ => resetTList_chg(),
-                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 1, disabled: !0}))
+                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 1, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }
@@ -481,7 +495,7 @@ const Swap = () => {
                       <img src={swapicon} alt="swap_icon" />
                     </button>
                     <CustomInputGroup
-                      icon={swap.token1_icon}
+                      icon={swap.token2_icon}
                       title="Swap To (est.)"
                       states={
                         {
@@ -495,7 +509,7 @@ const Swap = () => {
                             importCbk: _ => importToken(),
                             scbk: v => searchOrImportToken(v),
                             resetTList_chg: _ => resetTList_chg(),
-                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 2, disabled: !0}))
+                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 2, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }

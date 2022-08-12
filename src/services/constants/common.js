@@ -1,5 +1,7 @@
 
 import GEN_ICON from "../../Assets/Images/token_icons/Gen.svg";
+import DIY_ICON from "../../Assets/Images/token_icons/diy.svg";
+import TUR_ICON from "../../Assets/Images/token_icons/tur.svg";
 import BUSD from "../../Assets/Images/token_icons/BUSD-Token.svg";
 import WBNB from "../../Assets/Images/token_icons/WBNB-Token-Icon.svg";
 
@@ -34,6 +36,7 @@ export const MISC = {
     PVT_KEY: process.env.REACT_APP_PRIVATE_KEY,
     SWAP_DEAD_LINE: 20.0, // 20 min from now
     CONNECT_TTL: 'Connect Wallet',
+    SEL_TOKEN: 'Select a token',
     APPROVAL_AMOUNT: '', 
 }
 
@@ -57,6 +60,7 @@ export const VALID_CHAIN_ID = MISC.CHAIN_ID.CRO_TEST;
 // all local-storage keys are kept here!
 export const LS_KEYS = {
     JWT: 'jwtToken',
+    WALLET_TYPE: 'wallet_type',
 }
 
 export const ERR = {
@@ -72,10 +76,11 @@ export const EVENT = {
     SWAP_TOKEN_VAL_CHANGE: 'swap_token_value_changed',
 }
 
+
 export const TOKEN_LIST_STATIC = [
     {
         imported: !0,
-        icon: GEN_ICON,
+        icon: TUR_ICON,
         sym: "TUR",
         name: 'TUR',
         bal: '0',
@@ -88,7 +93,7 @@ export const TOKEN_LIST_STATIC = [
     },
     {
         imported: !0,
-        icon: BUSD,
+        icon: DIY_ICON,
         sym: "DIY",
         name: 'DIY',
         bal: '0',
