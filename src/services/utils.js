@@ -19,11 +19,26 @@ const isArr = v => v instanceof Array;
 
 const isNum = n => typeof n === 'number';
 
+const isNull = v => rEqual(`${v}`, 'null');
+
+const notNull = v => !isNull(v);
+
+const compare2objs = (a, b) => {
+    a = notNull(a) ? Object.keys(a).sort() : a;
+    b = notNull(b) ? Object.keys(b).sort() : b;
+    return jString(a) === jString(b); 
+}
+
 const rEqual = (a, b) => {
-    return isStr(a) && isStr(b) ? 
+    if(isObj(a) && isObj(b)) {
+        let s1 = '', s2 = '';
+        try { s1 = jString(a) } catch(e) { return compare2objs(a, b) }
+        try { s2 = jString(b) } catch(e) { return compare2objs(a, b) }
+        return s1 === s2;
+    }
+    return isStr(a) && isStr(b) ?
     a.toLowerCase() === b.toLowerCase() :
-    isNum(a) && isNum(b) ? a === b :
-    isObj(a) && isObj(b) ? jString(a) === jString(b) : 
+    isNum(a) && isNum(b) ? a === b : 
     a === b;
 }
 
@@ -33,7 +48,7 @@ const notEqual = (a, b) => !rEqual(a, b);
 
 const isNaN = n => rEqual(n, NaN) || rEqual(n, 'NaN') || rEqual(`${n}`, 'NaN');
 
-const isDefined = v => notEqual(v, null) || notEqual(v, 'undefined') || notEqual(v, undefined);
+const isDefined = v => notEqual(v, 'null') && notEqual(v, null) && notEqual(v, 'undefined') && notEqual(v, undefined);
 
 const notDefined = v => !isDefined(v);
 
@@ -44,6 +59,8 @@ const notEmpty = v => typeof v == 'string' ?
         !!v;
 
 const isEmpty = v => !notEmpty(v);
+
+const contains = (txt, v) => txt.toLowerCase().indexOf(v.toLowerCase()) > -1;
 
 const isAddr = addr => (
     isDefined(addr) &&
@@ -106,6 +123,8 @@ export {
     jString,
     toFixed,
     raiseBy,
+    notEqual,
+    contains,
     nullFunc,
     notEmpty,
     toBigNum,

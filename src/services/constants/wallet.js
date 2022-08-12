@@ -2,6 +2,7 @@ const WALLET_TYPE = {
     NONE: 'none',
     METAMASK: 'Metamask',
     TRUST_WALLET: 'TrustWallet',
+    WALLET_CONNECT: 'WalletConnect',
 }
 
 const EVENT = {
@@ -21,6 +22,7 @@ const CHAIN = {
         INT: 338,
         HEX: '0x152',
         NAME: 'Cronos Testnet',
+        URL: 'https://cronos-testnet-3.crypto.org:8545/'
     },
     CRONOS_MAIN: {
         INT: 338,

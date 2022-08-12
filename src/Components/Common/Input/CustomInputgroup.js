@@ -26,7 +26,7 @@ const CustomInputGroup = ({ className, icon, title, states }) => {
           <SelectTokenModal show={show} hideCbk={handleClose} state={states.tList} />
         </div>
       </InputGroup.Text>
-      <FormControl placeholder="0.00" value={states.token.val} onChange={states.token.cbk} type= 'Number' />
+      <FormControl placeholder="0.00" value={states.token.val} onChange={states.token.cbk} type= 'Number' disabled={states.token.disabled}/>
     </InputGroup>
   );
 };

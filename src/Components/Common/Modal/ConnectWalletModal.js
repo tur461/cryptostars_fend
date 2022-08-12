@@ -13,6 +13,7 @@ import toast from "../../../services/logging/toast";
 import { WALLET_TYPE } from "../../../services/constants/wallet";
 import { useEffect } from "react";
 import { isAddr, rEqual } from "../../../services/utils";
+import { Err } from "../../../services/xtras";
 
 const trunc = a => `${a.slice(0, 5)}..${a.slice(39, 42)}`;
 
@@ -30,7 +31,7 @@ const ConnectWalletModal = (props) => {
 
   useEffect(async() => {
     if(wallet.isConnected) {
-      let acc = await Wallet.getPriAccount();
+      let acc = Wallet.priAccount;
       props.conTitleCbk(trunc(acc));
     } else{
       props.conTitleCbk(MISC.CONNECT_TTL)
@@ -45,17 +46,17 @@ const ConnectWalletModal = (props) => {
 
   const connect2wallet = async walletType => {
     try {
-      await Wallet.init();
+      await Wallet.init(walletType);
       await Wallet.ensureChain();
       let acc = Wallet.priAccount;
       if (acc) {
-        l_t.s('Wallet connected successfully!');
+        l_t.s(walletType + ' Wallet connected successfully!');
         dispatch(setWalletType(walletType));
         props.onHide(!1);
         postWalletConnection(acc);
       }
-    } catch (error) {
-      toast.e(error.message);
+    } catch (e) {
+      Err.handle(e);
     }
   }
 
@@ -74,7 +75,6 @@ const ConnectWalletModal = (props) => {
       title="Connect To Wallet"
     >
       <ul>
-        {
         <li>
           <button 
             onClick={ 
@@ -95,7 +95,7 @@ const ConnectWalletModal = (props) => {
                 'Connect To Metamask' 
             }
           </button>
-        </li> }
+        </li>
         <li>
           <button 
             onClick={ 
@@ -114,6 +114,27 @@ const ConnectWalletModal = (props) => {
               wallet.isConnected && rEqual(WALLET_TYPE.TRUST_WALLET, wallet.walletType) ? 
                 'Disconnect from TrustWallet' : 
                 'Connect To TrustWallet' 
+            }
+          </button>
+        </li>
+        <li>
+          <button 
+            onClick={ 
+              wallet.isConnected ?
+              _ => {
+                _.preventDefault(); 
+                disconnect();
+              } :
+              _ => {
+                _.preventDefault();
+                connect2wallet(WALLET_TYPE.WALLET_CONNECT);
+              }
+            }
+          >
+            {
+              wallet.isConnected && rEqual(WALLET_TYPE.WALLET_CONNECT, wallet.walletType) ? 
+                'Disconnect from WalletConnect' : 
+                'Connect To WalletConnect' 
             }
           </button>
         </li>

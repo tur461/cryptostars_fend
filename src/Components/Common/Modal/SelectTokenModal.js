@@ -3,6 +3,7 @@ import CustomModal from "./CustomModal";
 import PerfectScrollbar from "react-perfect-scrollbar";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import { useSelector } from "react-redux";
+import { nullFunc } from "../../../services/utils";
 
 
 
@@ -33,19 +34,42 @@ const SelectTokenModal = ({ size, show, hideCbk, state }) => {
       <PerfectScrollbar>
         <div className="coinListBlockStyle">
           {swap.tokenList_chg.map((data, i) => (
-            <CoinItem key={i} iconImage={data.icon} title={data.sym} hideCbk={hideCbk} data={data} cbk={state.cbk} importCbk={state.importCbk} />
+            <CoinItem 
+              key={i} 
+              iconImage={data.icon} 
+              title={data.sym} 
+              hideCbk={hideCbk} 
+              data={data} 
+              cbk={state.cbk} 
+              importCbk={state.importCbk}
+            />
           ))}
         </div>
       </PerfectScrollbar>
     </CustomModal>
   );
 };
-const CoinItem = ({ className, iconImage, title, hideCbk, data, cbk, importCbk }) => {
+const CoinItem = ({ 
+  cbk, 
+  data, 
+  title, 
+  hideCbk, 
+  className, 
+  iconImage, 
+  importCbk,
+}) => {
   return (
-    <div className="coinItem">
+    <div 
+      className={`coinItem${data.disabled ? ' keep-disabled' : ''}`}
+      onClick={
+        data.disabled ? 
+        nullFunc : 
+        _ => cbk(title, data.addr, hideCbk(!0))
+      }
+    >
       <div className={`coinItem_style ${className}`}>
         
-        <p className="titleStyle" onClick={_ => cbk(title, data.addr, hideCbk(!0))}> 
+        <p className="titleStyle"> 
           <img src={iconImage} /> 
           {title} 
         </p>

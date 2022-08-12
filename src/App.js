@@ -3,11 +3,13 @@ import Application from "./Application";
 import { LoaderComponent } from "./Components/Common";
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
-  return <>{loading === false ? <Application /> : <LoaderComponent />}</>;
+  const [loader, setLoader] = useState(!0);
+  useEffect(_ => setTimeout(_ => setLoader(!1), 1000), []);
+  return <> {
+    loader ? 
+    <LoaderComponent /> : 
+    <Application />
+  } </>;
 }
 
 export default App;

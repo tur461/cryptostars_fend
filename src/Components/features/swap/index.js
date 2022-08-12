@@ -1,16 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { EVENT, MISC, TOKEN_LIST_STATIC } from '../../../services/constants/common';
-import { evDispatch } from '../../../services/utils';
-
+import log from '../../../services/logging/logger';
+import { evDispatch, isDefined } from '../../../services/utils';
+import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 export const swapSlice = createSlice({
     name: 'swap',
     initialState: {
         token1: '',
         token1_sym: 'Select a token',
         token1_addr: '',
+        token1_icon: GEN_ICON,
         token2: '',
         token2_sym: 'Select a token',
         token2_addr: '',
+        token2_icon: GEN_ICON,
         token1_approved: !0,
         slippage: MISC.DEF_SLIPPAGE,
         deadLine: MISC.SWAP_DEAD_LINE,
@@ -31,7 +34,21 @@ export const swapSlice = createSlice({
         },
         setTokenInfo: (state, action) => {
             state[`token${action.payload.n}_sym`] = action.payload.sym;
+            state[`token${action.payload.n}_icon`] = action.payload.icon;
             state[`token${action.payload.n}_addr`] = action.payload.addr;
+            if(isDefined(action.payload.disabled)) {
+                const tList = state.tokenList_chg.filter(item => item.addr !== action.payload.addr);
+                const tSel = state.tokenList_chg.filter(item => item.addr === action.payload.addr)[0];
+                
+                const list = state.tokenList.filter(item => item.addr !== action.payload.addr);
+                const sel = state.tokenList.filter(item => item.addr === action.payload.addr)[0];
+                sel.disabled = !0;
+                tSel.disabled = !0;
+                state.tokenList = [...list, sel];
+                state.tokenList_chg = [...tList, tSel];
+                log.i('token list changed!');
+            }
+
         },
         addToTokenList: (state, action) => {
             state.tokenList.push({

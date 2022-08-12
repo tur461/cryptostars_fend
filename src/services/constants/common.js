@@ -21,6 +21,9 @@ export const ADDRESS = {
 export const MISC = {
     MAX_256: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
     BUSD_DEC: 18,
+    disabled: !1,
+    tokenNum1: !1,
+    tokenNum2: !1,
     DEF_SLIPPAGE: 7.5,
     DIV_DEC_PLACES: 10,
     CHAIN_ID: {
@@ -77,6 +80,9 @@ export const TOKEN_LIST_STATIC = [
         name: 'TUR',
         bal: '0',
         dec: 18,
+        disabled: !1,
+        tokenNum1: !1,
+        tokenNum2: !1,
         addr: '0x283260A3461A435faa5dc30cc8F3B16445eD5cc5',
     
     },
@@ -87,6 +93,9 @@ export const TOKEN_LIST_STATIC = [
         name: 'DIY',
         bal: '0',
         dec: 18,
+        disabled: !1,
+        tokenNum1: !1,
+        tokenNum2: !1,
         addr: '0x2969ff4c56D5f33A8Bf36F20150f82B2a2a1F52C',
     },
     // {
@@ -96,6 +105,9 @@ export const TOKEN_LIST_STATIC = [
     //     name: 'crypto-star erc20 token',
     //     bal: '1934500456',
     //     dec: 18,
+    // disabled: !1,
+    // tokenNum1: !1,
+    // tokenNum2: !1,
     //     addr: '0x83D685Ed8D7E2591c998bF2c87e01c5795Df55fd',
     // },
     // {
@@ -105,6 +117,9 @@ export const TOKEN_LIST_STATIC = [
     //     name: 'busd erc20 token',
     //     bal: '1234',
     //     dec: 18,
+    // disabled: !1,
+    // tokenNum1: !1,
+    // tokenNum2: !1,
     //     addr: '0x627FE899085ff5F6e51A8ed50F76243C51674e01',
     // },
     // {
@@ -114,6 +129,9 @@ export const TOKEN_LIST_STATIC = [
     //     name: 'coinfluence erc20 token',
     //     bal: '5780001',
     //     dec: 18,
+    // disabled: !1,
+    // tokenNum1: !1,
+    // tokenNum2: !1,
     //     addr: '0x018b32b3cfaA0D74953B50309f82e57B4bAEdaE2',
     // },
     // {
@@ -123,6 +141,9 @@ export const TOKEN_LIST_STATIC = [
     //     name: 'steep labs erc20 token',
     //     bal: '740673',
     //     dec: 18,
+    // disabled: !1,
+    // tokenNum1: !1,
+    // tokenNum2: !1,
     //     addr: '0xD24cb054d7d725cF74715671e4F4F8009BD9015f',
     // },
 ]

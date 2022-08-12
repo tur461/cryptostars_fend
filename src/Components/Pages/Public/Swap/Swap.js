@@ -26,7 +26,7 @@ import GenIcon from "../../../../Assets/Images/token_icons/Gen.svg";
 import FactoryContract from '../../../../services/contracts/factory';
 import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
-import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, nullFunc, notNumInput } from "../../../../services/utils";
+import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, nullFunc, notNumInput, isEmpty } from "../../../../services/utils";
 import {
   Layout,
   PlayerCard,
@@ -35,6 +35,7 @@ import {
   CustomInputGroup,
   ConnectWalletModal,
   RecentTransactions,
+  LoaderComponent,
 } from "../../../Common";
 import PerfectScrollbar from "react-perfect-scrollbar";
 
@@ -48,6 +49,7 @@ import {
 } from "../../../features/swap";
 
 import {  setConnectTitle, setPriAccount, walletConnected } from '../../../features/wallet';
+import { Err } from "../../../../services/xtras";
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -75,7 +77,7 @@ const Swap = () => {
   const swap = useSelector(s => s.swap);
   const wallet = useSelector(s => s.wallet);
 
-  // non-redux states
+    // non-redux states
   const [show, setShow] = useState(!1);
   const [pair, setPair] = useState([]);
   const [isErr, setIsErr] = useState(!1);
@@ -98,6 +100,16 @@ const Swap = () => {
   const recentHndClose = () => setRecentShow(!1);
   const settingHndShow = () => setSettingsShow(!0);
   const settingHndClose = () => setSettingsShow(!1);
+
+  const lock = useRef(!0);
+
+  useEffect(_ => {
+    if(lock.current) {
+      // reset token values
+      dispatch(setTokenValue({v: '', n: 0}));
+      lock.current = !1;
+    }
+  }, [])
 
   useEffect(_ => {
     wallet.isConnected && CommonF.init({from: wallet.priAccount})
@@ -177,32 +189,35 @@ const Swap = () => {
     console.log('performing swap operation');
     
     log.i('TH Amount:', thresholdAmount);
-
-    await RouterContract.swap_TT(
-      [
-        amountIn,
-        thresholdAmount,
-        pair,
-        wallet.priAccount,
-        getDeadline(swap.deadLine),
-      ],
-      isExactIn
-    );
-    l_t.s('Swap Success!');
+    try {
+      await RouterContract.swap_TT(
+        [
+          amountIn,
+          thresholdAmount,
+          pair,
+          wallet.priAccount,
+          getDeadline(swap.deadLine),
+        ],
+        isExactIn
+      );
+      l_t.s('Swap Success!');
+    } catch(e) {Err.handle(e)} 
+    finally {}
   }
 
-  function upsideDown(e) {
+  async function upsideDown(e) {
     e.preventDefault();
     let t = [swap.token1, swap.token2],
-        s = [swap.token1_sym, swap.token2_sym];
+        s = [swap.token1_sym, swap.token2_sym],
+        a = [swap.token1_addr, swap.token2_addr],
+        icn = [swap.token1_icon, swap.token2_icon];
 
     isExactIn ? 
-    setOtherTokenValue(t[0], 2, !0) :
-    setOtherTokenValue(t[1], 1, !0);
+    await setOtherTokenValue(t[0], 2, !0) :
+    await setOtherTokenValue(t[1], 1, !0);
     // switch tokenInfo
-    dispatch(setTokenInfo({sym: s[1], addr: swap.token2_addr, n: 1}));
-    dispatch(setTokenInfo({sym: s[0], addr: swap.token1_addr, n: 2}));
-      
+    dispatch(setTokenInfo({sym: s[1], addr: a[1], n: 1, icon: icn[1]}));
+    dispatch(setTokenInfo({sym: s[0], addr: a[0], n: 2, icon: icn[0]}));
   }
   
   // if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
@@ -443,12 +458,13 @@ const Swap = () => {
                   </div>
                   <Form>
                     <CustomInputGroup 
-                      icon={cstcoin} 
+                      icon={swap.token1_icon} 
                       title="Swap From"
                       states={
                         {
                           token: {
-                            val: swap.token1, 
+                            val: swap.token1,
+                            disabled: isFetching && !isExactIn,
                             cbk: e => setOtherTokenValue(e.target.value, 1, !1)
                           },
                           tList: {
@@ -456,7 +472,7 @@ const Swap = () => {
                             importCbk: _ => importToken(),
                             scbk: v => searchOrImportToken(v),
                             resetTList_chg: _ => resetTList_chg(),
-                            cbk: (sym, addr) => dispatch(setTokenInfo({sym, addr, n: 1}))
+                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 1, disabled: !0}))
                           }
                         }
                       }
@@ -465,12 +481,13 @@ const Swap = () => {
                       <img src={swapicon} alt="swap_icon" />
                     </button>
                     <CustomInputGroup
-                      icon={lamescoin}
+                      icon={swap.token1_icon}
                       title="Swap To (est.)"
                       states={
                         {
                           token: {
                             val: swap.token2, 
+                            disabled: isFetching && isExactIn,
                             cbk: e => setOtherTokenValue(e.target.value, 2, !1)
                           },
                           tList: {
@@ -478,22 +495,24 @@ const Swap = () => {
                             importCbk: _ => importToken(),
                             scbk: v => searchOrImportToken(v),
                             resetTList_chg: _ => resetTList_chg(),
-                            cbk: (sym, addr) => dispatch(setTokenInfo({sym, addr, n: 2}))
+                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 2, disabled: !0}))
                           }
                         }
                       }
                     />
                     {
-                      !isFetching ?
+                      (isEmpty(swap.token1) || isEmpty(swap.token2)) ?
+                      <></> :
+                      isFetching ?
+                      <div className='tokenXchangePriceWrap'>
+                        <Loader text='Fetching info...' stroke='white'/>
+                      </div> :
                       <div className='tokenXchangePriceWrap'>
                         <div className='tokenXchangePrice'>
                           <span>{`1 ${token(swap.token2_addr)?.sym} = `}</span>
                           <span>{`${xchangeEquivalent} ${token(swap.token1_addr)?.sym}`}</span>
                         </div>
-                      </div> : 
-                      <div className='tokenXchangePriceWrap'>
-                        <Loader text='Fetching info...' stroke='white'/>
-                      </div>
+                      </div> 
                     }
                     <div className="slippageWrap">
                       <div className="slipageText">
