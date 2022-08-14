@@ -20,10 +20,17 @@ const CustomInputGroup = ({ className, icon, title, states }) => {
         <div className="coinSelect_wrap">
           <img src={icon} alt={`coin_icon ${icon}`} className='img--token_icon' />
           <div className="coinSelect">
-            <span>{title} </span>
+            <span></span>
             <span className="selectOption" onClick={handleShow}>
               {states.tList.val}
             </span>
+            <p 
+              className={`block--token-balance${states.token.showBalance ? '' : ' d-none'}`}
+              onClick={states.token.setToMaxAmount}
+            >
+              <span>Balance:</span>
+              <span className={states.token.showMaxBtn ? ' btn--max-amount' : ''}>{states.token.balance}</span>
+            </p>
           </div>
           <SelectTokenModal show={show} hideCbk={handleClose} state={states.tList} />
         </div>

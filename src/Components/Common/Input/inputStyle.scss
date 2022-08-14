@@ -76,7 +76,23 @@
             }
           }
         }
+        .block--token-balance {
+          span {
+            display: inline-block;
+            font-size: .8rem;
+            color: rgb(143, 150, 172);
+            &:last-child.btn--max-amount:after {
+              cursor: pointer;
+              content: 'MAX';
+              color: rgb(33, 114, 229);
+              font-size: .8rem;
+              font-weight: 600;
+              padding: .4rem;
+            }
+          }
+        }
       }
+      
     }
     .form-control {
       border: 2px solid $primaryColor;

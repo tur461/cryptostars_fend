@@ -81,6 +81,12 @@ export const EVENT = {
     SWAP_TOKEN_VAL_CHANGE: 'swap_token_value_changed',
 }
 
+export const TOKEN = {
+    A: 1,
+    B: 2,
+    BOTH: 0,
+}
+
 
 export const TOKEN_LIST_STATIC = [
     {

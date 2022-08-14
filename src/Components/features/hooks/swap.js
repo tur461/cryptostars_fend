@@ -10,7 +10,7 @@ import FaucetContract from "../../../services/contracts/faucet";
 import RouterContract from "../../../services/contracts/router";
 import FactoryContract from "../../../services/contracts/factory";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
-import { ADDRESS, INIT_VAL, MISC } from "../../../services/constants/common";
+import { ADDRESS, INIT_VAL, MISC, TOKEN } from "../../../services/constants/common";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
 import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
 import { isAddr, isInvalidNumeric, notEmpty, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
@@ -28,6 +28,12 @@ const useSwap = props => {
 		const [isExactIn, setIsExactIn] = useState('0');
 		const [isDisabled, setIsDisabled] = useState(!0);
 		const [isFetching, setIsFetching] = useState(!1);
+		const [showMaxBtn1, setShowMaxBtn1] = useState(!1);
+		const [showMaxBtn2, setShowMaxBtn2] = useState(!1);
+		const [token1_bal, setToken1_bal] = useState('0.0');
+		const [token2_bal, setToken2_bal] = useState('0.0');
+		const [showBalance1, setShowBalance1] = useState(!1);
+		const [showBalance2, setShowBalance2] = useState(!1);
 		const [isCSTClaimed, setIsCSTClaimed] = useState(!1);
 		const [tokenApproved, setTokenApproved] = useState(!0);
 		const [thresholdAmount, setThresholdAmount] = useState('0');
@@ -149,13 +155,16 @@ const useSwap = props => {
 		// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
 		async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
 			// resetStates();
-			if(isNotOKToProceed()) return;
+			if(isNotOKToProceed()) return !1;
 
 			const xactIn = !(ipNum - 1);
 			const otherTokenNum = ipNum - 1 ? 1: 2;
 			setIsExactIn(xactIn);
 			// CHheck for invalid input
-			if(isInvalidNumeric(typedValue)) return dispatch(setTokenValue({ V: '', n: ipNum }));
+			if(isInvalidNumeric(typedValue)) {
+				dispatch(setTokenValue({ V: '', n: ipNum }));
+				return !1;
+			}
 			
 			dispatch(setTokenValue({v: typedValue, n: ipNum}));
 			setIsFetching(!0);
@@ -228,7 +237,8 @@ const useSwap = props => {
 						setIsDisabled(!0);
 						setXchangeEquivalent(xchangePrice);
 						dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
-						return setErrText('Insufficient balance for ' + swap.token1_sym);
+						setErrText('Insufficient balance for ' + swap.token1_sym);
+						return !1;
 					}
 					
 					// check allowance for token 1
@@ -252,14 +262,16 @@ const useSwap = props => {
 					dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
 				} catch(e) {
 					log.e(e);
+					return !1;
 				}
-				return;
+				return !0;
 			} else {
 				dispatch(setTokenValue({v: typedValue, n: 0}));
 			}
 			setIsFetching(!1);
 			setIsExactIn(!0);
 			dispatch(setTokenValue({v: '', n: otherTokenNum}));
+			return !1;
 		}
 	
 		function token(addr) {
@@ -311,6 +323,13 @@ const useSwap = props => {
 			} catch(e){ Err.handle(e) }
 		}
 
+		function resetBalances() {
+			setToken1_bal('0.0');
+			setToken2_bal('0.0');
+			setShowBalance1(!1);
+			setShowBalance2(!1);
+		}
+
 		function resetTokenValues() {
 			dispatch(setTokenValue({
         v: '', 
@@ -327,6 +346,35 @@ const useSwap = props => {
       }));
 		}
 
+		async function  fetchBalanceOf(selectedToken) {
+			let bal, dec;
+			log.i('Balance for selected token # ' + selectedToken);
+			if(rEqual(selectedToken, TOKEN.A)) {
+				TokenContract.init(swap.token1_addr);
+				dec = await TokenContract.decimals();
+				bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
+				log.i('Bal for token 1:', toFixed(toDec(bal, dec), 2));
+				setToken1_bal(toFixed(toDec(bal, dec), 2));
+			} else if(rEqual(selectedToken, TOKEN.B)) {
+				TokenContract.init(swap.token2_addr);
+				dec = await TokenContract.decimals();
+				bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
+				log.i('Bal for token 2:', toDec(bal, dec));
+				setToken2_bal(toFixed(toDec(bal, dec), 2));
+			}
+		}
+
+		async function setToMaxAmount(selectedToken) {
+			if(rEqual(selectedToken, TOKEN.A)) {
+				const ok = await setOtherTokenValue(token1_bal, TOKEN.A, !1);
+				setShowMaxBtn1(!ok);
+			}
+			else {
+				const ok = await setOtherTokenValue(token2_bal, TOKEN.B, !1);
+				setShowMaxBtn2(!ok);
+			}
+		}
+
     return {
 			token,
 			claimCST,
@@ -334,7 +382,10 @@ const useSwap = props => {
 			resetStates,
 			performSwap,
 			importToken,
+			resetBalances,
+			fetchBalanceOf,
 			resetTList_chg,
+			setToMaxAmount,
 			resetTokenInfos,
 			resetTokenValues,
 			checkIfCSTClaimed,
@@ -349,8 +400,14 @@ const useSwap = props => {
 				btnText,
 				amountIn,
 				isExactIn,
+				token1_bal,
+				token2_bal,
 				isFetching,
 				isDisabled,
+				showMaxBtn1,
+				showMaxBtn2,
+				showBalance1,
+				showBalance2,
 				isCSTClaimed,
 				tokenApproved,
 				thresholdAmount,
@@ -364,8 +421,14 @@ const useSwap = props => {
 			setBtnText,
 			setAmountIn,
 			setIsExactIn,
+			setToken1_bal,
+			setToken2_bal,
 			setIsFetching,
 			setIsDisabled,
+			setShowMaxBtn1,
+			setShowMaxBtn2,
+			setShowBalance1,
+			setShowBalance2,
 			setTokenApproved,
 			setThresholdAmount,
 			setXchangeEquivalent,

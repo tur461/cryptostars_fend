@@ -22,7 +22,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import React, { useEffect, useRef, useState } from "react";
 import CommonF from "../../../../services/contracts/common";
 import { Container, Row, Col, Form } from "react-bootstrap";
-import { nullFunc, isEmpty, Debouncer } from "../../../../services/utils";
+import { nullFunc, isEmpty, Debouncer, rEqual, notEqual } from "../../../../services/utils";
 import swapicon from "../../../../Assets/Images/swap-icon.png";
 import headerImg from "../../../../Assets/Images/headerImg.png";
 import draco from "../../../../Assets/Images/draco-roadmap.png";
@@ -30,6 +30,7 @@ import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
 import settings from "../../../../Assets/Images/Settings-Icon.svg";
 import {  setConnectTitle, walletConnected } from '../../../features/wallet';
 import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
+import { MISC, TOKEN } from "../../../../services/constants/common";
 
 
 
@@ -77,6 +78,7 @@ const Swap = () => {
 
   useEffect(_ => {
     if(lock.current) {
+      swapHook.resetBalances();
       swapHook.resetTokenInfos();
       swapHook.resetTokenValues();
       lock.current = !1;
@@ -100,6 +102,34 @@ useEffect(_ => {
   useEffect(_=>{
     swapHook.setIsDisabled(swapHook.state.isErr);
   }, [])
+
+  // handle balance of selected token!
+
+  useEffect(_=>{
+    (async _ => {
+      if(notEqual(swap.token1_sym, MISC.SEL_TOKEN)) {
+        await swapHook.fetchBalanceOf(TOKEN.A);
+        swapHook.setShowMaxBtn1(!0);
+        swapHook.setShowBalance1(!0);
+      } else {
+        swapHook.setShowMaxBtn1(!1);
+        swapHook.setShowBalance1(!1);
+      }
+    })()
+  }, [swap.token1_sym])
+  
+  useEffect(_=>{
+    (async _ => {
+      if(notEqual(swap.token2_sym, MISC.SEL_TOKEN)) {
+        await swapHook.fetchBalanceOf(TOKEN.B);
+        swapHook.setShowMaxBtn2(!0);
+        swapHook.setShowBalance2(!0);
+      } else {
+        swapHook.setShowMaxBtn2(!1);
+        swapHook.setShowBalance2(!1);
+      }
+    })()
+  }, [swap.token2_sym])
 
   return (
     <>
@@ -189,15 +219,22 @@ useEffect(_ => {
                         {
                           token: {
                             val: swap.token1,
+                            balance: swapHook.state.token1_bal,
+                            showMaxBtn: swapHook.state.showMaxBtn1,
+                            showBalance: swapHook.state.showBalance1,
+                            setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.A),
                             disabled: swapHook.state.isFetching && !swapHook.state.isExactIn,
-                            cbk: e => Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, 1, !1])
+                            cbk: e => {
+                              swapHook.setShowMaxBtn1(!0);
+                              Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, TOKEN.A, !1])
+                            }
                           },
                           tList: {
                             val: swap.token1_sym,
                             importCbk: _ => swapHook.importToken(),
                             scbk: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 1, disabled: !0, isUpDown: !1}))
+                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.A, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }
@@ -213,16 +250,23 @@ useEffect(_ => {
                       states={
                         {
                           token: {
-                            val: swap.token2, 
+                            val: swap.token2,
+                            balance: swapHook.state.token2_bal,
+                            showMaxBtn: swapHook.state.showMaxBtn2,
+                            showBalance: swapHook.state.showBalance2,
+                            setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.B),
                             disabled: swapHook.state.isFetching && swapHook.state.isExactIn,
-                            cbk: e => Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, 2, !1])
+                            cbk: e => {
+                              swapHook.setShowMaxBtn2(!0);
+                              Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, TOKEN.B, !1])
+                            }
                           },
                           tList: {
                             val: swap.token2_sym,
                             importCbk: _ => swapHook.importToken(),
                             scbk: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 2, disabled: !0, isUpDown: !1}))
+                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.B, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }
