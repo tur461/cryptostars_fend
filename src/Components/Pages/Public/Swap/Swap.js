@@ -78,13 +78,11 @@ const Swap = () => {
     if(lock.current) {
       swapHook.resetTokenInfos();
       swapHook.resetTokenValues();
+      swapHook.checkIfCSTClaimed();
+      CommonF.init({from: wallet.priAccount})
       lock.current = !1;
     }
   }, [])
-
-  useEffect(_ => {
-    wallet.isConnected && CommonF.init({from: wallet.priAccount})
-  }, []);
 
   useEffect(_ => {
     swapHook.resetStates();
@@ -127,9 +125,16 @@ const Swap = () => {
                     onHide={handleClose}
                     conTitleCbk={t => dispatch(setConnectTitle(t))}
                   />
-                  <h1>Claim</h1>
-                  <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={swapHook.claimCST} />
-                  <p>(Crypto stars tokens)</p>
+                  <p className="heading--claim-cst">
+                    Claim 1000 CST
+                  </p>
+                  <ButtonPrimary 
+                    className="btn--claim-cst" 
+                    disabled={swapHook.state.isCSTClaimed}
+                    title={swapHook.state.isCSTClaimed ? 'claimed!' : '1000 cts'} 
+                    onClick={swapHook.state.isCSTClaimed ? nullFunc : swapHook.claimCST}
+                  />
+                  <p>(CryptoStars Tokens)</p>
                 </div>
               </Col>
             </Row>

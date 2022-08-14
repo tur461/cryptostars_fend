@@ -38,7 +38,7 @@ const Home = () => {
             <FaqAccordianItem
               eventKey={0}
               no="1"
-              title="¿Que es Crypto Stars y como funciona?"
+              title="¿Que es CryptoStars y como funciona?"
               text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -50,7 +50,7 @@ const Home = () => {
             <FaqAccordianItem
               eventKey={1}
               no="2"
-              title="¿Que es Crypto Stars y como funciona?"
+              title="¿Que es CryptoStars y como funciona?"
               text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -62,7 +62,7 @@ const Home = () => {
             <FaqAccordianItem
               eventKey={2}
               no="3"
-              title="¿Que es Crypto Stars y como funciona?"
+              title="¿Que es CryptoStars y como funciona?"
               text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -74,7 +74,7 @@ const Home = () => {
             <FaqAccordianItem
               eventKey={3}
               no="4"
-              title="¿Que es Crypto Stars y como funciona?"
+              title="¿Que es CryptoStars y como funciona?"
               text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -86,7 +86,7 @@ const Home = () => {
             <FaqAccordianItem
               eventKey={4}
               no="5"
-              title="¿Que es Crypto Stars y como funciona?"
+              title="¿Que es CryptoStars y como funciona?"
               text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris

@@ -135,9 +135,9 @@
         text-transform: capitalize;
       }
 
-      .ctsBtn {
+      .btn--claim-cst {
         width: 100%;
-        margin-top: -25px;
+        margin-top: -10px;
         padding: 0 27px;
         font-size: 72px;
         line-height: normal;
@@ -149,32 +149,32 @@
           margin-top: 0;
         }
       }
-      h1 {
+      .heading--claim-cst {
         padding-top: 55px;
         text-transform: uppercase;
-        font-size: 132px;
+        font-size: 3rem;
         color: $primaryColor;
-        font-weight: 250;
+        font-weight: 400;
         filter: drop-shadow(0 0 16px rgba(0, 10, 50, 0.94));
 
         @media (max-width: 880px) {
-          font-size: 110px;
-          text-align: right;
+          font-size: 2.5rem;
+          text-align: center;
         }
         @media (max-width: 767px) {
           text-align: center;
         }
         @media (max-width: 467px) {
-          font-size: 75px;
+          font-size: 1.5rem;
         }
       }
-      p {
+      p:last-child {
         padding-top: 10px;
         font-size: 22px;
         letter-spacing: 1px;
         color: $white;
         font-weight: 400;
-        text-align: right;
+        text-align: center;
         margin-bottom: 0;
         @media (max-width: 767px) {
           font-size: 18px;

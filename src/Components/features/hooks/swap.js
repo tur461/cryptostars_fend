@@ -28,6 +28,7 @@ const useSwap = props => {
 		const [isExactIn, setIsExactIn] = useState('0');
 		const [isDisabled, setIsDisabled] = useState(!0);
 		const [isFetching, setIsFetching] = useState(!1);
+		const [isCSTClaimed, setIsCSTClaimed] = useState(!1);
 		const [tokenApproved, setTokenApproved] = useState(!0);
 		const [thresholdAmount, setThresholdAmount] = useState('0');
 		const [btnText, setBtnText] = useState(INIT_VAL.SWAP_BTN[0]);
@@ -284,13 +285,13 @@ const useSwap = props => {
 		function resetTList_chg() {
 			dispatch(changeTokenList(swap.tokenList));
 		}
+
+		async function checkIfCSTClaimed() {
+			setIsCSTClaimed(await FaucetContract.hasClaimed(wallet.priAccount))
+		}
+
 		async function claimCST(e) {
 			e.preventDefault();
-			let hasClaimed = await FaucetContract.hasClaimed(wallet.priAccount);
-			if(hasClaimed) {
-				l_t.e('already claimed!');
-				return;
-			}
 			await FaucetContract.claimCST();
 			l_t.s('claim success!. please check your account.');
 		}
@@ -321,6 +322,7 @@ const useSwap = props => {
 			resetTList_chg,
 			resetTokenInfos,
 			resetTokenValues,
+			checkIfCSTClaimed,
 			setOtherTokenValue,
 			searchOrImportToken,
 			approveWithMaxAmount,
@@ -334,6 +336,7 @@ const useSwap = props => {
 				isExactIn,
 				isFetching,
 				isDisabled,
+				isCSTClaimed,
 				tokenApproved,
 				thresholdAmount,
 				xchangeEquivalent,
