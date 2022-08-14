@@ -14,6 +14,9 @@ import { PROVIDER_EVENT, WALLET_TYPE } from "../../../services/constants/wallet"
 import { useEffect } from "react";
 import { isAddr, rEqual } from "../../../services/utils";
 import { Err, LocalStore } from "../../../services/xtras";
+import METAMASK_LOGO from '../../../Assets/Images/wallet-logos/metamask.png';
+import WALLET_CONNECT_LOGO from '../../../Assets/Images/wallet-logos/walletconnect.png';
+
 
 const trunc = a => `${a.slice(0, 5)}..${a.slice(39, 42)}`;
 
@@ -95,7 +98,14 @@ const ConnectWalletModal = (props) => {
     >
       <ul>
         <li>
-          <button 
+          <button
+            className={
+              `img--wallet-logo img--wallet-logo-mm${
+                wallet.isConnected && rEqual(WALLET_TYPE.METAMASK, wallet.walletType) ? 
+                ' disconnect-wallet' : 
+                ''
+              }`
+            } 
             onClick={ 
               wallet.isConnected ?
                 _ => {
@@ -140,8 +150,15 @@ const ConnectWalletModal = (props) => {
             }
           </button>
         </li> */}
-        <li>
+        <li>  
           <button 
+            className={
+              `img--wallet-logo img--wallet-logo-wc${
+                wallet.isConnected && rEqual(WALLET_TYPE.WALLET_CONNECT, wallet.walletType) ? 
+                ' disconnect-wallet' : 
+                ''
+              }`
+            } 
             onClick={ 
               wallet.isConnected ?
               _ => {
