@@ -152,6 +152,7 @@ const Swap = () => {
                     <RecentTransactions
                       show={recentShow}
                       onHide={recentHndClose}
+                      recentTxList={swap.recentTxList}
                     />
                     <SettingModal
                       show={settingsShow}

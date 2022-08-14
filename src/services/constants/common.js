@@ -27,6 +27,7 @@ export const MISC = {
     tokenNum1: !1,
     tokenNum2: !1,
     OTHER_TOKEN_DEC_PLACES: 4,
+    MAX_RECENT_TXS: 4,
     DEF_SLIPPAGE: 7.5,
     DIV_DEC_PLACES: 10,
     CHAIN_ID: {
@@ -42,6 +43,7 @@ export const MISC = {
 }
 
 export const URL = {
+    CRONOS_EXPLORER_BASE: 'https://testnet.cronoscan.com',
     RPC: {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',

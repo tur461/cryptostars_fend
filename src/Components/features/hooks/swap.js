@@ -10,7 +10,7 @@ import RouterContract from "../../../services/contracts/router";
 import FactoryContract from "../../../services/contracts/factory";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { ADDRESS, INIT_VAL, MISC } from "../../../services/constants/common";
-import { addToTokenList, changeTokenList, setTokenInfo, setTokenValue } from "../swap";
+import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
 import { isAddr, notEmpty, notNumInput, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
 import PairContract from "../../../services/contracts/pair";
@@ -110,9 +110,10 @@ const useSwap = props => {
 					getDeadline(swap.deadLine),
 				],
 				isExactIn,
-			).then(_ => {
+			).then(tx => {
 				setIsFetching(!1);
 				resetTokenValues();
+				dispatch(saveTxHash(tx.transactionHash));
 				l_t.s('Swap Success!');
 			}).catch(e => {
 				Err.handle(e);

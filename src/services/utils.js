@@ -115,6 +115,15 @@ const stdRaiseBy = (v, dec) => toStd(raiseBy(v, dec));
 
 const toBigNum = v => isBigNumberish(v) ? v : BigNumber.from(v);
 
+const tStampJs = offset => Date.now() + ((isDefined(offset) ? offset : 0) * 1000);
+
+const tStampNix = offset => Math.ceil(Date.now()/1000) + (isDefined(offset) ? offset : 0);
+
+const toDateTimeStr = tStampJs => {
+    const d = (new Date(tStampJs)).toString().split(' ');
+    return `${d[1]} ${d[2]}, ${d[4]}`;
+}
+
 const _DebouncerStore = {
     timeOuts: [],
     callbacks: [],
@@ -167,13 +176,16 @@ export {
     notEqual,
     contains,
     nullFunc,
+    tStampJs,
     notEmpty,
     toBigNum,
     Debouncer,
+    tStampNix,
     isDefined,
     notDefined,
     isNumInput,
     stdRaiseBy,
     evDispatch,
     notNumInput,
+    toDateTimeStr,
 }

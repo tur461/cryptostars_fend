@@ -1,8 +1,10 @@
 import React from "react";
+import { URL } from "../../../services/constants/common";
+import { toDateTimeStr } from "../../../services/utils";
 import CustomModal from "./CustomModal";
 import "./ModalStyle.scss";
 
-const RecentTransactions = ({ size, show, onHide }) => {
+const RecentTransactions = ({ size, show, onHide, recentTxList }) => {
   return (
     <CustomModal
       size={size}
@@ -10,9 +12,25 @@ const RecentTransactions = ({ size, show, onHide }) => {
       onHide={onHide}
       title="Recent Transactions"
     >
-      <div className="no_record text-center">
-        <p>No recent Transactions</p>
-      </div>
+      <ul className="no_record text-center list--recent-txs">
+        {
+          recentTxList.length ?
+          recentTxList.map(tx => (
+            <li className="item--recent-tx" key={tx.tStampJs}>
+                <p>
+                  <span>swap on</span>
+                  <span>{toDateTimeStr(tx.tStampJs)}</span>
+                </p>
+                <a 
+                  href={`${URL.CRONOS_EXPLORER_BASE}/tx/${tx.hash}`}
+                  target='_blank'
+                  rel="noopener noreferrer"
+                >view on explorer</a>
+            </li>
+          )) :
+          <p>No recent Transactions</p>
+        }
+      </ul>
     </CustomModal>
   );
 };

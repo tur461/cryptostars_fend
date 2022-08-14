@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { EVENT, MISC, TOKEN_LIST_STATIC } from '../../../services/constants/common';
 import log from '../../../services/logging/logger';
-import { evDispatch, isDefined, rEqual } from '../../../services/utils';
+import { evDispatch, isDefined, rEqual, tStampJs } from '../../../services/utils';
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import l_t from '../../../services/logging/l_t';
 
@@ -24,6 +24,7 @@ export const swapSlice = createSlice({
         validSwap: !1,
         tokenList: TOKEN_LIST_STATIC,
         tokenList_chg: TOKEN_LIST_STATIC, 
+        recentTxList: [],
     },
 
     reducers: {
@@ -95,6 +96,14 @@ export const swapSlice = createSlice({
             })
             state.tokenList_chg = [...state.tokenList];
         },
+        saveTxHash: (state, action) => {
+            // if exceeded, remove most old one!
+            if(state.recentTxList.length > MISC.MAX_RECENT_TXS) state.recentTxList.splice(0, 1);
+            state.recentTxList.push({
+                tStampJs: tStampJs(), 
+                hash: action.payload,
+            });
+        },
 
         setExactIn: (state, action) => { state.isExactIn = action.payload },
         setDeadLine: (state, action) => { state.deadLine = action.payload },
@@ -103,7 +112,6 @@ export const swapSlice = createSlice({
         setValidSwap: (state, action) => { state.validSwap = action.payload },
         setToken1Approved: (state, action) => { state.token1_approved = action.payload },
         changeTokenList: (state, action) => { state.tokenList_chg = [...action.payload] },
-        
     }
 });
 
@@ -112,6 +120,7 @@ const {reducer, actions } = swapSlice;
 export const { 
     setPair,
     setExactIn,
+    saveTxHash,
     setDeadLine,
     setSlippage,
     setValidSwap,

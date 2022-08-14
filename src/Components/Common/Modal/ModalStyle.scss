@@ -335,3 +335,25 @@
   opacity: .3;
 
 }
+
+.list--recent-txs {
+  overflow-y: scroll;
+  max-height: 10rem;
+  list-style: none;
+  .item--recent-tx p {
+    margin-bottom: 0;
+  }
+  .item--recent-tx {
+    a {
+      text-decoration: none;
+      &:active,
+      &:focus {
+        color: #0d6efd;
+      }
+    }
+
+  }
+  .item--recent-tx span:last-child {
+    margin-left: .6rem;
+  }
+}
