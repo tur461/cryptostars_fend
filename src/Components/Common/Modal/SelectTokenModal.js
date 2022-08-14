@@ -17,7 +17,7 @@ const SelectTokenModal = ({ size, show, hideCbk, state }) => {
       classname="selectCurrency_modal"
       title="Select a Token"
     >
-      <div className="gradiantWrap">
+      {/* <div className="gradiantWrap">
         <input
           name="tokenSearch"
           className="searchInput_Style"
@@ -25,11 +25,11 @@ const SelectTokenModal = ({ size, show, hideCbk, state }) => {
           onChange={e => state.scbk(e.target.value)}
           placeholder="Search name or paste address"
         />
-      </div>
-      <div className="tokenName">
+      </div> */}
+      {/* <div className="tokenName">
         <h4>Token Name</h4>
         <hr />
-      </div>
+      </div> */}
 
       <PerfectScrollbar>
         <div className="coinListBlockStyle">
@@ -70,7 +70,7 @@ const CoinItem = ({
       <div className={`coinItem_style ${className}`}>
         
         <p className="titleStyle"> 
-          <img src={iconImage} /> 
+          <img src={iconImage} alt='token_icon' className="img--token_icon"/> 
           {title} 
         </p>
         <p className="tokenDescription">

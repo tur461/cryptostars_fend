@@ -156,7 +156,7 @@ const useSwap = props => {
 			setIsExactIn(xactIn);
 			// CHheck for invalid input
 			if(isInvalidNumeric(typedValue)) return dispatch(setTokenValue({ V: '', n: ipNum }));
-			log.i('u typed: ' + typedValue);
+			
 			dispatch(setTokenValue({v: typedValue, n: ipNum}));
 			setIsFetching(!0);
 			// check if given value is non-zero
