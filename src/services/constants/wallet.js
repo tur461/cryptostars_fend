@@ -5,8 +5,8 @@ const WALLET_TYPE = {
     WALLET_CONNECT: 'WalletConnect',
 }
 
-const EVENT = {
-    ACC_CHANGED: 'chainChanged',
+const PROVIDER_EVENT = {
+    ACC_CHANGED: 'accountChanged',
     CHAIN_CHANGE: 'chainChanged',
 }
 
@@ -45,9 +45,9 @@ const INFURA_ID = 'e9ef53e4b59f472b892524a49146d3b1';
 
 export {
     CHAIN,
-    EVENT,
     INFURA_ID,
     WALLET_METH,
     WALLET_TYPE,
     WALLET_PARAM,
+    PROVIDER_EVENT,
 }

@@ -27,6 +27,7 @@ export const MISC = {
     tokenNum1: !1,
     tokenNum2: !1,
     OTHER_TOKEN_DEC_PLACES: 4,
+    XCHANGE_PRICE_DEC_PLACES: 4,
     MAX_RECENT_TXS: 4,
     DEF_SLIPPAGE: 7.5,
     DIV_DEC_PLACES: 10,

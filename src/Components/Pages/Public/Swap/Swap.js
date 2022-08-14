@@ -73,16 +73,25 @@ const Swap = () => {
   const [settingsShow, setSettingsShow] = useState(!1);
 
   const lock = useRef(!0);
+  const conditionalLock = useRef(!0);
 
   useEffect(_ => {
     if(lock.current) {
       swapHook.resetTokenInfos();
       swapHook.resetTokenValues();
-      swapHook.checkIfCSTClaimed();
-      CommonF.init({from: wallet.priAccount})
       lock.current = !1;
     }
   }, [])
+
+useEffect(_ => {
+  if(conditionalLock.current) {
+    if(wallet.isConnected) {
+      swapHook.checkIfCSTClaimed();
+      CommonF.init({from: wallet.priAccount})
+      conditionalLock.current = !1;
+    }
+  }
+}, [wallet.isConnected])
 
   useEffect(_ => {
     swapHook.resetStates();
@@ -131,7 +140,7 @@ const Swap = () => {
                   <ButtonPrimary 
                     className="btn--claim-cst" 
                     disabled={swapHook.state.isCSTClaimed}
-                    title={swapHook.state.isCSTClaimed ? 'claimed!' : '1000 cts'} 
+                    title={swapHook.state.isCSTClaimed ? 'claimed!' : 'claim'} 
                     onClick={swapHook.state.isCSTClaimed ? nullFunc : swapHook.claimCST}
                   />
                   <p>(CryptoStars Tokens)</p>

@@ -3,7 +3,7 @@ import l_t from "../logging/l_t";
 import log from "../logging/logger";
 import { getAddress } from 'ethers/lib/utils';
 import { EVENT, URL } from "../constants/common";
-import { CHAIN, INFURA_ID, WALLET_METH, WALLET_PARAM, WALLET_TYPE } from "../constants/wallet";
+import { CHAIN, INFURA_ID, PROVIDER_EVENT, WALLET_METH, WALLET_PARAM, WALLET_TYPE } from "../constants/wallet";
 import { notDefined, notEqual, rEqual } from "../utils";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
@@ -52,6 +52,7 @@ let Wallet = {
                 this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS_INFURA, [])).map(a => getAddress(a));
                 log.i('accounts:', this.accounts);
             }
+            log.i('ACCOUNTS:', this._accounts);
             this._initEvents();
             this._walletType = walletType;
             log.s('init done', this._accounts, this.priAccount);
@@ -74,13 +75,13 @@ let Wallet = {
     },
     // internal functions
     _initEvents: function() {
-        this.provider.on(EVENT.CHAIN_CHANGE, async _ => {
+        this.provider.on(PROVIDER_EVENT.CHAIN_CHANGE, async _ => {
             l_t.i('chain change event');
             await this.ensureChain();
         });
-        this.provider.on(EVENT.ACC_CHANGE, _ => {
-            l_t.i('account change event');
-            window.dispatchEvent(new Event(EVENT.ACC_CHANGE));
+        this.provider.on(PROVIDER_EVENT.ACC_CHANGED, accounts => {
+            l_t.i('account change event:', accounts);
+            
         });
     }
 }

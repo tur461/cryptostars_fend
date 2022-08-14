@@ -10,7 +10,7 @@ import l_t from "../../../services/logging/l_t";
 import { EVENT, LS_KEYS, MISC } from "../../../services/constants/common";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
-import { WALLET_TYPE } from "../../../services/constants/wallet";
+import { PROVIDER_EVENT, WALLET_TYPE } from "../../../services/constants/wallet";
 import { useEffect } from "react";
 import { isAddr, rEqual } from "../../../services/utils";
 import { Err, LocalStore } from "../../../services/xtras";
@@ -46,12 +46,6 @@ const ConnectWalletModal = (props) => {
       lock.current = !1;
     }
   }, [wallet.isConnected])
-  
-  
-  window.addEventListener(EVENT.CHAIN_CHANGE, async e => {
-    log.s(EVENT.CHAIN_CHANGE);
-    if(!e.detail.isValidChain) postWalletConnection('');
-  });
 
   const connect2wallet = async walletType => {
     // if(wallet.isConnected) {

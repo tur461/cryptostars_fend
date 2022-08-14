@@ -185,7 +185,7 @@ const useSwap = props => {
 						xactIn ? 
 						typedValue / fetchedAmountFraction : 
 						fetchedAmountFraction / typedValue, 
-						4
+						MISC.XCHANGE_PRICE_DEC_PLACES
 					);
 					log.i('fetched amount frac before:', fetchedAmountFraction);
 					fetchedAmountFraction = toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES);
@@ -214,8 +214,8 @@ const useSwap = props => {
 						setIsErr(!0);
 						setIsFetching(!1);
 						setIsDisabled(!0);
-						
-						dispatch(setTokenValue({v: '', n: otherTokenNum}));
+						setXchangeEquivalent(xchangePrice);
+						dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
 						return setErrText('Insufficient balance for ' + swap.token1_sym);
 					}
 					
@@ -293,8 +293,10 @@ const useSwap = props => {
 
 		async function claimCST(e) {
 			e.preventDefault();
-			await FaucetContract.claimCST();
-			l_t.s('claim success!. please check your account.');
+			try {
+				await FaucetContract.claimCST();
+				l_t.s('claim success!. please check your account.');
+			} catch(e){ Err.handle(e) }
 		}
 
 		function resetTokenValues() {
