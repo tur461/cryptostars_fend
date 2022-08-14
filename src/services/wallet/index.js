@@ -76,11 +76,11 @@ let Wallet = {
     // internal functions
     _initEvents: function() {
         this.provider.on(PROVIDER_EVENT.CHAIN_CHANGE, async _ => {
-            l_t.i('chain change event');
+            log.i('chain change event');
             await this.ensureChain();
         });
         this.provider.on(PROVIDER_EVENT.ACC_CHANGED, accounts => {
-            l_t.i('account change event:', accounts);
+            log.i('account change event:', accounts);
             
         });
     }

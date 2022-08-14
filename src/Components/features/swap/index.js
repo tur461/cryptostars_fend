@@ -59,10 +59,10 @@ export const swapSlice = createSlice({
                 }
             } else {
                 if(rEqual(state[`token${action.payload.n}_addr`], action.payload.addr)) {
-                    l_t.e('already selected!');
+                    l_t.w('already selected!');
                 } else
                 if(rEqual(state[`token${rEqual(action.payload.n, 1) ? 2 : 1}_addr`], action.payload.addr)) {
-                    l_t.e('both tokens can\'t be same!');
+                    l_t.w('both tokens can\'t be same!');
                 } else {
                     state[`token${action.payload.n}_sym`] = action.payload.sym;
                     state[`token${action.payload.n}_icon`] = action.payload.icon;

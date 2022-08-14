@@ -10,6 +10,12 @@ const toast = {
     i: m => {
         tt.info(m)
     },
+    w: m => {
+        tt.warn(m)
+    },
+    l: m => {
+        tt.loading(m)
+    },
 }
 
 export default toast;
