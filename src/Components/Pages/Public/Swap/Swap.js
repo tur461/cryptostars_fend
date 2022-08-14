@@ -1,33 +1,3 @@
-import "./Swap.scss";
-import Loader from '../../../Loader';
-import l_t from "../../../../services/logging/l_t";
-import "react-perfect-scrollbar/dist/css/styles.css";
-import log from '../../../../services/logging/logger';
-import GEN_ICON from "../../../../Assets/Images/token_icons/Gen.svg";
-import LMES from "../../../../Assets/Images/LMES.png";
-import MSAL from "../../../../Assets/Images/MSAL.png";
-import MBAP from "../../../../Assets/Images/MBAP.png";
-import HAAL from "../../../../Assets/Images/HAAL.png";
-import toast from '../../../../services/logging/toast';
-import { useDispatch, useSelector } from "react-redux";
-import React, { useEffect, useRef, useState } from "react";
-import CommonF from "../../../../services/contracts/common";
-import { Container, Row, Col, Form } from "react-bootstrap";
-import cstcoin from "../../../../Assets/Images/cst-coin.png";
-import swapicon from "../../../../Assets/Images/swap-icon.png";
-import headerImg from "../../../../Assets/Images/headerImg.png";
-import draco from "../../../../Assets/Images/draco-roadmap.png";
-import lamescoin from "../../../../Assets/Images/lames-coin.png";
-import TokenContract from "../../../../services/contracts/token";
-import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
-import RouterContract from "../../../../services/contracts/router";
-import settings from "../../../../Assets/Images/Settings-Icon.svg";
-import FaucetContract from '../../../../services/contracts/faucet';
-import GenIcon from "../../../../Assets/Images/token_icons/Gen.svg";
-import FactoryContract from '../../../../services/contracts/factory';
-import { ADDRESS, INIT_VAL, MISC } from "../../../../services/constants/common";
-import { getDeadline, getThresholdAmountFromTolerance } from "../../../../services/contracts/utils";
-import { isAddr, toStd, toFixed, toDec, notEmpty, stdRaiseBy, toBigNum, nullFunc, notNumInput, isEmpty } from "../../../../services/utils";
 import {
   Layout,
   PlayerCard,
@@ -36,21 +6,32 @@ import {
   CustomInputGroup,
   ConnectWalletModal,
   RecentTransactions,
-  LoaderComponent,
 } from "../../../Common";
+
+import "./Swap.scss";
+import Loader from '../../../Loader';
+import useSwap from "../../../features/hooks/swap";
+import "react-perfect-scrollbar/dist/css/styles.css";
+import log from '../../../../services/logging/logger';
+import LMES from "../../../../Assets/Images/LMES.png";
+import MSAL from "../../../../Assets/Images/MSAL.png";
+import MBAP from "../../../../Assets/Images/MBAP.png";
+import HAAL from "../../../../Assets/Images/HAAL.png";
+import { useDispatch, useSelector } from "react-redux";
 import PerfectScrollbar from "react-perfect-scrollbar";
+import React, { useEffect, useRef, useState } from "react";
+import CommonF from "../../../../services/contracts/common";
+import { Container, Row, Col, Form } from "react-bootstrap";
+import { nullFunc, isEmpty, Debouncer } from "../../../../services/utils";
+import swapicon from "../../../../Assets/Images/swap-icon.png";
+import headerImg from "../../../../Assets/Images/headerImg.png";
+import draco from "../../../../Assets/Images/draco-roadmap.png";
+import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
+import settings from "../../../../Assets/Images/Settings-Icon.svg";
+import {  setConnectTitle, walletConnected } from '../../../features/wallet';
+import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
 
-import { 
-  setSlippage,
-  setDeadLine,
-  setTokenInfo,
-  setTokenValue,
-  addToTokenList,
-  changeTokenList,
-} from "../../../features/swap";
 
-import {  setConnectTitle, setPriAccount, walletConnected } from '../../../features/wallet';
-import { Err } from "../../../../services/xtras";
 
 const PlayerName = [
   { name: "Lionel Messi", symbol: "TUR", icon: LMES },
@@ -74,51 +55,29 @@ const PlayerList = () => {
 const Swap = () => {
   const dispatch = useDispatch();
 
+  const swapHook = useSwap();
+  
   // redux states
   const swap = useSelector(s => s.swap);
   const wallet = useSelector(s => s.wallet);
 
-  log.i('custom ip grp icon:', swap.token1_icon);
-
-    // non-redux states
+    // helpers
   const [show, setShow] = useState(!1);
-  const [pair, setPair] = useState([]);
-  const [isErr, setIsErr] = useState(!1);
-  const [errText, setErrText] = useState('');
-  const [amountIn, setAmountIn] = useState('0');
-  const [isExactIn, setIsExactIn] = useState('0');
-  const [isFetching, setIsFetching] = useState(!1);
-  const [isDisabled, setIsDisabled] = useState(!0);
-  const [recentShow, setRecentShow] = useState(!1);
-  const [settingsShow, setSettingsShow] = useState(!1);
-  const [tokenApproved, setTokenApproved] = useState(!0);
-  const [thresholdAmount, setThresholdAmount] = useState('0');
-  const [btnText, setBtnText] = useState(INIT_VAL.SWAP_BTN[0]);
-  const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
-  
-  // helpers
   const handleShow = () => setShow(!0);
   const handleClose = () => setShow(!1);
   const recentHndShow = () => setRecentShow(!0);
   const recentHndClose = () => setRecentShow(!1);
   const settingHndShow = () => setSettingsShow(!0);
+  const [recentShow, setRecentShow] = useState(!1);
   const settingHndClose = () => setSettingsShow(!1);
+  const [settingsShow, setSettingsShow] = useState(!1);
 
   const lock = useRef(!0);
 
   useEffect(_ => {
     if(lock.current) {
-      // reset token values
-      dispatch(setTokenValue({
-        v: '', 
-        n: 0
-      }));
-      dispatch(setTokenInfo({
-        n: 0,
-        addr: '', 
-        icon: GEN_ICON,
-        sym: MISC.SEL_TOKEN, 
-      }));
+      swapHook.resetTokenInfos();
+      swapHook.resetTokenValues();
       lock.current = !1;
     }
   }, [])
@@ -128,276 +87,12 @@ const Swap = () => {
   }, []);
 
   useEffect(_ => {
-    resetStates()
+    swapHook.resetStates();
   }, [swap.slippage])
 
   useEffect(_=>{
-    log.i('pair:', pair);
-    log.i('is err:', isErr);
-    setIsDisabled(isErr);
+    swapHook.setIsDisabled(swapHook.state.isErr);
   }, [])
-
-
-  async function approveWithMaxAmount(e) {
-    log.i('approving..')
-    e.preventDefault();
-    TokenContract.init(swap.token1_addr);
-    setIsFetching(!0);
-    await TokenContract.approve(MISC.MAX_256, ADDRESS.ROUTER_CONTRACT);
-    setIsErr(!1);
-    setIsFetching(!1);
-    setTokenApproved(!0);
-  }
-
-  function resetStates() {
-    setTokenApproved(!0);
-    setIsDisabled(!0);
-    setBtnText('Swap');
-    // dispatch(setTokenValue({v: '', n: 0}));
-  }
-  // assumes Center Token is CST token
-  async function tryNormalizePair(p) {
-    let pAddr = await FactoryContract.getPair(p[0], p[1]);
-    if(pAddr !== ADDRESS.ZERO) return p;
-    else
-    if(p[0] === ADDRESS.CST_TOKEN || p[1] === ADDRESS.CST_TOKEN)
-      throw new Error('"error: token pair doesn\'t exist!"');
-    else {
-      pAddr = await FactoryContract.getPair(p[0], ADDRESS.CST_TOKEN);
-      let pAddr2 = await FactoryContract.getPair(p[1], ADDRESS.CST_TOKEN);
-      if(pAddr !== ADDRESS.ZERO && pAddr2 !== ADDRESS.ZERO) return [p[0], ADDRESS.CST_TOKEN, p[1]];
-    }
-    setIsFetching(!1);
-    throw new Error('"error: pair doesn\'t exist!"');
-  }
-
-  async function setSwapPrerequisites(amount, pr, fetchedAmount, xactIn) {
-    log.i(arguments, swap.slippage);
-    const sellTokenAddr = isExactIn ? swap.token1_addr : swap.token2_addr;
-    const buyTokenAddr = isExactIn ? swap.token2_addr : swap.token1_addr;
-    TokenContract.init(sellTokenAddr);
-    const sellTokenDec = await TokenContract.decimals();
-    TokenContract.init(buyTokenAddr);
-    const buyTokenDec = await TokenContract.decimals();
-    
-    let xactAmount = toStd(amount * 10**(xactIn ? sellTokenDec : buyTokenDec));
-    log.i('fetchedAmount:', fetchedAmount.to);
-    let thAmount = getThresholdAmountFromTolerance(fetchedAmount, swap.slippage, xactIn, xactIn ? buyTokenDec : sellTokenDec)
-    log.i('Final TH amount:', thAmount);
-    log.s(btnText);
-    setPair(pr);
-    setAmountIn(xactAmount);
-    setThresholdAmount(thAmount.toString());
-    return !0;
-  }
-
-  async function performSwap(e) {
-    e.preventDefault();
-    if(isErr) return toast.e('please resolve error first!');
-    if(!wallet.priAccount.length) {
-      l_t.e('please connect wallet first!');
-      return;
-    }
-    console.log('performing swap operation');
-    
-    log.i('TH Amount:', thresholdAmount);
-    setIsFetching(!0);
-    RouterContract.swap_TT(
-      [
-        amountIn,
-        thresholdAmount,
-        pair,
-        wallet.priAccount,
-        getDeadline(swap.deadLine),
-      ],
-      isExactIn,
-    ).then(_ => {
-      setIsFetching(!1);
-      l_t.s('Swap Success!');
-    }).catch(e => {
-      Err.handle(e);
-      setIsFetching(!1);
-    }) 
-  }
-
-  async function upsideDown(e) {
-    e.preventDefault();
-    let t = [swap.token1, swap.token2],
-        s = [swap.token1_sym, swap.token2_sym],
-        a = [swap.token1_addr, swap.token2_addr],
-        icn = [swap.token1_icon, swap.token2_icon];
-
-    isExactIn ? 
-    await setOtherTokenValue(t[0], 2, !0) :
-    await setOtherTokenValue(t[1], 1, !0);
-    // switch tokenInfo
-    dispatch(setTokenInfo({sym: [s[1], s[0]], addr: [a[1], a[0]], n: 0, icon: [icn[1], icn[0]], isUpDown: !0}));
-  }
-  
-  // if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
-  // if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
-  async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
-    resetStates();
-    const xactIn = !(ipNum - 1);
-    const otherTokenNum = ipNum - 1 ? 1: 2;
-    setIsExactIn(xactIn);
-    // CHheck for invalid input
-    if(notNumInput(typedValue)) return dispatch(setTokenValue({ V: '', n: ipNum }));
-
-    dispatch(setTokenValue({v: typedValue, n: ipNum}));
-    setIsFetching(!0);
-    // check if given value is non-zero
-    if(notEmpty(typedValue)) {
-      try {
-        const addrList = isUpsideDown ? 
-          [swap.token2_addr, swap.token1_addr] : 
-          [swap.token1_addr, swap.token2_addr];
-        const pair = await tryNormalizePair(addrList);
-        // get contract instance
-        TokenContract.init(
-          isUpsideDown ? // if coming from upsideDown()
-          addrList[ipNum - 1] : // select addr of second token 
-          swap[`token${ipNum}_addr`] // otherwise addr of exact token
-        );
-        let dec = await TokenContract.decimals();
-        const param = [stdRaiseBy(typedValue, dec), pair];
-        let fetchedAmounts = await (
-          xactIn ? 
-          RouterContract.getAmountsOut(param) : 
-          RouterContract.getAmountsIn(param)
-        );
-        const fetchedAmount = xactIn ? 
-          fetchedAmounts[fetchedAmounts.length - 1] : 
-          fetchedAmounts[0]; 
-        log.i('fetched amount:', fetchedAmount);
-        let fetchedAmountFraction = toDec(fetchedAmount, dec);
-        const xchangePrice = toFixed(
-          xactIn ? 
-          typedValue / fetchedAmountFraction : 
-          fetchedAmountFraction / typedValue, 
-          4
-        );
-        log.i('fetched amount frac before:', fetchedAmountFraction);
-        fetchedAmountFraction = toFixed(fetchedAmountFraction, 20);
-        log.i('fetched amount frac:', fetchedAmountFraction);
-        const buyAmountFraction = xactIn ? typedValue : fetchedAmountFraction;
-        
-        TokenContract.init(
-          isUpsideDown ? // if coming from upsideDown()! 
-          addrList[xactIn ? 1 : 0] : 
-          swap[`token${xactIn ? 2 : 1}_addr`]);
-        
-        dec = await TokenContract.decimals();
-        
-        let sellAmount = toBigNum(
-          xactIn ? // if exact amount is in top input
-          param[0] : // typed exact ip amount 
-          fetchedAmount // fetched ip amount (in top input)
-        );
-        log.i('sell Amount frac:', sellAmount);
-        log.i('buy Amount frac:', buyAmountFraction);
-        TokenContract.init(swap.token1_addr);
-        // check balance for token 1
-        let balance = await TokenContract.balanceOf(wallet.priAccount);
-        
-        if(balance.lte(sellAmount)) {
-          setIsErr(!0);
-          setIsFetching(!1);
-          dispatch(setTokenValue({v: '', n: otherTokenNum}));
-          return setErrText('Insufficient balance for ' + swap.token1_sym);
-        }
-        
-        // check allowance for token 1
-        let allowance = await TokenContract.allowance(wallet.priAccount, ADDRESS.ROUTER_CONTRACT);
-        let isApproved = allowance.gt(sellAmount);
-        
-        
-        if(!isApproved) {
-          setIsErr(!0);
-          setTokenApproved(!1);
-          setErrText('Approve ' + swap.token1_sym);
-          dispatch(setTokenValue({v: '', n: otherTokenNum}));
-        } else {
-          setIsErr(!1);
-        }
-        
-        await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum)
-        // set another token value
-        setXchangeEquivalent(xchangePrice);
-        setIsFetching(!1);
-        dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
-      } catch(e) {
-        log.e(e);
-      }
-      return;
-    } else {
-      dispatch(setTokenValue({v: typedValue, n: 0}));
-    }
-    setIsFetching(!1);
-    setIsExactIn(!0);
-    dispatch(setTokenValue({v: '', n: otherTokenNum}));
-  }
-
-  function token(addr) {
-    return swap.tokenList.filter(t => t.addr === addr)[0];
-  }
-
-  async function searchOrImportToken(v) {
-    v = v.trim();
-    if(!v.length) v = swap.tokenList;
-    else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
-      
-      TokenContract.init(v);
-      let name = await TokenContract.name();
-      let sym = await TokenContract.symbol();
-      let dec = await TokenContract.decimals();
-      // wallet must be connected for this!
-      let bal = await TokenContract.balanceOf(wallet.priAccount);
-      bal = bal.toBigInt().toString();
-      v = [{name, sym, dec, bal, addr: v, icon: GenIcon, imported: !1}]
-    } else {
-      v = swap.tokenList.filter(tkn => {
-        if(tkn.sym.toLowerCase().indexOf(v.toLowerCase()) >= 0) return !0;
-        if(tkn.addr === v) return !0;
-        return !1;
-      });
-    }
-    dispatch(changeTokenList(v));
-  }
-
-  function importToken() {
-    let token = swap.tokenList_chg[0];
-    dispatch(addToTokenList({...token, imported: !0}));
-    dispatch(changeTokenList([{...token, imported: !0}]));
-  }
-
-  function resetTList_chg() {
-    dispatch(changeTokenList(swap.tokenList));
-  }
-
-  // ------------------------------------------------------
-
-  // ------------------ other code ------------------------
-
-  async function claimCST(e) {
-    e.preventDefault();
-    let hasClaimed = await FaucetContract.hasClaimed(wallet.priAccount);
-    if(hasClaimed) {
-      l_t.e('already claimed!');
-      return;
-    }
-    await FaucetContract.claimCST();
-    l_t.s('claim success!. please check your account.');
-  }
-
-   //Disconnect wallet functionality
-  const disconnect = () => {
-    dispatch(setPriAccount(''));
-    dispatch(walletConnected(!1));
-    dispatch(setConnectTitle(MISC.CONNECT_TTL))
-    // window.location.reload();
-  }
-  // ------------------------------------------------------
 
   return (
     <>
@@ -433,7 +128,7 @@ const Swap = () => {
                     conTitleCbk={t => dispatch(setConnectTitle(t))}
                   />
                   <h1>Claim</h1>
-                  <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={claimCST} />
+                  <ButtonPrimary title="1000 cts" className="ctsBtn" onClick={swapHook.claimCST} />
                   <p>(Crypto stars tokens)</p>
                 </div>
               </Col>
@@ -478,21 +173,23 @@ const Swap = () => {
                         {
                           token: {
                             val: swap.token1,
-                            disabled: isFetching && !isExactIn,
-                            cbk: e => setOtherTokenValue(e.target.value, 1, !1)
+                            disabled: swapHook.state.isFetching && !swapHook.state.isExactIn,
+                            cbk: e => Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, 1, !1])
                           },
                           tList: {
                             val: swap.token1_sym,
-                            importCbk: _ => importToken(),
-                            scbk: v => searchOrImportToken(v),
-                            resetTList_chg: _ => resetTList_chg(),
+                            importCbk: _ => swapHook.importToken(),
+                            scbk: v => swapHook.searchOrImportToken(v),
+                            resetTList_chg: _ => swapHook.resetTList_chg(),
                             cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 1, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }
                     />
-                    <button className="swapSwitch" onClick={upsideDown}>
-                      <img src={swapicon} alt="swap_icon" />
+                    <button 
+                      className="swapSwitch" 
+                      onClick={swapHook.upsideDown}
+                    > <img src={swapicon} alt="swap_icon" /> 
                     </button>
                     <CustomInputGroup
                       icon={swap.token2_icon}
@@ -501,14 +198,14 @@ const Swap = () => {
                         {
                           token: {
                             val: swap.token2, 
-                            disabled: isFetching && isExactIn,
-                            cbk: e => setOtherTokenValue(e.target.value, 2, !1)
+                            disabled: swapHook.state.isFetching && swapHook.state.isExactIn,
+                            cbk: e => Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, 2, !1])
                           },
                           tList: {
                             val: swap.token2_sym,
-                            importCbk: _ => importToken(),
-                            scbk: v => searchOrImportToken(v),
-                            resetTList_chg: _ => resetTList_chg(),
+                            importCbk: _ => swapHook.importToken(),
+                            scbk: v => swapHook.searchOrImportToken(v),
+                            resetTList_chg: _ => swapHook.resetTList_chg(),
                             cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: 2, disabled: !0, isUpDown: !1}))
                           }
                         }
@@ -517,14 +214,18 @@ const Swap = () => {
                     {
                       (isEmpty(swap.token1) || isEmpty(swap.token2)) ?
                       <></> :
-                      isFetching ?
+                      swapHook.state.isFetching ?
                       <div className='tokenXchangePriceWrap'>
                         <Loader text='Fetching info...' stroke='white'/>
                       </div> :
                       <div className='tokenXchangePriceWrap'>
                         <div className='tokenXchangePrice'>
-                          <span>{`1 ${token(swap.token2_addr)?.sym} = `}</span>
-                          <span>{`${xchangeEquivalent} ${token(swap.token1_addr)?.sym}`}</span>
+                          <span>
+                            {`1 ${swapHook.token(swap.token2_addr)?.sym} = `}
+                          </span>
+                          <span>
+                            {`${swapHook.state.xchangeEquivalent} ${swapHook.token(swap.token1_addr)?.sym}`}
+                          </span>
                         </div>
                       </div> 
                     }
@@ -535,38 +236,34 @@ const Swap = () => {
                       </div>
                     </div>
                     {
-                        isErr && !tokenApproved ?
-                        <div className='error-box'>
-                          <p>{errText}</p>
-                        </div> : <></>
-                    }
-                    {
-                        !tokenApproved ? 
+                        !swapHook.state.tokenApproved ? 
                         <button
                           className="approve-btn" 
-                          onClick={approveWithMaxAmount}
-                        >
-                          {'Approve ' + swap.token1_sym}
+                          onClick={swapHook.approveWithMaxAmount}
+                        > {'Approve ' + swap.token1_sym}
                         </button> :
                         <button
                           disabled={
                             !wallet.isConnected || 
-                            isFetching
+                            swapHook.state.isFetching ||
+                            swapHook.state.isErr
                           }
                           className="swap-btn" 
                           onClick={
-                            !isErr &&
-                            !isFetching &&
+                            !swapHook.state.isErr &&
+                            !swapHook.state.isFetching &&
                             walletConnected ?
-                            performSwap :
+                            swapHook.performSwap :
                             nullFunc
                           }
                         >
                           {
                             !wallet.isConnected ?
                               'wallet not connected' :
-                              isFetching ?
+                              swapHook.state.isFetching ?
                                 'please wait..' : 
+                              swapHook.state.isErr ?
+                              swapHook.state.errText :
                                 'Swap'
                           }
                         </button>

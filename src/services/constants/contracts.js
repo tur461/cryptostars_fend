@@ -6,7 +6,7 @@ export const METH = {
         ALLOWANCE: 'allowance',
     },
     PAIR_CONTRACT: {
-
+        RESERVES: 'getReserves',
     },
     FACTORY_CONTRACT: {
 

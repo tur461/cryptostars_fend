@@ -19,6 +19,8 @@ const isArr = v => v instanceof Array;
 
 const isNum = n => typeof n === 'number';
 
+const isFunc = fn => typeof fn === 'function';
+
 const isNull = v => rEqual(`${v}`, 'null');
 
 const notNull = v => !isNull(v);
@@ -113,6 +115,40 @@ const stdRaiseBy = (v, dec) => toStd(raiseBy(v, dec));
 
 const toBigNum = v => isBigNumberish(v) ? v : BigNumber.from(v);
 
+const _DebouncerStore = {
+    timeOuts: [],
+    callbacks: [],
+    arguments: [],
+    currentIndex: -1,
+    debounceDelay: 150,
+    _getIndex: function() {
+        return ++this.currentIndex;
+    }
+}
+
+// input debouncer
+const Debouncer = {
+    debounce: function(cbk, argList) {
+        if(!isFunc(cbk)) throw new Error('Expected Function as first param!');
+        if(!isArr(argList)) throw new Error('Expected Array as second param!');
+        const getDebounceFn = i => {
+            const debounceFn = _ => {
+                console.log('debounceFn called');
+                clearTimeout(_DebouncerStore.timeOuts[i]);
+                _DebouncerStore.timeOuts[i] = setTimeout(
+                    _ => _DebouncerStore.callbacks[i](..._DebouncerStore.arguments[i]), 
+                    _DebouncerStore.debounceDelay
+                );
+            };
+            return debounceFn();
+        }
+        _DebouncerStore.callbacks.push(cbk);
+        _DebouncerStore.arguments.push(argList);
+        return getDebounceFn(_DebouncerStore._getIndex());
+    },
+    
+}
+
 
 export {
     isNum,
@@ -133,6 +169,7 @@ export {
     nullFunc,
     notEmpty,
     toBigNum,
+    Debouncer,
     isDefined,
     notDefined,
     isNumInput,
