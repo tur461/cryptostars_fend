@@ -21,34 +21,35 @@ export const ADDRESS = {
 }
 
 export const MISC = {
-    MAX_256: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
-    BUSD_DEC: 18,
-    disabled: !1,
-    tokenNum1: !1,
-    tokenNum2: !1,
-    OTHER_TOKEN_DEC_PLACES: 4,
-    XCHANGE_PRICE_DEC_PLACES: 4,
-    MAX_RECENT_TXS: 4,
-    DEF_SLIPPAGE: 7.5,
-    DIV_DEC_PLACES: 10,
     CHAIN_ID: {
         BSC_TEST: 97,
         BSC_MAIN: 51,
         CRO_TEST: 338,
     },
-    PVT_KEY: process.env.REACT_APP_PRIVATE_KEY,
-    SWAP_DEAD_LINE: 20.0, // 20 min from now
-    CONNECT_TTL: 'Connect Wallet',
-    SEL_TOKEN: 'Select a token',
+    BUSD_DEC: 18,
+    disabled: !1,
+    tokenNum1: !1,
+    tokenNum2: !1,
+    MAX_RECENT_TXS: 4,
+    DEF_SLIPPAGE: 7.5,
+    DIV_DEC_PLACES: 10,
     APPROVAL_AMOUNT: '', 
+    DEBOUNCE_DELAY: 50, // ms
+    SWAP_DEAD_LINE: 20.0, // 20 min from now
+    SEL_TOKEN: 'Select a token',
+    OTHER_TOKEN_DEC_PLACES: 4,
+    XCHANGE_PRICE_DEC_PLACES: 4,
+    CONNECT_TTL: 'Connect Wallet',
+    PVT_KEY: process.env.REACT_APP_PRIVATE_KEY,
+    MAX_256: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 }
 
 export const URL = {
-    CRONOS_EXPLORER_BASE: 'https://testnet.cronoscan.com',
     RPC: {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',
-    }
+    },
+    CRONOS_EXPLORER_BASE: 'https://testnet.cronoscan.com',
 }
 
 

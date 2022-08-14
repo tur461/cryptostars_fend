@@ -33,9 +33,9 @@ const SettingModal = ({ size, show, onHide, states }) => {
         <div className="selct_area">
           <div className="d-flex">
             <span>
-               <button onClick={_ => states.slip.updateSlippageOnUI(0.1)}>0.1%</button>
-               <button onClick={_ => states.slip.updateSlippageOnUI(0.5)}>0.5%</button>
-               <button onClick={_ => states.slip.updateSlippageOnUI(1)}>1%</button>
+              <button onClick={_ => states.slip.updateSlippageOnUI(0.1)}>0.1%</button>
+              <button onClick={_ => states.slip.updateSlippageOnUI(0.5)}>0.5%</button>
+              <button onClick={_ => states.slip.updateSlippageOnUI(1)}>1%</button>
             </span>
             <span className="d-flex align-items-center">
               <input

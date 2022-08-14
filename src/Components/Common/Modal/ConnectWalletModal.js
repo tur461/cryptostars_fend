@@ -31,21 +31,25 @@ const ConnectWalletModal = (props) => {
 
   const lock = useRef(!0);
 
-  useEffect(async() => {
-    if(lock.current) {
-      if(wallet.isConnected) {
-        log.i('pri account', Wallet);
-        if(LocalStore.has(LS_KEYS.WALLET_TYPE)) {
-          await connect2wallet(LocalStore.get(LS_KEYS.WALLET_TYPE));
-          let acc = Wallet.priAccount;
-          props.conTitleCbk(trunc(acc));
+  useEffect(_ => {
+    (
+      async() => {
+        if(lock.current) {
+          if(wallet.isConnected) {
+            log.i('pri account', Wallet);
+            if(LocalStore.has(LS_KEYS.WALLET_TYPE)) {
+              await connect2wallet(LocalStore.get(LS_KEYS.WALLET_TYPE));
+              let acc = Wallet.priAccount;
+              props.conTitleCbk(trunc(acc));
+            }
+          } else{
+            props.conTitleCbk(MISC.CONNECT_TTL)
+          }
+          lock.current = !1;
         }
-      } else{
-        props.conTitleCbk(MISC.CONNECT_TTL)
       }
-      lock.current = !1;
-    }
-  }, [wallet.isConnected])
+    )()
+}, [wallet.isConnected])
 
   const connect2wallet = async walletType => {
     // if(wallet.isConnected) {
@@ -57,7 +61,7 @@ const ConnectWalletModal = (props) => {
       const acc = Wallet.priAccount;
       const provider = Wallet.provider;
       if (acc) {
-        l_t.s(walletType + ' Wallet connected successfully!');
+        l_t.s('Wallet connected!');
         LocalStore.add(LS_KEYS.WALLET_TYPE, walletType);
         dispatch(setPriAccount(acc));
         dispatch(setWalletType(walletType));

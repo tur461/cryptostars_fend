@@ -169,12 +169,13 @@ useEffect(_ => {
                       states={
                         {
                           dLine: {
-                            val: swap.deadLine,
-                            cbk: e => dispatch(setDeadLine(e.target.value))
+                            deadLineValue: swap.deadLine,
+                            setDeadLine: e => dispatch(setDeadLine(e.target.value))
                           },
                           slip: {
-                            val: swap.slippage,
-                            cbk: e => dispatch(setSlippage(e.target.value))
+                            slippageValue: swap.slippage,
+                            setSlippage: e => dispatch(setSlippage(e.target.value)),
+                            updateSlippageOnUI: v => dispatch(setSlippage(v)),
                           },
                         }
                       }

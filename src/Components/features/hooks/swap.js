@@ -4,16 +4,16 @@ import l_t from "../../../services/logging/l_t";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { useDispatch, useSelector } from "react-redux";
+import PairContract from "../../../services/contracts/pair";
 import TokenContract from "../../../services/contracts/token";
 import FaucetContract from "../../../services/contracts/faucet";
 import RouterContract from "../../../services/contracts/router";
 import FactoryContract from "../../../services/contracts/factory";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { ADDRESS, INIT_VAL, MISC } from "../../../services/constants/common";
-import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
-import { isAddr, notEmpty, notNumInput, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
-import PairContract from "../../../services/contracts/pair";
+import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
+import { isAddr, isInvalidNumeric, notEmpty, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
 
 const useSwap = props => {
 		const dispatch = useDispatch();
@@ -49,7 +49,7 @@ const useSwap = props => {
 		function resetStates() {
 			setTokenApproved(!0);
 			setIsDisabled(!0);
-			setBtnText('Swap');
+			// setBtnText('Swap');
 			// dispatch(setTokenValue({v: '', n: 0}));
 		}
 		// assumes Center Token is CST token
@@ -134,17 +134,29 @@ const useSwap = props => {
 			// switch tokenInfo
 			dispatch(setTokenInfo({sym: [s[1], s[0]], addr: [a[1], a[0]], n: 0, icon: [icn[1], icn[0]], isUpDown: !0}));
 		}
+
+		function isNotOKToProceed() {
+			let errMsg = !wallet.isConnected ? 'Please connect wallet first' : 
+			rEqual(swap.token1_sym, MISC.SEL_TOKEN) ? 'Please select token 1' : 
+			rEqual(swap.token2_sym, MISC.SEL_TOKEN) ? 'Please select token 2' :
+			'';
+			const isNotOK = notEmpty(errMsg);
+			isNotOK && l_t.e(errMsg);
+			return isNotOK;
+		}
 		
 		// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
 		// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
 		async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
-			resetStates();
+			// resetStates();
+			if(isNotOKToProceed()) return;
+
 			const xactIn = !(ipNum - 1);
 			const otherTokenNum = ipNum - 1 ? 1: 2;
 			setIsExactIn(xactIn);
 			// CHheck for invalid input
-			if(notNumInput(typedValue)) return dispatch(setTokenValue({ V: '', n: ipNum }));
-	
+			if(isInvalidNumeric(typedValue)) return dispatch(setTokenValue({ V: '', n: ipNum }));
+			log.i('u typed: ' + typedValue);
 			dispatch(setTokenValue({v: typedValue, n: ipNum}));
 			setIsFetching(!0);
 			// check if given value is non-zero

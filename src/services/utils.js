@@ -5,7 +5,7 @@ import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber";
 
 const isNumInput = v => /^[0-9]*[.,]?[0-9]*$/gmi.test(v);
 
-const notNumInput = v => !isNumInput(v);
+const isInvalidNumeric = v => !isNumInput(v);
 
 const jString = o => JSON.stringify(o);
 
@@ -129,7 +129,7 @@ const _DebouncerStore = {
     callbacks: [],
     arguments: [],
     currentIndex: -1,
-    debounceDelay: 150,
+    debounceDelay: MISC.DEBOUNCE_DELAY,
     _getIndex: function() {
         return ++this.currentIndex;
     }
@@ -186,6 +186,6 @@ export {
     isNumInput,
     stdRaiseBy,
     evDispatch,
-    notNumInput,
     toDateTimeStr,
+    isInvalidNumeric,
 }
