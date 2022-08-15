@@ -119,6 +119,8 @@ const useSwap = props => {
 			).then(tx => {
 				setIsFetching(!1);
 				resetTokenValues();
+				fetchBalanceOf(TOKEN.A);
+				fetchBalanceOf(TOKEN.B);
 				dispatch(saveTxHash(tx.transactionHash));
 				l_t.s('Swap Success!');
 			}).catch(e => {
