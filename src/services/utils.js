@@ -130,14 +130,10 @@ const eHandle = e => {
 }
 
 const _DebouncerStore = {
-    timeOuts: [],
-    callbacks: [],
+    timeOut: null,
+    callback: nullFunc,
     arguments: [],
-    currentIndex: -1,
     debounceDelay: MISC.DEBOUNCE_DELAY,
-    _getIndex: function() {
-        return ++this.currentIndex;
-    }
 }
 
 // input debouncer
@@ -145,20 +141,20 @@ const Debouncer = {
     debounce: function(cbk, argList) {
         if(!isFunc(cbk)) throw new Error('Expected Function as first param!');
         if(!isArr(argList)) throw new Error('Expected Array as second param!');
-        const getDebounceFn = i => {
+        const getDebounceFn = _ => {
             const debounceFn = _ => {
                 console.log('debounceFn called');
-                clearTimeout(_DebouncerStore.timeOuts[i]);
-                _DebouncerStore.timeOuts[i] = setTimeout(
-                    _ => _DebouncerStore.callbacks[i](..._DebouncerStore.arguments[i]), 
+                clearTimeout(_DebouncerStore.timeOut);
+                _DebouncerStore.timeOut = setTimeout(
+                    _ => _DebouncerStore.callback(..._DebouncerStore.arguments), 
                     _DebouncerStore.debounceDelay
                 );
             };
             return debounceFn();
         }
-        _DebouncerStore.callbacks.push(cbk);
-        _DebouncerStore.arguments.push(argList);
-        return getDebounceFn(_DebouncerStore._getIndex());
+        _DebouncerStore.callback = cbk;
+        _DebouncerStore.arguments = argList;
+        return getDebounceFn();
     },
     
 }
