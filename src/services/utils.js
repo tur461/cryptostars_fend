@@ -124,6 +124,11 @@ const toDateTimeStr = tStampJs => {
     return `${d[1]} ${d[2]}, ${d[4]}`;
 }
 
+const eHandle = e => {
+    e.preventDefault();
+    // e.stopPropagation();
+}
+
 const _DebouncerStore = {
     timeOuts: [],
     callbacks: [],
@@ -167,6 +172,7 @@ export {
     rEqual,
     isNull,
     isAddr,
+    eHandle,
     isEmpty,
     jObject,
     notNull,

@@ -21,8 +21,8 @@ const SelectTokenModal = ({ size, show, hideCbk, state }) => {
         <input
           name="tokenSearch"
           className="searchInput_Style"
-          onPaste={e => state.scbk(e.target.value)}
-          onChange={e => state.scbk(e.target.value)}
+          onPaste={e => state.searchCallback(e.target.value)}
+          onChange={e => state.searchCallback(e.target.value)}
           placeholder="Search name or paste address"
         />
       </div> */}
@@ -40,7 +40,7 @@ const SelectTokenModal = ({ size, show, hideCbk, state }) => {
               title={data.sym} 
               hideCbk={hideCbk} 
               data={data} 
-              cbk={state.cbk} 
+              tokenSelectCbk={state.tokenSelectCallback} 
               importCbk={state.importCbk}
             />
           ))}
@@ -50,7 +50,7 @@ const SelectTokenModal = ({ size, show, hideCbk, state }) => {
   );
 };
 const CoinItem = ({ 
-  cbk, 
+  tokenSelectCbk, 
   data, 
   title, 
   hideCbk, 
@@ -64,7 +64,7 @@ const CoinItem = ({
       onClick={
         data.disabled ? 
         nullFunc : 
-        _ => cbk(title, data.addr, data.icon, hideCbk(!0))
+        _ => tokenSelectCbk(title, data.addr, data.icon, hideCbk(!0))
       }
     >
       <div className={`coinItem_style ${className}`}>

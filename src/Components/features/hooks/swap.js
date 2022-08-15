@@ -13,7 +13,7 @@ import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { ADDRESS, INIT_VAL, MISC, TOKEN } from "../../../services/constants/common";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
 import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
-import { isAddr, isInvalidNumeric, notEmpty, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
+import { eHandle, isAddr, isInvalidNumeric, notEmpty, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
 
 const useSwap = props => {
 		const dispatch = useDispatch();
@@ -154,6 +154,7 @@ const useSwap = props => {
 		// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
 		// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
 		async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
+			// log.i('you typed:', typedValue);
 			// resetStates();
 			if(isNotOKToProceed()) return !1;
 
@@ -375,6 +376,15 @@ const useSwap = props => {
 			}
 		}
 
+		function eventListeners() {
+			const disableScroll = e => {
+				if(rEqual(document.activeElement.type, 'number'))
+					document.activeElement.blur();
+			}
+			// disable scrolling on input type number!
+			document.addEventListener('wheel', disableScroll);
+		}
+
     return {
 			token,
 			claimCST,
@@ -383,6 +393,7 @@ const useSwap = props => {
 			performSwap,
 			importToken,
 			resetBalances,
+			eventListeners,
 			fetchBalanceOf,
 			resetTList_chg,
 			setToMaxAmount,

@@ -79,6 +79,7 @@ const Swap = () => {
   useEffect(_ => {
     if(lock.current) {
       swapHook.resetBalances();
+      swapHook.eventListeners();
       swapHook.resetTokenInfos();
       swapHook.resetTokenValues();
       lock.current = !1;
@@ -224,17 +225,18 @@ useEffect(_ => {
                             showBalance: swapHook.state.showBalance1,
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.A),
                             disabled: swapHook.state.isFetching && !swapHook.state.isExactIn,
-                            cbk: e => {
+                            inputCallback: e => {
+                              log.i('on key down e:', e);
                               swapHook.setShowMaxBtn1(!0);
                               Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, TOKEN.A, !1])
                             }
                           },
                           tList: {
                             val: swap.token1_sym,
-                            importCbk: _ => swapHook.importToken(),
-                            scbk: v => swapHook.searchOrImportToken(v),
+                            importCallback: _ => swapHook.importToken(),
+                            searchCallback: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.A, disabled: !0, isUpDown: !1}))
+                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.A, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }
@@ -256,23 +258,27 @@ useEffect(_ => {
                             showBalance: swapHook.state.showBalance2,
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.B),
                             disabled: swapHook.state.isFetching && swapHook.state.isExactIn,
-                            cbk: e => {
+                            inputCallback: e => {
+                              log.i('on key up e:', e);
                               swapHook.setShowMaxBtn2(!0);
                               Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, TOKEN.B, !1])
                             }
                           },
                           tList: {
                             val: swap.token2_sym,
-                            importCbk: _ => swapHook.importToken(),
-                            scbk: v => swapHook.searchOrImportToken(v),
+                            importCallback: _ => swapHook.importToken(),
+                            searchCallback: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            cbk: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.B, disabled: !0, isUpDown: !1}))
+                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.B, disabled: !0, isUpDown: !1}))
                           }
                         }
                       }
                     />
                     {
-                      (isEmpty(swap.token1) || isEmpty(swap.token2)) ?
+                      (
+                        isEmpty(swap.token1) || 
+                        isEmpty(swap.token2)
+                      ) ?
                       <></> :
                       swapHook.state.isFetching ?
                       <div className='tokenXchangePriceWrap'>
