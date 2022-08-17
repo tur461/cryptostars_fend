@@ -120,11 +120,12 @@ const useSwap = props => {
 					getDeadline(swap.deadLine),
 				],
 				isExactIn,
-			).then(tx => {
+			).then(async tx => {
 				setIsFetching(!1);
 				resetTokenValues();
-				fetchBalanceOf(TOKEN.A);
-				fetchBalanceOf(TOKEN.B);
+				log.i([swap.token1_addr, swap.token2_addr])
+				await fetchBalanceOf(TOKEN.A, [swap.token1_addr]);
+				await fetchBalanceOf(TOKEN.B, [swap.token2_addr]);
 				dispatch(saveTxHash(tx.transactionHash));
 				l_t.s('Swap Success!');
 			}).catch(e => {
