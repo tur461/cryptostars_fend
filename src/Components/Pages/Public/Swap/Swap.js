@@ -30,7 +30,8 @@ import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
 import settings from "../../../../Assets/Images/Settings-Icon.svg";
 import {  setConnectTitle, walletConnected } from '../../../features/wallet';
 import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
-import { MISC, TOKEN } from "../../../../services/constants/common";
+import { LS_KEYS, MISC, TOKEN } from "../../../../services/constants/common";
+import { LocalStore } from "../../../../services/xtras";
 
 
 
@@ -76,24 +77,24 @@ const Swap = () => {
   const lock = useRef(!0);
   const conditionalLock = useRef(!0);
 
-  useEffect(_ => {
-    if(lock.current) {
-      swapHook.resetBalances();
-      swapHook.eventListeners();
-      swapHook.resetTokenInfos();
-      swapHook.resetTokenValues();
-      lock.current = !1;
-    }
-  }, [])
+  // useEffect(_ => {
+  //   if(lock.current) {
+  //     swapHook.initialSteps();
+  //     lock.current = !1;
+  //   }
+  // }, [])
 
 useEffect(_ => {
-  if(conditionalLock.current) {
+  // if(conditionalLock.current) {
     if(wallet.isConnected) {
+      swapHook.initialSteps(TOKEN.A);
       swapHook.checkIfCSTClaimed();
       CommonF.init({from: wallet.priAccount})
-      conditionalLock.current = !1;
+    //   conditionalLock.current = !1;
+    } else {
+      swapHook.initialSteps(TOKEN.BOTH);
     }
-  }
+  // }
 }, [wallet.isConnected])
 
   useEffect(_ => {
@@ -103,34 +104,6 @@ useEffect(_ => {
   useEffect(_=>{
     swapHook.setIsDisabled(swapHook.state.isErr);
   }, [])
-
-  // handle balance of selected token!
-
-  useEffect(_=>{
-    (async _ => {
-      if(notEqual(swap.token1_sym, MISC.SEL_TOKEN)) {
-        await swapHook.fetchBalanceOf(TOKEN.A);
-        swapHook.setShowMaxBtn1(!0);
-        swapHook.setShowBalance1(!0);
-      } else {
-        swapHook.setShowMaxBtn1(!1);
-        swapHook.setShowBalance1(!1);
-      }
-    })()
-  }, [swap.token1_sym])
-  
-  useEffect(_=>{
-    (async _ => {
-      if(notEqual(swap.token2_sym, MISC.SEL_TOKEN)) {
-        await swapHook.fetchBalanceOf(TOKEN.B);
-        swapHook.setShowMaxBtn2(!0);
-        swapHook.setShowBalance2(!0);
-      } else {
-        swapHook.setShowMaxBtn2(!1);
-        swapHook.setShowBalance2(!1);
-      }
-    })()
-  }, [swap.token2_sym])
 
   return (
     <>
@@ -219,8 +192,8 @@ useEffect(_ => {
                       states={
                         {
                           token: {
-                            val: swap.token1,
-                            balance: swapHook.state.token1_bal,
+                            val: swap.token1_value.ui,
+                            balance: swapHook.state.token1_bal.ui,
                             showMaxBtn: swapHook.state.showMaxBtn1,
                             showBalance: swapHook.state.showBalance1,
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.A),
@@ -236,7 +209,7 @@ useEffect(_ => {
                             importCallback: _ => swapHook.importToken(),
                             searchCallback: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.A, disabled: !0, isUpDown: !1}))
+                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.A, disabled: !0, isUpDown: !1, cbk: swapHook.checkPair}))
                           }
                         }
                       }
@@ -252,8 +225,8 @@ useEffect(_ => {
                       states={
                         {
                           token: {
-                            val: swap.token2,
-                            balance: swapHook.state.token2_bal,
+                            val: swap.token2_value.ui,
+                            balance: swapHook.state.token2_bal.ui,
                             showMaxBtn: swapHook.state.showMaxBtn2,
                             showBalance: swapHook.state.showBalance2,
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.B),
@@ -269,31 +242,33 @@ useEffect(_ => {
                             importCallback: _ => swapHook.importToken(),
                             searchCallback: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.B, disabled: !0, isUpDown: !1}))
+                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.B, disabled: !0, isUpDown: !1, cbk: swapHook.checkPair}))
                           }
                         }
                       }
                     />
                     {
                       (
-                        isEmpty(swap.token1) || 
-                        isEmpty(swap.token2)
+                        isEmpty(swap.token1_value) || 
+                        isEmpty(swap.token1_value)
                       ) ?
                       <></> :
                       swapHook.state.isFetching ?
                       <div className='tokenXchangePriceWrap'>
                         <Loader text='Fetching info...' stroke='white'/>
                       </div> :
-                      <div className='tokenXchangePriceWrap'>
-                        <div className='tokenXchangePrice'>
-                          <span>
-                            {`1 ${swapHook.token(swap.token2_addr)?.sym} = `}
-                          </span>
-                          <span>
-                            {`${swapHook.state.xchangeEquivalent} ${swapHook.token(swap.token1_addr)?.sym}`}
-                          </span>
-                        </div>
-                      </div> 
+                      swapHook.state.showXchangeRate ?
+                        <div className='tokenXchangePriceWrap'>
+                          <div className='tokenXchangePrice'>
+                            <span>
+                              {`1 ${swapHook.token(swap.token2_addr)?.sym} = `}
+                            </span>
+                            <span>
+                              {`${swapHook.state.xchangeEquivalent} ${swapHook.token(swap.token1_addr)?.sym}`}
+                            </span>
+                          </div>
+                        </div> :
+                        <></> 
                     }
                     <div className="slippageWrap">
                       <div className="slipageText">

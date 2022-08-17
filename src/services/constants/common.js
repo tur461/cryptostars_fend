@@ -2,8 +2,9 @@
 import GEN_ICON from "../../Assets/Images/token_icons/Gen.svg";
 import DIY_ICON from "../../Assets/Images/token_icons/diy.svg";
 import TUR_ICON from "../../Assets/Images/token_icons/tur.svg";
-import BUSD from "../../Assets/Images/token_icons/BUSD-Token.svg";
-import WBNB from "../../Assets/Images/token_icons/WBNB-Token-Icon.svg";
+import CST_ICON from "../../Assets/Images/token_icons/cst.png";
+import BUSD_ICON from "../../Assets/Images/token_icons/BUSD-Token.svg";
+import WBNB_ICON from "../../Assets/Images/token_icons/WBNB-Token-Icon.svg";
 
 export const ADDRESS = {
     ZERO: `0x${'0'.repeat(40)}`,
@@ -26,6 +27,13 @@ export const MISC = {
         BSC_MAIN: 51,
         CRO_TEST: 338,
     },
+    DEF_TOKEN: {
+        DEC: 18,
+        SYM: 'CST',
+        ICON: CST_ICON,
+        NAME: 'crypto-star erc20 token',
+        ADDR: '0xD6Fc68d2e678890cE9165781A4934c21902b34cD',
+    },
     BUSD_DEC: 18,
     disabled: !1,
     tokenNum1: !1,
@@ -40,6 +48,7 @@ export const MISC = {
     OTHER_TOKEN_DEC_PLACES: 4,
     XCHANGE_PRICE_DEC_PLACES: 4,
     CONNECT_TTL: 'Connect Wallet',
+    NET_STATUS_CHECK_DELAY: 2200, // ms
     PVT_KEY: process.env.REACT_APP_PRIVATE_KEY,
     MAX_256: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 }
@@ -49,6 +58,7 @@ export const URL = {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',
     },
+    NET_STATUS: 'https://776a-14-97-28-150.ngrok.io/internet_check.html', // for non-localhost use https://www.google.com
     CRONOS_EXPLORER_BASE: 'https://testnet.cronoscan.com',
 }
 
@@ -66,6 +76,8 @@ export const VALID_CHAIN_ID = MISC.CHAIN_ID.CRO_TEST;
 export const LS_KEYS = {
     JWT: 'jwtToken',
     WALLET_TYPE: 'wallet_type',
+    SHOW_BAL_1: 'show_balance_1',
+    SHOW_BAL_2: 'show_balance_2',
 }
 
 export const ERR = {
@@ -75,8 +87,11 @@ export const ERR = {
 }
 
 export const EVENT = {
+    MOUSE_SCROLL: 'wheel',
+    TOKEN_SELECTION: 'token_selected',
     ACC_CHANGE: 'account_change_event',
     CHAIN_CHANGE: 'chain_change_event',
+    NET_STATUS: 'internet_status_change',
     CHECK_ALLOWANCE: 'allowance_check_event',
     SWAP_TOKEN_VAL_CHANGE: 'swap_token_value_changed',
 }
@@ -85,6 +100,16 @@ export const TOKEN = {
     A: 1,
     B: 2,
     BOTH: 0,
+}
+
+const initVal = {
+    ui: '0',
+    actual: '0',
+}
+
+export const TOKEN_INIT = {
+    VAL: _ => Object.assign({}, initVal),
+    BAL: _ => Object.assign({}, initVal),
 }
 
 
@@ -114,30 +139,30 @@ export const TOKEN_LIST_STATIC = [
         tokenNum2: !1,
         addr: '0x2969ff4c56D5f33A8Bf36F20150f82B2a2a1F52C',
     },
-    // {
-    //     imported: !0,
-    //     icon: WBNB,
-    //     sym: "CSTAR",
-    //     name: 'crypto-star erc20 token',
-    //     bal: '1934500456',
-    //     dec: 18,
-    // disabled: !1,
-    // tokenNum1: !1,
-    // tokenNum2: !1,
-    //     addr: '0x83D685Ed8D7E2591c998bF2c87e01c5795Df55fd',
-    // },
-    // {
-    //     imported: !0,
-    //     icon: BUSD,
-    //     sym: "BUSD",
-    //     name: 'busd erc20 token',
-    //     bal: '1234',
-    //     dec: 18,
-    // disabled: !1,
-    // tokenNum1: !1,
-    // tokenNum2: !1,
-    //     addr: '0x627FE899085ff5F6e51A8ed50F76243C51674e01',
-    // },
+    {
+        imported: !0,
+        icon: CST_ICON,
+        sym: "CST",
+        name: 'crypto-star erc20 token',
+        bal: '1934500456',
+        dec: 18,
+        disabled: !1,
+        tokenNum1: !1,
+        tokenNum2: !1,
+        addr: '0xD6Fc68d2e678890cE9165781A4934c21902b34cD',
+    },
+    {
+        imported: !0,
+        icon: BUSD_ICON,
+        sym: "BUSD",
+        name: 'busd erc20 token',
+        bal: '1234',
+        dec: 18,
+        disabled: !1,
+        tokenNum1: !1,
+        tokenNum2: !1,
+        addr: '0x627FE899085ff5F6e51A8ed50F76243C51674e01',
+    },
     // {
     //     imported: !0,
     //     icon: BUSD,

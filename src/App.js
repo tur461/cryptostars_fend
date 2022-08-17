@@ -4,7 +4,9 @@ import { LoaderComponent } from "./Components/Common";
 
 function App() {
   const [loader, setLoader] = useState(!0);
+  
   useEffect(_ => setTimeout(_ => setLoader(!1), 1000), []);
+  
   return <> {
     loader ? 
     <LoaderComponent /> : 

@@ -26,6 +26,12 @@ const PairContract = {
     bytecode: function(meth, values) {
         return this.iface.encodeFunctionData(meth, values);
     },
+    getToken0: function() {
+        return this.contract[METH.PAIR_CONTRACT.T0]();
+    },
+    getToken1: function() {
+        return this.contract[METH.PAIR_CONTRACT.T1]();
+    },
     getReserves: function() {
         return this.contract[METH.PAIR_CONTRACT.RESERVES]();
     }

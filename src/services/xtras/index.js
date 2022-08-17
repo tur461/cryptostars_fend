@@ -4,13 +4,15 @@ import { contains, isDefined, notEmpty, notNull, rEqual } from "../utils"
 
 const Err = {
     match: {
+        PAIR_NOT_EXIST: 'pair not exist',
         PROCESS_WEB3: '',
         REJECTED_MM: 'user denied',
         REJECTED_WC: 'user rejected',
     },
     ErrText: {
         REJECTED: 'User rejected the transaction',
-        PROCESS_WEB3: 'Please check metamask'
+        PROCESS_WEB3: 'Please check metamask',
+        PAIR_NOT_EXIST: 'pool not exist for the pair!',
     },
     handle: function(e) {
         log.e('handling error:', e);
@@ -26,7 +28,11 @@ const Err = {
                 ) msg = this.ErrText.REJECTED;
                 
             }
-        } else msg = e;
+        } else if(rEqual(typeof e, 'string')) {
+            if(contains(e, this.match.PAIR_NOT_EXIST))
+                msg = this.ErrText.PAIR_NOT_EXIST;
+            else msg = e;
+        } else msg = 'error type unknown!';
         notEmpty(msg) && l_t.e(msg);
     }
 }

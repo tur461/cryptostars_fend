@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Err } from "../../../services/xtras";
+import { Err, LocalStore } from "../../../services/xtras";
 import l_t from "../../../services/logging/l_t";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
@@ -10,10 +10,11 @@ import FaucetContract from "../../../services/contracts/faucet";
 import RouterContract from "../../../services/contracts/router";
 import FactoryContract from "../../../services/contracts/factory";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
-import { ADDRESS, INIT_VAL, MISC, TOKEN } from "../../../services/constants/common";
+import { ADDRESS, EVENT, INIT_VAL, LS_KEYS, MISC, TOKEN, TOKEN_INIT } from "../../../services/constants/common";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
 import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
-import { eHandle, isAddr, isInvalidNumeric, notEmpty, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
+import { isAddr, isEmpty, isInvalidNumeric, notEmpty, notEqual, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
+import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber";
 
 const useSwap = props => {
 		const dispatch = useDispatch();
@@ -30,14 +31,15 @@ const useSwap = props => {
 		const [isFetching, setIsFetching] = useState(!1);
 		const [showMaxBtn1, setShowMaxBtn1] = useState(!1);
 		const [showMaxBtn2, setShowMaxBtn2] = useState(!1);
-		const [token1_bal, setToken1_bal] = useState('0.0');
-		const [token2_bal, setToken2_bal] = useState('0.0');
 		const [showBalance1, setShowBalance1] = useState(!1);
 		const [showBalance2, setShowBalance2] = useState(!1);
 		const [isCSTClaimed, setIsCSTClaimed] = useState(!1);
 		const [tokenApproved, setTokenApproved] = useState(!0);
+		const [showXchangeRate, setShowXchangeRate] = useState(!1);
 		const [thresholdAmount, setThresholdAmount] = useState('0');
 		const [btnText, setBtnText] = useState(INIT_VAL.SWAP_BTN[0]);
+		const [token1_bal, setToken1_bal] = useState(TOKEN_INIT.BAL());
+		const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
 		const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 
 
@@ -55,25 +57,27 @@ const useSwap = props => {
 		function resetStates() {
 			setTokenApproved(!0);
 			setIsDisabled(!0);
+			setShowXchangeRate(!1);
 			// setBtnText('Swap');
 			// dispatch(setTokenValue({v: '', n: 0}));
 		}
 		// assumes Center Token is CST token
 		async function tryNormalizePair(p) {
 			let pAddr = await FactoryContract.getPair(p[0], p[1]);
-			if(pAddr !== ADDRESS.ZERO) return p;
+			if(isAddr(pAddr)) return p;
 			else
-			if(p[0] === ADDRESS.CST_TOKEN || p[1] === ADDRESS.CST_TOKEN){
-				Err.handle(new Error('error: token pair doesn\'t exist!'));
+			// check if selected pair contains cst
+			if(rEqual(p[0], ADDRESS.CST_TOKEN) || rEqual(p[1], ADDRESS.CST_TOKEN)){
+				Err.handle('pair not exist!');
 				return [];
 			}
+			// check if both the non-cst tokens has pair with cst token
 			else {
 				pAddr = await FactoryContract.getPair(p[0], ADDRESS.CST_TOKEN);
 				let pAddr2 = await FactoryContract.getPair(p[1], ADDRESS.CST_TOKEN);
-				if(pAddr !== ADDRESS.ZERO && pAddr2 !== ADDRESS.ZERO) return [p[0], ADDRESS.CST_TOKEN, p[1]];
+				if(isAddr(pAddr) && isAddr(pAddr2)) return [p[0], ADDRESS.CST_TOKEN, p[1]];
 			}
-			setIsFetching(!1);
-			throw new Error('"error: pair doesn\'t exist!"');
+			return [];
 		}
 	
 		async function setSwapPrerequisites(amount, pr, fetchedAmount, xactIn) {
@@ -131,10 +135,12 @@ const useSwap = props => {
 	
 		async function upsideDown(e) {
 			e.preventDefault();
-			let t = [swap.token1, swap.token2],
+			let t = [swap.token1_value.actual, swap.token2_value.actual],
 					s = [swap.token1_sym, swap.token2_sym],
 					a = [swap.token1_addr, swap.token2_addr],
 					icn = [swap.token1_icon, swap.token2_icon];
+
+			await handleBalanceForSelectedToken(TOKEN.BOTH, [a[1], a[0]]);
 	
 			isExactIn ? 
 			await setOtherTokenValue(t[0], 2, !0) :
@@ -152,11 +158,29 @@ const useSwap = props => {
 			isNotOK && l_t.e(errMsg);
 			return isNotOK;
 		}
+
+		async function isLiquidityLowForPair(pair, amount) {
+			const pairAddr = await FactoryContract.getPair(...pair);
+					PairContract.init(pairAddr);
+					const reserve = await PairContract.getReserves();
+					const t0 = await PairContract.getToken0();
+					const t1 = await PairContract.getToken1();
+					const [tokenB, reserveB] = rEqual(swap.token2_addr, t0) ? 
+					[t0, reserve[0]] :
+					[t1, reserve[1]];
+					if(amount.gt(reserveB)) return !0;
+					// log.i('[isLiquidityLowForPair]');
+					// log.i('amount of tokenB:', amount.toString()/10**18);
+					// log.i('pair:', pair);
+					// log.i('tokenB: ' + tokenB);
+					// log.i('reserves:', reserveB.toString()/10**18);
+					return !1;
+		}
 		
 		// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
 		// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
 		async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
-			// log.i('you typed:', typedValue);
+			log.i('you typed:', typedValue);
 			// resetStates();
 			if(isNotOKToProceed()) return !1;
 
@@ -178,6 +202,16 @@ const useSwap = props => {
 						[swap.token2_addr, swap.token1_addr] : 
 						[swap.token1_addr, swap.token2_addr];
 					const pair = await tryNormalizePair(addrList);
+					// code block to check if the pair is valid
+					if(isEmpty(pair)) {
+						setIsErr(!0);
+						setIsFetching(!1);
+						setIsDisabled(!0);
+						setShowXchangeRate(!1);
+						dispatch(setTokenValue({v: '', n: otherTokenNum}));
+						setErrText('pool not exist');
+						return;
+					}
 					// get contract instance
 					TokenContract.init(
 						isUpsideDown ? // if coming from upsideDown()
@@ -186,15 +220,21 @@ const useSwap = props => {
 					);
 					let dec = await TokenContract.decimals();
 					const param = [stdRaiseBy(typedValue, dec), pair];
-					
-					const pairAddr = await FactoryContract.getPair(...pair);
-					PairContract.init(pairAddr);
-					const reserves = await PairContract.getReserves();
-					log.i('pairAddr:', pairAddr, 'reserves:', reserves.map(r => r.toString()));
-					log.i('input amount:', param[0]);
-
-					// here check if buyAmount is less than what we have in reserves!
-					
+					// code block to check if enough liquidity for the pair
+					if(rEqual(ipNum, TOKEN.B)) {
+						const isLiqLow = await isLiquidityLowForPair(pair, toBigNum(param[0]));
+						log.i('liq low?:', isLiqLow);
+						if(isLiqLow) {
+							setIsErr(!0);
+							setIsFetching(!1);
+							setIsDisabled(!0);
+							setShowXchangeRate(!1);
+							dispatch(setTokenValue({v: '', n: otherTokenNum}));
+							setErrText('Liquidity too low');
+							return;
+						}
+					}
+					// get amount in or out as per exact In is true or false
 					let fetchedAmounts = await (
 						xactIn ? 
 						RouterContract.getAmountsOut(param) : 
@@ -203,7 +243,7 @@ const useSwap = props => {
 					const fetchedAmount = xactIn ? 
 						fetchedAmounts[fetchedAmounts.length - 1] : 
 						fetchedAmounts[0]; 
-					log.i('fetched amount:', fetchedAmount);
+					
 					let fetchedAmountFraction = toDec(fetchedAmount, dec);
 					const xchangePrice = toFixed(
 						xactIn ? 
@@ -211,9 +251,9 @@ const useSwap = props => {
 						fetchedAmountFraction / typedValue, 
 						MISC.XCHANGE_PRICE_DEC_PLACES
 					);
-					log.i('fetched amount frac before:', fetchedAmountFraction);
-					fetchedAmountFraction = toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES);
-					log.i('fetched amount frac:', fetchedAmountFraction);
+					
+					// fetchedAmountFraction = toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES);
+					
 					const buyAmountFraction = xactIn ? typedValue : fetchedAmountFraction;
 					
 					TokenContract.init(
@@ -222,22 +262,26 @@ const useSwap = props => {
 						swap[`token${xactIn ? 2 : 1}_addr`]);
 					
 					dec = await TokenContract.decimals();
-					
+				
 					let sellAmount = toBigNum(
 						xactIn ? // if exact amount is in top input
 						param[0] : // typed exact ip amount 
 						fetchedAmount // fetched ip amount (in top input)
 					);
-					log.i('sell Amount frac:', sellAmount);
-					log.i('buy Amount frac:', buyAmountFraction);
+
+					// log.i('sell Amount frac:', sellAmount);
+					// log.i('buy Amount frac:', buyAmountFraction);
 					TokenContract.init(swap.token1_addr);
 					// check balance for token 1
 					let balance = await TokenContract.balanceOf(wallet.priAccount);
 					log.i('SELL AMOUNT:', sellAmount.toString());
+					
+					// code block to check balance of tokenA is greater than sellAmount
 					if(balance.lte(sellAmount)) {
 						setIsErr(!0);
 						setIsFetching(!1);
 						setIsDisabled(!0);
+						setShowXchangeRate(!1);
 						setXchangeEquivalent(xchangePrice);
 						dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
 						setErrText('Insufficient balance for ' + swap.token1_sym);
@@ -248,7 +292,7 @@ const useSwap = props => {
 					let allowance = await TokenContract.allowance(wallet.priAccount, ADDRESS.ROUTER_CONTRACT);
 					let isApproved = allowance.gt(sellAmount);
 					
-					
+					// code block to check if tokenA has approved router contract
 					if(!isApproved) {
 						setIsErr(!0);
 						setTokenApproved(!1);
@@ -260,8 +304,10 @@ const useSwap = props => {
 					
 					await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum)
 					// set another token value
+					log.i('xchange rate:', xchangeEquivalent);
 					setXchangeEquivalent(xchangePrice);
 					setIsFetching(!1);
+					setShowXchangeRate(!0);
 					dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
 				} catch(e) {
 					log.e(e);
@@ -269,10 +315,12 @@ const useSwap = props => {
 				}
 				return !0;
 			} else {
-				dispatch(setTokenValue({v: typedValue, n: 0}));
+				dispatch(setTokenValue({v: '', n: 0}));
+				setShowXchangeRate(!1);
 			}
 			setIsFetching(!1);
 			setIsExactIn(!0);
+			setShowXchangeRate(!1);
 			dispatch(setTokenValue({v: '', n: otherTokenNum}));
 			return !1;
 		}
@@ -327,10 +375,11 @@ const useSwap = props => {
 		}
 
 		function resetBalances() {
-			setToken1_bal('0.0');
-			setToken2_bal('0.0');
+			log.w('balances reset');
 			setShowBalance1(!1);
 			setShowBalance2(!1);
+			setToken1_bal(TOKEN_INIT.BAL());
+			setToken2_bal(TOKEN_INIT.BAL());
 		}
 
 		function resetTokenValues() {
@@ -340,40 +389,101 @@ const useSwap = props => {
       }));
 		}
 
-		function resetTokenInfos() {
+		function resetTokenInfos(n) {
 			dispatch(setTokenInfo({
-        n: 0,
-        addr: '', 
-        icon: GEN_ICON,
-        sym: MISC.SEL_TOKEN, 
+        n,
+				isUpDown: !1,
+				reset: !0,
+        sym: MISC.DEF_TOKEN.SYM,
+        addr: MISC.DEF_TOKEN.ADDR,
+        icon: MISC.DEF_TOKEN.ICON,
       }));
 		}
 
-		async function  fetchBalanceOf(selectedToken) {
+		async function  fetchBalanceOf(selectedToken, addrList) {
+			log.i('selected token:', selectedToken);
+			// log.t('selected token:', selectedToken);
 			let bal, dec;
+			const b = TOKEN_INIT.BAL();
 			log.i('Balance for selected token # ' + selectedToken);
 			if(rEqual(selectedToken, TOKEN.A)) {
-				TokenContract.init(swap.token1_addr);
+				TokenContract.init(addrList[0]);
 				dec = await TokenContract.decimals();
 				bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 				log.i('Bal for token 1:', toFixed(toDec(bal, dec), 2));
-				setToken1_bal(toFixed(toDec(bal, dec), 2));
+				b.actual = toDec(bal, dec);
+				b.ui = toFixed(b.actual, 2);
+				setToken1_bal(b);
 			} else if(rEqual(selectedToken, TOKEN.B)) {
-				TokenContract.init(swap.token2_addr);
+				TokenContract.init(addrList[0]);
 				dec = await TokenContract.decimals();
 				bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 				log.i('Bal for token 2:', toDec(bal, dec));
-				setToken2_bal(toFixed(toDec(bal, dec), 2));
+				b.actual = toDec(bal, dec);
+				b.ui = toFixed(b.actual, 2);
+				setToken2_bal(b);
+			} else if(rEqual(selectedToken, TOKEN.BOTH)) {
+				TokenContract.init(addrList[0]);
+				dec = await TokenContract.decimals();
+				bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
+				b.actual = toDec(bal, dec);
+				b.ui = toFixed(b.actual, 2);
+				setToken1_bal({...b});
+				log.i('Bal for token 1:', toFixed(toDec(bal, dec), 2));
+				TokenContract.init(addrList[1]);
+				dec = await TokenContract.decimals();
+				bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
+				b.actual = toDec(bal, dec);
+				b.ui = toFixed(b.actual, 2);
+				setToken2_bal({...b});
+				log.i('Bal for token 2:', toDec(bal, dec));
+				log.i('addrList:', addrList);
+			}
+		}
+
+		async function handleBalanceForSelectedToken(selectedToken, addrList) {
+			log.w('handling bal for token # ' + selectedToken);
+			if(
+				rEqual(selectedToken, TOKEN.A)
+			) {
+					log.w('showing balance 1', swap.token1_sym);
+					await fetchBalanceOf(TOKEN.A, addrList);
+					setShowMaxBtn1(!0);
+					setShowBalance1(!0);
+			} 
+			else if(
+				rEqual(selectedToken, TOKEN.B) 
+			) {
+					log.w('showing balance 2', swap.token2_sym);
+					await fetchBalanceOf(TOKEN.B, addrList);
+					setShowMaxBtn2(!0);
+					setShowBalance2(!0);
+			} 
+			else if(rEqual(selectedToken, TOKEN.BOTH)) {
+				await fetchBalanceOf(TOKEN.BOTH, addrList);
+				setShowMaxBtn1(!0);
+				setShowMaxBtn2(!0);
+				setShowBalance1(!0);
+				setShowBalance2(!0);
+			} else {
+				log.w('bal 1:', showBalance1, 'bal 2:', showBalance2);
+				if(rEqual(selectedToken, TOKEN.A)) {
+					if(showBalance1) {
+						setShowBalance1(!1);
+					}
+				} else if(showBalance2) {
+					setShowBalance2(!1);
+				} 
 			}
 		}
 
 		async function setToMaxAmount(selectedToken) {
 			if(rEqual(selectedToken, TOKEN.A)) {
-				const ok = await setOtherTokenValue(token1_bal, TOKEN.A, !1);
+				const ok = await setOtherTokenValue(token1_bal.actual, TOKEN.A, !1);
 				setShowMaxBtn1(!ok);
 			}
 			else {
-				const ok = await setOtherTokenValue(token2_bal, TOKEN.B, !1);
+				const ok = await setOtherTokenValue(token2_bal.actual, TOKEN.B, !1);
 				setShowMaxBtn2(!ok);
 			}
 		}
@@ -383,8 +493,26 @@ const useSwap = props => {
 				if(rEqual(document.activeElement.type, 'number'))
 					document.activeElement.blur();
 			}
+			
+			const handleTokenSelected = e => {
+				log.w('EVENT: ' + EVENT.TOKEN_SELECTION, e.detail);
+				const addrList = e.detail.addrList;
+				wallet.isConnected && isAddr(addrList[0]) &&
+				handleBalanceForSelectedToken(e.detail.selectedToken, addrList);
+			}
+
 			// disable scrolling on input type number!
-			document.addEventListener('wheel', disableScroll);
+			document.addEventListener(EVENT.MOUSE_SCROLL, disableScroll);
+			document.addEventListener(EVENT.TOKEN_SELECTION, handleTokenSelected);
+			log.w('event listeners setup done.');
+		}
+
+		function initialSteps(n) {
+			log.w('swap initial steps');
+			resetBalances();
+      eventListeners();
+      resetTokenInfos(n);
+      resetTokenValues();
 		}
 
     return {
@@ -394,6 +522,7 @@ const useSwap = props => {
 			resetStates,
 			performSwap,
 			importToken,
+			initialSteps,
 			resetBalances,
 			eventListeners,
 			fetchBalanceOf,
@@ -405,6 +534,7 @@ const useSwap = props => {
 			setOtherTokenValue,
 			searchOrImportToken,
 			approveWithMaxAmount,
+			handleBalanceForSelectedToken,
 			
 			state: {
 				pair,
@@ -423,6 +553,7 @@ const useSwap = props => {
 				showBalance2,
 				isCSTClaimed,
 				tokenApproved,
+				showXchangeRate,
 				thresholdAmount,
 				xchangeEquivalent,
 			},

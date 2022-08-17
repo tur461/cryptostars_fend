@@ -1,39 +1,48 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { EVENT, MISC, TOKEN_LIST_STATIC } from '../../../services/constants/common';
-import log from '../../../services/logging/logger';
-import { evDispatch, isDefined, rEqual, tStampJs } from '../../../services/utils';
-import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import l_t from '../../../services/logging/l_t';
+import log from '../../../services/logging/logger';
+import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
+import { evDispatch, rEqual, toFixed, tStampJs } from '../../../services/utils';
+import { EVENT, MISC, TOKEN_INIT, TOKEN_LIST_STATIC } from '../../../services/constants/common';
 
 export const swapSlice = createSlice({
     name: 'swap',
     initialState: {
-        token1: '',
-        token1_sym: MISC.SEL_TOKEN,
-        token1_addr: '',
-        token1_icon: `${GEN_ICON}`,
-        token2: '',
-        token2_sym: MISC.SEL_TOKEN,
-        token2_addr: '',
-        token2_icon: `${GEN_ICON}`,
-        token1_approved: !0,
-        slippage: MISC.DEF_SLIPPAGE,
-        deadLine: MISC.SWAP_DEAD_LINE,
         isExactIn: !0,
         xchangeEq: '',
         validSwap: !1,
-        tokenList: TOKEN_LIST_STATIC,
-        tokenList_chg: TOKEN_LIST_STATIC, 
+        token2_addr: '',
         recentTxList: [],
+        token1_approved: !0,
+        token2_icon: `${GEN_ICON}`,
+        token2_sym: MISC.SEL_TOKEN,
+        slippage: MISC.DEF_SLIPPAGE,
+        tokenList: TOKEN_LIST_STATIC,
+        deadLine: MISC.SWAP_DEAD_LINE,
+        token1_value: TOKEN_INIT.VAL(),
+        token2_value: TOKEN_INIT.VAL(),
+        token1_sym: MISC.SEL_TOKEN,
+        tokenList_chg: TOKEN_LIST_STATIC, 
+        token1_addr: '',
+        token1_icon: `${GEN_ICON}`,
     },
 
     reducers: {
         setTokenValue: (state, action) => {
             let n = action.payload.n;
             if(n === 0) {
-                state.token1 = action.payload.v;
-                state.token2 = action.payload.v;
-            } else state[`token${n}`] = action.payload.v;
+                state.token1_value.ui = action.payload.v;
+                state.token2_value.ui = action.payload.v;
+                state.token1_value.actual = action.payload.v;
+                state.token2_value.actual = action.payload.v;
+            } else {
+                let v = action.payload.v;
+                v = Number(v) >= 0.000001 && Number(v) <= 100000000000000000000 ? 
+                v : 
+                toFixed(v, MISC.OTHER_TOKEN_DEC_PLACES);	
+                state[`token${n}_value`].actual = action.payload.v; 
+                state[`token${n}_value`].ui = v;
+            }
         },
         setTokenInfo: (state, action) => {
             log.i('setting token infos:', action.payload);
@@ -48,47 +57,54 @@ export const swapSlice = createSlice({
                     state.token1_addr = action.payload.addr[0];
                     state.token2_addr = action.payload.addr[1];
                 } else {
-                    state.token1_sym = action.payload.sym;
-                    state.token2_sym = action.payload.sym;
+                    state.token1_sym = MISC.SEL_TOKEN;
+                    state.token2_sym = MISC.SEL_TOKEN;
     
-                    state.token1_icon = action.payload.icon;
-                    state.token2_icon = action.payload.icon;
+                    state.token2_icon = `${GEN_ICON}`;
+                    state.token1_icon = `${GEN_ICON}`;
     
-                    state.token1_addr = action.payload.addr;
-                    state.token2_addr = action.payload.addr;
+                    state.token1_addr = '';
+                    state.token2_addr = '';
                 }
+                evDispatch(
+                    EVENT.TOKEN_SELECTION, 
+                    {
+                        selectedToken: action.payload.n, 
+                        addrList: [
+                            state.token1_addr,
+                            state.token2_addr,
+                        ]
+                    }
+                );
             } else {
-                if(rEqual(state[`token${action.payload.n}_addr`], action.payload.addr)) {
+                const otherN = rEqual(action.payload.n, 1) ? 2 : 1;
+                if(rEqual(state[`token${action.payload.n}_addr`], action.payload.addr) && !action.payload.reset) {
                     l_t.w('already selected!');
                 } else
-                if(rEqual(state[`token${rEqual(action.payload.n, 1) ? 2 : 1}_addr`], action.payload.addr)) {
+                if(rEqual(state[`token${otherN}_addr`], action.payload.addr)  && !action.payload.reset) {
                     l_t.w('both tokens can\'t be same!');
                 } else {
+                    state.token1_value.ui = '';
+                    state.token2_value.ui = '';
+                    state.token1_value.actual = '';
+                    state.token2_value.actual = '';
                     state[`token${action.payload.n}_sym`] = action.payload.sym;
                     state[`token${action.payload.n}_icon`] = action.payload.icon;
                     state[`token${action.payload.n}_addr`] = action.payload.addr;
+                    if(action.payload.reset) {
+                        state[`token${otherN}_sym`] = MISC.SEL_TOKEN;
+                        state[`token${otherN}_icon`] = `${GEN_ICON}`;
+                        state[`token${otherN}_addr`] = '';
+                    }
+                    evDispatch(
+                        EVENT.TOKEN_SELECTION, 
+                        {
+                            selectedToken: action.payload.n,
+                            addrList: [action.payload.addr]
+                        }
+                    );
                 }
             }
-
-            // if(isDefined(action.payload.disabled)) {
-            //     const tList = state.tokenList_chg.filter(item => item.addr !== action.payload.addr);
-            //     const tSel = state.tokenList_chg.filter(item => item.addr === action.payload.addr)[0];
-                
-            //     const list = state.tokenList.filter(item => item.addr !== action.payload.addr);
-            //     const sel = state.tokenList.filter(item => item.addr === action.payload.addr)[0];
-            //     if(rEqual(sel.tokenNum1, action.payload.n)) {
-            //         sel.disabled = !0;
-
-            //     } else
-            //     if(rEqual(sel.tokenNum2, action.payload.n)) {
-
-            //     }
-            //     tSel.disabled = !0;
-            //     state.tokenList = [...list, sel];
-            //     state.tokenList_chg = [...tList, tSel];
-            //     log.i('token list changed!');
-            // }
-
         },
         addToTokenList: (state, action) => {
             state.tokenList.push({

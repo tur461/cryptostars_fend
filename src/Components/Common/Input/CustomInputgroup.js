@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { InputGroup, FormControl, Form } from "react-bootstrap";
 import log from "../../../services/logging/logger";
 import SelectTokenModal from "../Modal/SelectTokenModal";
@@ -6,6 +6,9 @@ import "./inputStyle.scss";
 
 const CustomInputGroup = ({ className, icon, title, states }) => {
   const [show, setShow] = useState(false);
+  useEffect(_ => {
+    log.w('show bal change ', states.token.showBalance);
+  }, [states.token.showBalance])
   
   const handleClose = () => {
     setShow(false);
