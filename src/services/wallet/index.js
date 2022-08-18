@@ -4,7 +4,7 @@ import log from "../logging/logger";
 import { getAddress } from 'ethers/lib/utils';
 import { EVENT, URL } from "../constants/common";
 import { CHAIN, INFURA_ID, PROVIDER_EVENT, WALLET_METH, WALLET_PARAM, WALLET_TYPE } from "../constants/wallet";
-import { notDefined, notEqual, rEqual } from "../utils";
+import { evDispatch, notDefined, notEqual, rEqual } from "../utils";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 
 let Wallet = {
@@ -37,6 +37,7 @@ let Wallet = {
                 this._provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
                 this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS, [])).map(a => getAddress(a));
                 this._signer = await this.provider.getSigner();
+                this._initEvents(window.ethereum);
             }
             else if(rEqual(walletType, WALLET_TYPE.WALLET_CONNECT)) {
                 log.i('infura id:', INFURA_ID);
@@ -51,9 +52,10 @@ let Wallet = {
                 this._provider = this._provider = new ethers.providers.Web3Provider(wcProvider, 'any');;
                 this._accounts = (await this.provider.send(WALLET_METH.REQ_ACCOUNTS_INFURA, [])).map(a => getAddress(a));
                 log.i('accounts:', this.accounts);
+                this._initEvents(wcProvider);
             }
             log.i('ACCOUNTS:', this._accounts);
-            this._initEvents();
+            
             this._walletType = walletType;
             log.s('init done', this._accounts, this.priAccount);
         } else log.i('we already have a provider!', this.provider);
@@ -74,14 +76,15 @@ let Wallet = {
         }
     },
     // internal functions
-    _initEvents: function() {
-        this.provider.on(PROVIDER_EVENT.CHAIN_CHANGE, async _ => {
+    _initEvents: function(Provider) {
+        Provider.on(PROVIDER_EVENT.CHAIN_CHANGE, async _ => {
             log.i('chain change event');
             await this.ensureChain();
         });
-        this.provider.on(PROVIDER_EVENT.ACC_CHANGED, accounts => {
+        Provider.on(PROVIDER_EVENT.ACC_CHANGED, accounts => {
             log.i('account change event:', accounts);
-            
+            this._accounts = accounts;
+            evDispatch(EVENT.ACC_CHANGE, {newAccount: accounts[0]});
         });
     }
 }

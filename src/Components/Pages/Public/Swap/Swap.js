@@ -30,8 +30,7 @@ import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
 import settings from "../../../../Assets/Images/Settings-Icon.svg";
 import {  setConnectTitle, walletConnected } from '../../../features/wallet';
 import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
-import { LS_KEYS, MISC, TOKEN } from "../../../../services/constants/common";
-import { LocalStore } from "../../../../services/xtras";
+import { TOKEN } from "../../../../services/constants/common";
 
 
 
@@ -74,16 +73,7 @@ const Swap = () => {
   const settingHndClose = () => setSettingsShow(!1);
   const [settingsShow, setSettingsShow] = useState(!1);
 
-  const lock = useRef(!0);
-  const conditionalLock = useRef(!0);
-
-  // useEffect(_ => {
-  //   if(lock.current) {
-  //     swapHook.initialSteps();
-  //     lock.current = !1;
-  //   }
-  // }, [])
-
+  
 useEffect(_ => {
   // if(conditionalLock.current) {
     if(wallet.isConnected) {
@@ -143,9 +133,22 @@ useEffect(_ => {
                   </p>
                   <ButtonPrimary 
                     className="btn--claim-cst" 
-                    disabled={swapHook.state.isCSTClaimed}
-                    title={swapHook.state.isCSTClaimed ? 'claimed!' : 'claim'} 
-                    onClick={swapHook.state.isCSTClaimed ? nullFunc : swapHook.claimCST}
+                    disabled={
+                      swapHook.state.isCSTClaimed || 
+                      swapHook.state.isClaiming
+                    }
+                    title={
+                      swapHook.state.isCSTClaimed ? 
+                      'claimed!' : 
+                      swapHook.state.isClaiming ? 
+                      'please wait..' : 
+                      'claim'
+                    } 
+                    onClick={
+                      swapHook.state.isCSTClaimed ? 
+                      nullFunc : 
+                      swapHook.claimCST
+                    }
                   />
                   <p>(CryptoStars Tokens)</p>
                 </div>
@@ -207,14 +210,24 @@ useEffect(_ => {
                           tList: {
                             val: swap.token1_sym,
                             importCallback: _ => swapHook.importToken(),
-                            searchCallback: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.A, disabled: !0, isUpDown: !1, cbk: swapHook.checkPair}))
+                            searchCallback: v => swapHook.searchOrImportToken(v),
+                            tokenSelectCallback: (sym, addr, icon) => dispatch(
+                              setTokenInfo({
+                                sym, 
+                                addr, 
+                                icon, 
+                                n: TOKEN.A, 
+                                disabled: !0, 
+                                isUpDown: !1, 
+                                cbk: swapHook.checkPair
+                              })
+                            )
                           }
                         }
                       }
                     />
-                    <button 
+                    <button
                       className="swapSwitch" 
                       onClick={swapHook.upsideDown}
                     > <img src={swapicon} alt="swap_icon" /> 
@@ -240,17 +253,27 @@ useEffect(_ => {
                           tList: {
                             val: swap.token2_sym,
                             importCallback: _ => swapHook.importToken(),
-                            searchCallback: v => swapHook.searchOrImportToken(v),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
-                            tokenSelectCallback: (sym, addr, icon) => dispatch(setTokenInfo({sym, addr, icon, n: TOKEN.B, disabled: !0, isUpDown: !1, cbk: swapHook.checkPair}))
+                            searchCallback: v => swapHook.searchOrImportToken(v),
+                            tokenSelectCallback: (sym, addr, icon) => dispatch(
+                              setTokenInfo({
+                                sym, 
+                                addr, 
+                                icon, 
+                                n: TOKEN.B, 
+                                disabled: !0, 
+                                isUpDown: !1, 
+                                cbk: swapHook.checkPair
+                              })
+                            )
                           }
                         }
                       }
                     />
                     {
                       (
-                        isEmpty(swap.token1_value) || 
-                        isEmpty(swap.token1_value)
+                        isEmpty(swap.token1_value.ui) || 
+                        isEmpty(swap.token1_value.ui)
                       ) ?
                       <></> :
                       swapHook.state.isFetching ?

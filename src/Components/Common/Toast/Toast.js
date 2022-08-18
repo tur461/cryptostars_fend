@@ -3,28 +3,29 @@ import './Toast.scss';
 
 
 class Toaster {
-  success = message => {
-    let options = { position: "top-right", heading: "Success" };
+  success = (message, op={}) => {
+    console.log('op', op);
+    let options = { position: op.position || "top-right", heading: "Success" };
     cogoToast.success(message, options);
   };
 
-  error = message => {
-    let options = { position: "top-right", heading: "Error" };
+  error = (message, op={}) => {
+    let options = { position: op.position || "top-right", heading: "Error" };
     cogoToast.error(message, options);
   };
 
-  info = message => {
-    let options = { position: "top-right", heading: "Info" };
+  info = (message, op={}) => {
+    let options = { position: op.position || "top-right", heading: "Info" };
     cogoToast.info(message, options);
   };
 
-  warn = message => {
-    let options = { position: "top-right", heading: "Warning" };
+  warn = (message, op={}) => {
+    let options = { position: op.position || "top-right", heading: "Warning" };
     cogoToast.warn(message, options);
   };
 
-  loading = message => {
-    let options = { position: "top-right", heading: "Loading" };
+  loading = (message, op={}) => {
+    let options = { position: op.position || "top-right", heading: "Loading" };
     cogoToast.loading(message, options);
   };
 }

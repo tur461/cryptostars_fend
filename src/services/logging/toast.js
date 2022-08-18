@@ -1,20 +1,20 @@
 import {Toast as tt} from '../../Components/Common/Toast/Toast';
 
 const toast = {
-    s: m => {
-        tt.success(m)
+    s: (m, op={}) => {
+        tt.success(m, op)
     },
-    e: m => {
-        tt.error(m)
+    e: (m, op={}) => {
+        tt.error(m, op)
     },
-    i: m => {
-        tt.info(m)
+    i: (m, op={}) => {
+        tt.info(m, op)
     },
-    w: m => {
-        tt.warn(m)
+    w: (m, op={}) => {
+        tt.warn(m, op)
     },
-    l: m => {
-        tt.loading(m)
+    l: (m, op={}) => {
+        tt.loading(m, op)
     },
 }
 

@@ -6,7 +6,7 @@ const WALLET_TYPE = {
 }
 
 const PROVIDER_EVENT = {
-    ACC_CHANGED: 'accountChanged',
+    ACC_CHANGED: 'accountsChanged',
     CHAIN_CHANGE: 'chainChanged',
 }
 

@@ -52,6 +52,10 @@ const ConnectWalletModal = (props) => {
         }
       }
     )()
+    document.addEventListener(EVENT.ACC_CHANGE, e => {
+      l_t.s('Account changed!', {position: 'top-left'});
+      props.conTitleCbk(trunc(e.detail.newAccount));
+    })
 }, [wallet.isConnected])
 
   const connect2wallet = async walletType => {

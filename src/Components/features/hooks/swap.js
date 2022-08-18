@@ -1,34 +1,67 @@
+import { 
+	saveTxHash, 
+	setTokenInfo, 
+	setTokenValue,
+	addToTokenList, 
+	changeTokenList, 
+} from "../swap";
+
+import { 
+	toDec, 
+	toStd, 
+	isAddr, 
+	rEqual, 
+	toFixed, 
+	isEmpty, 
+	notEmpty, 
+	toBigNum, 
+	stdRaiseBy, 
+	isInvalidNumeric, 
+} from "../../../services/utils";
+
+import { 
+	PairContract, 
+	TokenContract, 
+	FaucetContract, 
+	RouterContract, 
+	FactoryContract, 
+} from "../../../services/contracts";
+
+import { 
+	MISC, 
+	EVENT, 
+	TOKEN, 
+	ADDRESS, 
+	INIT_VAL, 
+	TOKEN_INIT, 
+} from "../../../services/constants/common";
+
 import { useState } from "react";
-import { Err, LocalStore } from "../../../services/xtras";
+import { Err } from "../../../services/xtras";
 import l_t from "../../../services/logging/l_t";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { useDispatch, useSelector } from "react-redux";
-import PairContract from "../../../services/contracts/pair";
-import TokenContract from "../../../services/contracts/token";
-import FaucetContract from "../../../services/contracts/faucet";
-import RouterContract from "../../../services/contracts/router";
-import FactoryContract from "../../../services/contracts/factory";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
-import { ADDRESS, EVENT, INIT_VAL, LS_KEYS, MISC, TOKEN, TOKEN_INIT } from "../../../services/constants/common";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
-import { addToTokenList, changeTokenList, saveTxHash, setTokenInfo, setTokenValue } from "../swap";
-import { isAddr, isEmpty, isInvalidNumeric, notEmpty, notEqual, rEqual, stdRaiseBy, toBigNum, toDec, toFixed, toStd } from "../../../services/utils";
-import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber";
 
 const useSwap = props => {
 		const dispatch = useDispatch();
-
+		
     const swap = useSelector(s => s.swap);
     const wallet = useSelector(s => s.wallet);  
 		
 		const [pair, setPair] = useState([]);
 		const [isErr, setIsErr] = useState(!1);
 		const [errText, setErrText] = useState('');
+		const [reserves, setReserves] = useState([]);
 		const [amountIn, setAmountIn] = useState('0');
 		const [isExactIn, setIsExactIn] = useState('0');
+		const [pairTokens, setPairTokens] = useState([]);
 		const [isDisabled, setIsDisabled] = useState(!0);
+		const [isClaiming, setIsClaiming] = useState(!1);
 		const [isFetching, setIsFetching] = useState(!1);
+		const [tokenB_addr, setTokenB_addr] = useState('');
 		const [showMaxBtn1, setShowMaxBtn1] = useState(!1);
 		const [showMaxBtn2, setShowMaxBtn2] = useState(!1);
 		const [showBalance1, setShowBalance1] = useState(!1);
@@ -162,20 +195,23 @@ const useSwap = props => {
 
 		async function isLiquidityLowForPair(pair, amount) {
 			const pairAddr = await FactoryContract.getPair(...pair);
-					PairContract.init(pairAddr);
-					const reserve = await PairContract.getReserves();
-					const t0 = await PairContract.getToken0();
-					const t1 = await PairContract.getToken1();
-					const [tokenB, reserveB] = rEqual(swap.token2_addr, t0) ? 
-					[t0, reserve[0]] :
-					[t1, reserve[1]];
-					if(amount.gt(reserveB)) return !0;
-					// log.i('[isLiquidityLowForPair]');
-					// log.i('amount of tokenB:', amount.toString()/10**18);
-					// log.i('pair:', pair);
-					// log.i('tokenB: ' + tokenB);
-					// log.i('reserves:', reserveB.toString()/10**18);
-					return !1;
+			PairContract.init(pairAddr);
+			const reserves = await PairContract.getReserves();
+			const t0 = await PairContract.getToken0();
+			const t1 = await PairContract.getToken1();
+			const [tokenB, reserveB] = rEqual(swap.token2_addr, t0) ? 
+			[t0, reserves[0]] :
+			[t1, reserves[1]];
+			setReserves(reserves);
+			setTokenB_addr(tokenB);
+			setPairTokens([t0, t1]);
+			if(amount.gt(reserveB)) return !0;
+			// log.i('[isLiquidityLowForPair]');
+			// log.i('amount of tokenB:', amount.toString()/10**18);
+			// log.i('pair:', pair);
+			// log.i('tokenB: ' + tokenB);
+			// log.i('reserves:', reserveB.toString()/10**18);
+			return !1;
 		}
 		
 		// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
@@ -302,6 +338,8 @@ const useSwap = props => {
 					} else {
 						setIsErr(!1);
 					}
+
+					const buyAmount = xactIn ? fetchedAmount.toString() : param[0];
 					
 					await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum)
 					// set another token value
@@ -309,6 +347,9 @@ const useSwap = props => {
 					setXchangeEquivalent(xchangePrice);
 					setIsFetching(!1);
 					setShowXchangeRate(!0);
+					
+					const priceImpactPercent = await getPriceImpactPercent(pair, sellAmount.toString(), buyAmount);
+					log.i('Price Impact:', priceImpactPercent);
 					dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
 				} catch(e) {
 					log.e(e);
@@ -370,9 +411,12 @@ const useSwap = props => {
 		async function claimCST(e) {
 			e.preventDefault();
 			try {
+				setIsClaiming(!0);
 				await FaucetContract.claimCST();
+				setIsCSTClaimed(!0);
+				setIsClaiming(!1);
 				l_t.s('claim success!. please check your account.');
-			} catch(e){ Err.handle(e) }
+			} catch(e){ Err.handle(e); setIsClaiming(!1); }
 		}
 
 		function resetBalances() {
@@ -399,6 +443,33 @@ const useSwap = props => {
         addr: MISC.DEF_TOKEN.ADDR,
         icon: MISC.DEF_TOKEN.ICON,
       }));
+		}
+
+
+		// this function is supposed to be called 
+		// at the end of setOtherTokenValue function
+		async function getPriceImpactPercent(addrList, sellAmount, buyAmount) {
+			const pairAddr = await FactoryContract.getPair(...addrList);
+			PairContract.init(pairAddr);
+			let reserves = await PairContract.getReserves();
+			reserves = reserves.map(r => Number(r.toString()));
+			sellAmount = Number(sellAmount.toString())
+			buyAmount = Number(buyAmount.toString())
+			const t0 = await PairContract.getToken0();
+			const t1 = await PairContract.getToken1();
+			const [tokenB, reserveA, reserveB] = rEqual(swap.token2_addr, t0) ? 
+					[t0, reserves[1], reserves[0]] :
+					[t1, reserves[0], reserves[1]];
+			const tokenB_price_old = reserveA / reserveB;
+			const tokenB_price_new = sellAmount / buyAmount;
+			// priceImpact or price diff -> non-zero means there is a price impact
+			// which should not be > 15%, if its then show 'swap anyway' (or even disable)
+			// if <15% and > 3% show red color swap
+			// if < 3% show usual swap button
+			const priceDiff = tokenB_price_old - tokenB_price_new;
+			// in-terms of old pricing
+			const priceImpactPercent = (priceDiff / tokenB_price_old) * 100;
+			return Math.abs(priceImpactPercent);
 		}
 
 		async function  fetchBalanceOf(selectedToken, addrList) {
@@ -544,6 +615,7 @@ const useSwap = props => {
 				btnText,
 				amountIn,
 				isExactIn,
+				isClaiming,
 				token1_bal,
 				token2_bal,
 				isFetching,
