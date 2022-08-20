@@ -132,7 +132,7 @@ useEffect(_ => {
                     Claim 1000 CST
                   </p>
                   <ButtonPrimary 
-                    className="btn--claim-cst" 
+                    className={`btn--claim-cst${swapHook.state.isClaiming ? ' claiming-text' : ''}`}
                     disabled={
                       swapHook.state.isCSTClaimed || 
                       swapHook.state.isClaiming
@@ -288,6 +288,12 @@ useEffect(_ => {
                             </span>
                             <span>
                               {`${swapHook.state.xchangeEquivalent} ${swapHook.token(swap.token1_addr)?.sym}`}
+                            </span>
+                          </div>
+                          <div className="price-impact">
+                            <span>Price Impact</span>
+                            <span>
+                              {`${swapHook.state.priceImpactPercent}%`}
                             </span>
                           </div>
                         </div> :

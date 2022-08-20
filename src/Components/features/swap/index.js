@@ -117,7 +117,8 @@ export const swapSlice = createSlice({
             if(state.recentTxList.length >= MISC.MAX_RECENT_TXS) state.recentTxList.splice(0, 1);
             state.recentTxList.push({
                 tStampJs: tStampJs(), 
-                hash: action.payload,
+                hash: action.payload.txHash,
+                pair: action.payload.pair
             });
         },
 

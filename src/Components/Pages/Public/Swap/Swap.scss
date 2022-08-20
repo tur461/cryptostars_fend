@@ -149,6 +149,11 @@
           margin-top: 0;
         }
       }
+
+      .claiming-text {
+        font-size: 40px;
+      }
+
       .heading--claim-cst {
         padding-top: 55px;
         text-transform: uppercase;
@@ -253,6 +258,10 @@
         color: $goldenYellow;
         .tokenXchangePrice span {
           font-weight: 700;
+        }
+        .price-impact span:last-child {
+          font-weight: 700;
+          margin-left: 1rem;
         }
       }
 

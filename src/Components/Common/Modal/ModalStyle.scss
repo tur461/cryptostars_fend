@@ -372,10 +372,15 @@
   overflow-y: scroll;
   max-height: 10rem;
   list-style: none;
-  .item--recent-tx p {
-    margin-bottom: 0;
-  }
   .item--recent-tx {
+    p {
+      margin-bottom: 0;
+      font-size: 1rem;
+      span {
+        margin-left: .6rem;
+        margin-right: .6rem;
+      }
+    }
     a {
       text-decoration: none;
       &:active,
@@ -383,9 +388,5 @@
         color: #0d6efd;
       }
     }
-
-  }
-  .item--recent-tx span:last-child {
-    margin-left: .6rem;
   }
 }

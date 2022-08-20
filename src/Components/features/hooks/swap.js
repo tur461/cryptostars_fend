@@ -59,7 +59,7 @@ const useSwap = props => {
 		const [isExactIn, setIsExactIn] = useState('0');
 		const [pairTokens, setPairTokens] = useState([]);
 		const [isDisabled, setIsDisabled] = useState(!0);
-		const [isClaiming, setIsClaiming] = useState(!1);
+		const [isClaiming, setIsClaiming] = useState(!0);
 		const [isFetching, setIsFetching] = useState(!1);
 		const [tokenB_addr, setTokenB_addr] = useState('');
 		const [showMaxBtn1, setShowMaxBtn1] = useState(!1);
@@ -74,6 +74,7 @@ const useSwap = props => {
 		const [token1_bal, setToken1_bal] = useState(TOKEN_INIT.BAL());
 		const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
 		const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
+		const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
 
 
     async function approveWithMaxAmount(e) {
@@ -159,7 +160,10 @@ const useSwap = props => {
 				log.i([swap.token1_addr, swap.token2_addr])
 				await fetchBalanceOf(TOKEN.A, [swap.token1_addr]);
 				await fetchBalanceOf(TOKEN.B, [swap.token2_addr]);
-				dispatch(saveTxHash(tx.transactionHash));
+				dispatch(saveTxHash({
+					pair: `${swap.token1_sym}/${swap.token2_sym}`, 
+					txHash: tx.transactionHash, 
+				}));
 				l_t.s('Swap Success!');
 			}).catch(e => {
 				Err.handle(e);
@@ -350,6 +354,7 @@ const useSwap = props => {
 					
 					const priceImpactPercent = await getPriceImpactPercent(pair, sellAmount.toString(), buyAmount);
 					log.i('Price Impact:', priceImpactPercent);
+					setPriceImpactPercent(priceImpactPercent);
 					dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
 				} catch(e) {
 					log.e(e);
@@ -469,7 +474,7 @@ const useSwap = props => {
 			const priceDiff = tokenB_price_old - tokenB_price_new;
 			// in-terms of old pricing
 			const priceImpactPercent = (priceDiff / tokenB_price_old) * 100;
-			return Math.abs(priceImpactPercent);
+			return toFixed(priceImpactPercent, 3);
 		}
 
 		async function  fetchBalanceOf(selectedToken, addrList) {
@@ -629,6 +634,7 @@ const useSwap = props => {
 				showXchangeRate,
 				thresholdAmount,
 				xchangeEquivalent,
+				priceImpactPercent,
 			},
 
 			// stateSetters

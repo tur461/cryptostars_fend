@@ -18,7 +18,9 @@ const RecentTransactions = ({ size, show, onHide, recentTxList }) => {
           recentTxList.map(tx => (
             <li className="item--recent-tx" key={tx.tStampJs}>
                 <p>
-                  <span>swap on</span>
+                  Swap
+                  <span>{tx.pair}</span>
+                  on
                   <span>{toDateTimeStr(tx.tStampJs)}</span>
                 </p>
                 <a 
