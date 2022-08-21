@@ -39,8 +39,9 @@ const CustomInputGroup = ({ className, icon, title, states }) => {
         </div>
       </InputGroup.Text>
       <FormControl 
-        type= 'Number' 
-        placeholder="0.00" 
+        type= 'text' 
+        className="inout-for-swap"
+        // placeholder="0.00" 
         value={states.token.val} 
         disabled={states.token.disabled}
         onInput={states.token.inputCallback} 

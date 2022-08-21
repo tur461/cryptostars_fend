@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import l_t from '../../../services/logging/l_t';
 import log from '../../../services/logging/logger';
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
-import { evDispatch, rEqual, toFixed, tStampJs } from '../../../services/utils';
+import { evDispatch, isNaNy, rEqual, toFixed, tStampJs } from '../../../services/utils';
 import { EVENT, MISC, TOKEN_INIT, TOKEN_LIST_STATIC } from '../../../services/constants/common';
 
 export const swapSlice = createSlice({
@@ -37,11 +37,8 @@ export const swapSlice = createSlice({
                 state.token2_value.actual = action.payload.v;
             } else {
                 let v = action.payload.v;
-                v = Number(v) >= 0.000001 && Number(v) <= 100000000000000000000 ? 
-                v : 
-                toFixed(v, MISC.OTHER_TOKEN_DEC_PLACES);	
-                state[`token${n}_value`].actual = action.payload.v; 
-                state[`token${n}_value`].ui = v;
+                state[`token${n}_value`].ui = v.ui;
+                state[`token${n}_value`].actual = v.actual; 
             }
         },
         setTokenInfo: (state, action) => {

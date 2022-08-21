@@ -1,9 +1,12 @@
-import { ADDRESS, EVENT, MISC, URL } from "./constants/common";
+import { ADDRESS, EVENT, MISC, REGEX, URL } from "./constants/common";
 import {BigNumber} from '@ethersproject/bignumber';
 import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber";
 
+// String.prototype.trim = function() {
+//   return this.replace(/(^\s*|\s*$)/g, "");
+// };
 
-const isNumInput = v => /^[0-9]*[.,]?[0-9]*$/gmi.test(v);
+const isNumInput = v => v.match(REGEX.NUMERIC); 
 
 const isInvalidNumeric = v => !isNumInput(v);
 
@@ -51,7 +54,7 @@ const nullFunc = _ => { _.preventDefault(); console.log('null function'); }
 
 const notEqual = (a, b) => !rEqual(a, b);
 
-const isNaN = n => rEqual(n, NaN) || rEqual(n, 'NaN') || rEqual(`${n}`, 'NaN');
+const isNaNy = n => rEqual(n, NaN) || rEqual(n, 'NaN') || rEqual(`${n}`, 'NaN');
 
 const isDefined = v => notEqual(v, 'null') && notEqual(v, null) && notEqual(v, 'undefined') && notEqual(v, undefined);
 
@@ -62,6 +65,8 @@ const notEmpty = v => typeof v == 'string' ?
         isArr(v) ? v.length :
         isObj(v) ? Object.entries(v).length : 
         !!v;
+
+const notZero = v => notEqual(Number(v), 0) && !isNaNy(Number(v));
 
 const isEmpty = v => !notEmpty(v);
 
@@ -220,14 +225,15 @@ const Debouncer = {
 
 export {
     isNum,
-    isNaN,
     toStd,
     toDec,
+    isNaNy,
     rEqual,
     isNull,
     isAddr,
     eHandle,
     isEmpty,
+		notZero,
     jObject,
     notNull,
     jString,

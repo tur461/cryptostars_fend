@@ -81,6 +81,14 @@ export const LS_KEYS = {
 }
 
 export const ERR = {
+    SELECT_TOKEN_1: 'Please select token 1',
+    SELECT_TOKEN_2: 'Please select token 2',
+    CONNECT_WALLET: 'Please connect wallet first',
+    NO_INPUT: 'no input!',
+    INTERNAL: 'internal error!',
+    APPROVE: 'Approve ',
+    POOL_NOT_EXIST: 'pool not exist',
+    LOW_BAL_FOR: 'Insufficient balance for ',
     INV_CHAIN: 'Invalid Chain!',
     NO_METAMASK: 'metamask not installed!',
     NOT_ADMIN: 'primary wallet account is not an admin!',
@@ -94,6 +102,10 @@ export const EVENT = {
     NET_STATUS: 'internet_status_change',
     CHECK_ALLOWANCE: 'allowance_check_event',
     SWAP_TOKEN_VAL_CHANGE: 'swap_token_value_changed',
+}
+
+export const REGEX = {
+    NUMERIC: /^[0-9]*(\.[0-9]*)?$/,
 }
 
 export const TOKEN = {

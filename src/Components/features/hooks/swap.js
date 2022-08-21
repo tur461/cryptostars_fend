@@ -16,7 +16,8 @@ import {
 	notEmpty, 
 	toBigNum, 
 	stdRaiseBy, 
-	isInvalidNumeric, 
+	isInvalidNumeric,
+	notZero, 
 } from "../../../services/utils";
 
 import { 
@@ -33,7 +34,9 @@ import {
 	TOKEN, 
 	ADDRESS, 
 	INIT_VAL, 
-	TOKEN_INIT, 
+	TOKEN_INIT,
+	REGEX,
+	ERR, 
 } from "../../../services/constants/common";
 
 import { useState } from "react";
@@ -188,9 +191,9 @@ const useSwap = props => {
 		}
 
 		function isNotOKToProceed() {
-			let errMsg = !wallet.isConnected ? 'Please connect wallet first' : 
-			rEqual(swap.token1_sym, MISC.SEL_TOKEN) ? 'Please select token 1' : 
-			rEqual(swap.token2_sym, MISC.SEL_TOKEN) ? 'Please select token 2' :
+			let errMsg = !wallet.isConnected ? ERR.CONNECT_WALLET : 
+			rEqual(swap.token1_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_1 : 
+			rEqual(swap.token2_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_2 :
 			'';
 			const isNotOK = notEmpty(errMsg);
 			isNotOK && l_t.e(errMsg);
@@ -217,7 +220,25 @@ const useSwap = props => {
 			// log.i('reserves:', reserveB.toString()/10**18);
 			return !1;
 		}
-		
+
+		function handleInputErr(erTxt, toDispatch, v, ipNum) {
+			setIsErr(!0);
+			setIsFetching(!1);
+			setIsDisabled(!0);
+			setShowXchangeRate(!1);
+			setErrText(erTxt);
+			toDispatch &&
+			dispatch(
+				setTokenValue({
+					v: {
+						actual: v,
+						ui: rEqual(v, '') ? v : toFixed(v, MISC.OTHER_TOKEN_DEC_PLACES),
+					}, 
+					n: ipNum,
+				})
+			);
+		}
+
 		// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
 		// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
 		async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
@@ -230,29 +251,34 @@ const useSwap = props => {
 			setIsExactIn(xactIn);
 			// CHheck for invalid input
 			if(isInvalidNumeric(typedValue)) {
-				dispatch(setTokenValue({ V: '', n: ipNum }));
-				return !1;
+				log.i('[setOtherTokenValue] num invalid');
+				return dispatch(
+					setTokenValue({ 
+						v: '',
+						n: 0
+					})
+				);
 			}
 			
-			dispatch(setTokenValue({v: typedValue, n: ipNum}));
+			dispatch(
+				setTokenValue({
+					v: {
+						ui: typedValue,
+						actual: typedValue,
+					}, n: ipNum
+				})
+			);
 			setIsFetching(!0);
 			// check if given value is non-zero
-			if(notEmpty(typedValue)) {
+			if(notEmpty(typedValue) && notZero(typedValue)) {
+				log.i('not empty', typedValue);
 				try {
 					const addrList = isUpsideDown ? 
 						[swap.token2_addr, swap.token1_addr] : 
 						[swap.token1_addr, swap.token2_addr];
 					const pair = await tryNormalizePair(addrList);
 					// code block to check if the pair is valid
-					if(isEmpty(pair)) {
-						setIsErr(!0);
-						setIsFetching(!1);
-						setIsDisabled(!0);
-						setShowXchangeRate(!1);
-						dispatch(setTokenValue({v: '', n: otherTokenNum}));
-						setErrText('pool not exist');
-						return;
-					}
+					if(isEmpty(pair)) return handleInputErr(ERR.POOL_NOT_EXIST, !0, typedValue, ipNum);
 					// get contract instance
 					TokenContract.init(
 						isUpsideDown ? // if coming from upsideDown()
@@ -293,10 +319,6 @@ const useSwap = props => {
 						MISC.XCHANGE_PRICE_DEC_PLACES
 					);
 					
-					// fetchedAmountFraction = toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES);
-					
-					const buyAmountFraction = xactIn ? typedValue : fetchedAmountFraction;
-					
 					TokenContract.init(
 						isUpsideDown ? // if coming from upsideDown()! 
 						addrList[xactIn ? 1 : 0] : 
@@ -318,16 +340,13 @@ const useSwap = props => {
 					log.i('SELL AMOUNT:', sellAmount.toString());
 					
 					// code block to check balance of tokenA is greater than sellAmount
-					if(balance.lte(sellAmount)) {
-						setIsErr(!0);
-						setIsFetching(!1);
-						setIsDisabled(!0);
-						setShowXchangeRate(!1);
-						setXchangeEquivalent(xchangePrice);
-						dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
-						setErrText('Insufficient balance for ' + swap.token1_sym);
-						return !1;
-					}
+					if(balance.lte(sellAmount)) 
+						return handleInputErr(
+							`${ERR.LOW_BAL_FOR}${swap.token1_sym}`, 
+							!0, 
+							'', 
+							otherTokenNum
+						)
 					
 					// check allowance for token 1
 					let allowance = await TokenContract.allowance(wallet.priAccount, ADDRESS.ROUTER_CONTRACT);
@@ -335,13 +354,14 @@ const useSwap = props => {
 					
 					// code block to check if tokenA has approved router contract
 					if(!isApproved) {
-						setIsErr(!0);
 						setTokenApproved(!1);
-						setErrText('Approve ' + swap.token1_sym);
-						dispatch(setTokenValue({v: '', n: otherTokenNum}));
-					} else {
-						setIsErr(!1);
-					}
+						handleInputErr(
+							`${ERR.APPROVE}${swap.token1_sym}`,
+							!0,
+							'',
+							otherTokenNum,
+						)
+					} else setIsErr(!1);
 
 					const buyAmount = xactIn ? fetchedAmount.toString() : param[0];
 					
@@ -355,21 +375,32 @@ const useSwap = props => {
 					const priceImpactPercent = await getPriceImpactPercent(pair, sellAmount.toString(), buyAmount);
 					log.i('Price Impact:', priceImpactPercent);
 					setPriceImpactPercent(priceImpactPercent);
-					dispatch(setTokenValue({v: fetchedAmountFraction, n: otherTokenNum}));
+					dispatch(
+						setTokenValue({
+								v: {
+									actual: fetchedAmountFraction,
+									ui: toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES)
+								}, 
+								n: otherTokenNum
+						})
+					);
 				} catch(e) {
-					log.e(e);
-					return !1;
+					Err.handle(e);
 				}
 				return !0;
-			} else {
-				dispatch(setTokenValue({v: '', n: 0}));
-				setShowXchangeRate(!1);
-			}
-			setIsFetching(!1);
-			setIsExactIn(!0);
-			setShowXchangeRate(!1);
-			dispatch(setTokenValue({v: '', n: otherTokenNum}));
-			return !1;
+			} 
+			else return handleInputErr(
+				ERR.NO_INPUT,
+				!0,
+				'',
+				otherTokenNum,
+			);
+			handleInputErr(
+				ERR.INTERNAL,
+				!0,
+				'',
+				otherTokenNum,
+			);
 		}
 	
 		function token(addr) {

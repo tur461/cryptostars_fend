@@ -30,7 +30,8 @@ import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
 import settings from "../../../../Assets/Images/Settings-Icon.svg";
 import {  setConnectTitle, walletConnected } from '../../../features/wallet';
 import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
-import { TOKEN } from "../../../../services/constants/common";
+import { ERR, TOKEN } from "../../../../services/constants/common";
+import l_t from "../../../../services/logging/l_t";
 
 
 
@@ -212,17 +213,20 @@ useEffect(_ => {
                             importCallback: _ => swapHook.importToken(),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
                             searchCallback: v => swapHook.searchOrImportToken(v),
-                            tokenSelectCallback: (sym, addr, icon) => dispatch(
-                              setTokenInfo({
-                                sym, 
-                                addr, 
-                                icon, 
-                                n: TOKEN.A, 
-                                disabled: !0, 
-                                isUpDown: !1, 
-                                cbk: swapHook.checkPair
-                              })
-                            )
+                            tokenSelectCallback: (sym, addr, icon) => {
+                                if(!wallet.isConnected) return l_t.e(ERR.CONNECT_WALLET);
+                                dispatch(
+                                  setTokenInfo({
+                                    sym, 
+                                    addr, 
+                                    icon, 
+                                    n: TOKEN.A, 
+                                    disabled: !0, 
+                                    isUpDown: !1, 
+                                    cbk: swapHook.checkPair
+                                  })
+                                )
+                            }
                           }
                         }
                       }
@@ -255,17 +259,20 @@ useEffect(_ => {
                             importCallback: _ => swapHook.importToken(),
                             resetTList_chg: _ => swapHook.resetTList_chg(),
                             searchCallback: v => swapHook.searchOrImportToken(v),
-                            tokenSelectCallback: (sym, addr, icon) => dispatch(
-                              setTokenInfo({
-                                sym, 
-                                addr, 
-                                icon, 
-                                n: TOKEN.B, 
-                                disabled: !0, 
-                                isUpDown: !1, 
-                                cbk: swapHook.checkPair
-                              })
-                            )
+                            tokenSelectCallback: (sym, addr, icon) => {
+                              if(!wallet.isConnected) return l_t.e(ERR.CONNECT_WALLET);  
+                                dispatch(
+                                  setTokenInfo({
+                                    sym, 
+                                    addr, 
+                                    icon, 
+                                    n: TOKEN.B, 
+                                    disabled: !0, 
+                                    isUpDown: !1, 
+                                    cbk: swapHook.checkPair
+                                  })
+                                )
+                            }
                           }
                         }
                       }
