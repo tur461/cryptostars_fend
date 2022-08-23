@@ -139,10 +139,10 @@ useEffect(_ => {
                       swapHook.state.isClaiming
                     }
                     title={
+                      swapHook.state.isClaiming ? 
+                      'please wait..' :
                       swapHook.state.isCSTClaimed ? 
                       'claimed!' : 
-                      swapHook.state.isClaiming ? 
-                      'please wait..' : 
                       'claim'
                     } 
                     onClick={

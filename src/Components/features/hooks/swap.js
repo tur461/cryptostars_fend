@@ -62,7 +62,7 @@ const useSwap = props => {
 		const [isExactIn, setIsExactIn] = useState('0');
 		const [pairTokens, setPairTokens] = useState([]);
 		const [isDisabled, setIsDisabled] = useState(!0);
-		const [isClaiming, setIsClaiming] = useState(!0);
+		const [isClaiming, setIsClaiming] = useState(!1);
 		const [isFetching, setIsFetching] = useState(!1);
 		const [tokenB_addr, setTokenB_addr] = useState('');
 		const [showMaxBtn1, setShowMaxBtn1] = useState(!1);
@@ -440,8 +440,8 @@ const useSwap = props => {
 			dispatch(changeTokenList(swap.tokenList));
 		}
 
-		async function checkIfCSTClaimed() {
-			setIsCSTClaimed(await FaucetContract.hasClaimed(wallet.priAccount))
+		async function checkIfCSTClaimed(account) {
+			setIsCSTClaimed(await FaucetContract.hasClaimed(account || wallet.priAccount))
 		}
 
 		async function claimCST(e) {
@@ -451,6 +451,7 @@ const useSwap = props => {
 				await FaucetContract.claimCST();
 				setIsCSTClaimed(!0);
 				setIsClaiming(!1);
+				await fetchBalanceOf(TOKEN.A, [swap.token1_addr]);
 				l_t.s('claim success!. please check your account.');
 			} catch(e){ Err.handle(e); setIsClaiming(!1); }
 		}
@@ -609,7 +610,13 @@ const useSwap = props => {
 				handleBalanceForSelectedToken(e.detail.selectedToken, addrList);
 			}
 
+			const onAccountChanged = async e => {
+				console.log('account changed event');
+				await checkIfCSTClaimed(e.detail.newAccount);
+			}
+
 			// disable scrolling on input type number!
+			document.addEventListener(EVENT.ACC_CHANGE, onAccountChanged)
 			document.addEventListener(EVENT.MOUSE_SCROLL, disableScroll);
 			document.addEventListener(EVENT.TOKEN_SELECTION, handleTokenSelected);
 			log.w('event listeners setup done.');
@@ -618,9 +625,9 @@ const useSwap = props => {
 		function initialSteps(n) {
 			log.w('swap initial steps');
 			resetBalances();
-      eventListeners();
-      resetTokenInfos(n);
-      resetTokenValues();
+			eventListeners();
+			resetTokenInfos(n);
+			resetTokenValues();
 		}
 
     return {
