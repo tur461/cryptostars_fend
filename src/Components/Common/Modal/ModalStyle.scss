@@ -66,7 +66,7 @@
         padding-left: 0;
         li {
           margin-bottom: 15px;
-          
+
           button {
             font-size: 17px;
             color: $white;
@@ -84,7 +84,7 @@
             }
 
             &:before {
-              content: '';
+              content: "";
               display: block;
               width: 48px;
               height: 48px;
@@ -104,13 +104,15 @@
             }
 
             &.img--wallet-logo-mm:before {
-              background: url('../../../Assets/Images//wallet-logos/metamask.png') no-repeat;
+              background: url("../../../Assets/Images//wallet-logos/metamask.png")
+                no-repeat;
               background-size: cover;
             }
             &.img--wallet-logo-wc:before {
-              background: url('../../../Assets/Images//wallet-logos/walletconnect.png') no-repeat;
+              background: url("../../../Assets/Images//wallet-logos/walletconnect.png")
+                no-repeat;
               background-size: cover;
-            } 
+            }
 
             &:hover {
               background-color: $lightBlue;
@@ -223,19 +225,18 @@
     color: $black;
     font-weight: 700;
     background: $primaryColor;
-    padding: .2rem;
+    padding: 0.2rem;
     border: 1px solid $black;
     border-radius: 5px;
     margin-top: 2rem;
     vertical-align: middle;
   }
   button:hover {
-    opacity: .8;
+    opacity: 0.8;
   }
-  
 
   .coinItem_style {
-    *{
+    * {
       box-sizing: border-box;
       padding: 0;
       margin: 0;
@@ -258,7 +259,7 @@
       height: 38px;
       margin-right: 20px;
     }
-  
+
     .titleStyle {
       font-size: 1rem;
       font-weight: 400;
@@ -269,16 +270,16 @@
       align-items: center;
       img {
         width: 1rem;
-        margin-right: .4rem;
+        margin-right: 0.4rem;
       }
     }
     .tokenDescription {
-      padding: .6rem;
+      padding: 0.6rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       .tokenName {
-        font-size: .5rem;
+        font-size: 0.5rem;
         color: $goldenYellow;
       }
       .tokenBalance {
@@ -292,7 +293,6 @@
     }
   }
 }
-
 
 .stting_modl {
   .slipTolrnc_text {
@@ -362,10 +362,9 @@
   }
 }
 
-.keep-disabled{
+.keep-disabled {
   cursor: not-allowed;
-  opacity: .3;
-
+  opacity: 0.3;
 }
 
 .list--recent-txs {
@@ -377,8 +376,8 @@
       margin-bottom: 0;
       font-size: 1rem;
       span {
-        margin-left: .6rem;
-        margin-right: .6rem;
+        margin-left: 0.6rem;
+        margin-right: 0.6rem;
       }
     }
     a {
@@ -389,4 +388,8 @@
       }
     }
   }
+}
+
+.toleranceIcon {
+  filter: invert(1);
 }
