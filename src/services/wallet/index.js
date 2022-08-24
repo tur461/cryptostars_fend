@@ -72,13 +72,15 @@ let Wallet = {
         log.i('selected chain:', chainId);
         if(chainId !== CHAIN.CRONOS_TEST.INT) {
             log.i('switching to cronos chain');
+            evDispatch(EVENT.CHAIN_CHANGE, {isInvalid: !0});
             await this.provider.send(WALLET_METH.ADD_CHAIN, [WALLET_PARAM.ADD_CHAIN]);
-        }
+        } else evDispatch(EVENT.CHAIN_CHANGE, {isInvalid: !1});
     },
     // internal functions
     _initEvents: function(Provider) {
         Provider.on(PROVIDER_EVENT.CHAIN_CHANGE, async _ => {
             log.i('chain change event');
+            
             await this.ensureChain();
         });
         Provider.on(PROVIDER_EVENT.ACC_CHANGED, accounts => {

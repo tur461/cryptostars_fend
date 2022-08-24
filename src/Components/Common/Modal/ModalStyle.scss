@@ -102,6 +102,17 @@
                 background-color: rgba(243, 23, 45, 0.9);
               }
             }
+            
+            &.disabled--wallet-btn {
+              background-color: grey;
+              cursor: not-allowed;
+              &:hover {
+                background-color: grey;
+              }
+              &::before {
+                opacity: .5;
+              }
+            }
 
             &.img--wallet-logo-mm:before {
               background: url('../../../Assets/Images//wallet-logos/metamask.png') no-repeat;

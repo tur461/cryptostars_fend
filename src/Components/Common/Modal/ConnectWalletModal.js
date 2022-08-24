@@ -107,9 +107,11 @@ const ConnectWalletModal = (props) => {
               `img--wallet-logo img--wallet-logo-mm${
                 wallet.isConnected && rEqual(WALLET_TYPE.METAMASK, wallet.walletType) ? 
                 ' disconnect-wallet' : 
-                ''
+                wallet.isConnected && rEqual(WALLET_TYPE.WALLET_CONNECT, wallet.walletType) ?
+                ' disabled--wallet-btn' : ''
               }`
-            } 
+            }
+            disabled={wallet.isConnected && rEqual(WALLET_TYPE.WALLET_CONNECT, wallet.walletType)}  
             onClick={ 
               wallet.isConnected ?
                 _ => {
@@ -160,9 +162,11 @@ const ConnectWalletModal = (props) => {
               `img--wallet-logo img--wallet-logo-wc${
                 wallet.isConnected && rEqual(WALLET_TYPE.WALLET_CONNECT, wallet.walletType) ? 
                 ' disconnect-wallet' : 
-                ''
+                wallet.isConnected && rEqual(WALLET_TYPE.METAMASK, wallet.walletType) ?
+                ' disabled--wallet-btn' : ''
               }`
-            } 
+            }
+            disabled={wallet.isConnected && rEqual(WALLET_TYPE.METAMASK, wallet.walletType)} 
             onClick={ 
               wallet.isConnected ?
               _ => {

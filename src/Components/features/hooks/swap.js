@@ -73,6 +73,7 @@ const useSwap = props => {
 		const [tokenApproved, setTokenApproved] = useState(!0);
 		const [showXchangeRate, setShowXchangeRate] = useState(!1);
 		const [thresholdAmount, setThresholdAmount] = useState('0');
+		const [isInvalidNetwork, setIsInvalidNetwork] = useState(!1);
 		const [btnText, setBtnText] = useState(INIT_VAL.SWAP_BTN[0]);
 		const [token1_bal, setToken1_bal] = useState(TOKEN_INIT.BAL());
 		const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
@@ -615,7 +616,13 @@ const useSwap = props => {
 				await checkIfCSTClaimed(e.detail.newAccount);
 			}
 
+			const onChainChanged = async e => {
+				console.log('chain changed event');
+				setIsInvalidNetwork(e.detail.isInvalid)
+			}
+
 			// disable scrolling on input type number!
+			document.addEventListener(EVENT.CHAIN_CHANGE, onChainChanged)
 			document.addEventListener(EVENT.ACC_CHANGE, onAccountChanged)
 			document.addEventListener(EVENT.MOUSE_SCROLL, disableScroll);
 			document.addEventListener(EVENT.TOKEN_SELECTION, handleTokenSelected);
@@ -671,6 +678,7 @@ const useSwap = props => {
 				tokenApproved,
 				showXchangeRate,
 				thresholdAmount,
+				isInvalidNetwork,
 				xchangeEquivalent,
 				priceImpactPercent,
 			},
@@ -692,6 +700,7 @@ const useSwap = props => {
 			setShowBalance2,
 			setTokenApproved,
 			setThresholdAmount,
+			setIsInvalidNetwork,
 			setXchangeEquivalent,
 
     }

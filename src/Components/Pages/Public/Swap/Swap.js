@@ -136,6 +136,7 @@ useEffect(_ => {
                     className={`btn--claim-cst${swapHook.state.isClaiming ? ' claiming-text' : ''}`}
                     disabled={
                       !wallet.isConnected ||
+                      swapHook.state.isInvalidNetwork ||
                       swapHook.state.isCSTClaimed || 
                       swapHook.state.isClaiming
                     }
@@ -322,7 +323,9 @@ useEffect(_ => {
                         </button> :
                         <button
                           disabled={
+                            
                             !wallet.isConnected || 
+                            swapHook.state.isInvalidNetwork ||
                             swapHook.state.isFetching ||
                             swapHook.state.isErr
                           }
@@ -338,11 +341,13 @@ useEffect(_ => {
                           {
                             !wallet.isConnected ?
                               'wallet not connected' :
-                              swapHook.state.isFetching ?
-                                'please wait..' : 
-                              swapHook.state.isErr ?
-                              swapHook.state.errText :
-                                'Swap'
+                            swapHook.state.isInvalidNetwork ?
+                              'invalid network' :
+                            swapHook.state.isFetching ?
+                              'please wait..' : 
+                            swapHook.state.isErr ?
+                            swapHook.state.errText :
+                              'Swap'
                           }
                         </button>
                     }
