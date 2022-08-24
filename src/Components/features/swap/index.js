@@ -112,7 +112,7 @@ export const swapSlice = createSlice({
         saveTxHash: (state, action) => {
             // if exceeded, remove most old one!
             if(state.recentTxList.length >= MISC.MAX_RECENT_TXS) state.recentTxList.splice(0, 1);
-            state.recentTxList.push({
+            state.recentTxList.unshift({
                 tStampJs: tStampJs(), 
                 hash: action.payload.txHash,
                 pair: action.payload.pair

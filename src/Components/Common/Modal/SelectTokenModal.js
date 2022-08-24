@@ -75,7 +75,6 @@ const CoinItem = ({
         </p>
         <p className="tokenDescription">
           <span className="tokenName">{data.name}</span>
-          <span className="tokenBalance">{data.bal}</span>
         </p>
       </div>
       <button 

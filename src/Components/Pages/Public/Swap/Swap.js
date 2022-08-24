@@ -135,6 +135,7 @@ useEffect(_ => {
                   <ButtonPrimary 
                     className={`btn--claim-cst${swapHook.state.isClaiming ? ' claiming-text' : ''}`}
                     disabled={
+                      !wallet.isConnected ||
                       swapHook.state.isCSTClaimed || 
                       swapHook.state.isClaiming
                     }
