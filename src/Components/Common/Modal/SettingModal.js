@@ -1,6 +1,7 @@
 import React from "react";
 import CustomModal from "./CustomModal";
-import external from "../../../Assets/Images/external-link.svg";
+// import external from "../../../Assets/Images/external-link.svg";
+import info from "../../../Assets/Images/info.svg"
 import ReactTooltip from "react-tooltip";
 import { Link } from "react-router-dom";
 import "./ModalStyle.scss";
@@ -15,7 +16,7 @@ const SettingModal = ({ size, show, onHide, states }) => {
             <img
               data-tip
               data-for="registerTip"
-              src={external}
+              src={info}
               alt="icon"
               className="toleranceIcon"
             />

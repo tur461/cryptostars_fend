@@ -11,7 +11,7 @@ const Err = {
     },
     ErrText: {
         REJECTED: 'User rejected the transaction',
-        PROCESS_WEB3: 'Please check metamask',
+        PROCESS_WEB3: 'Kindly check your wallet',
         PAIR_NOT_EXIST: 'pool not exist for the pair!',
     },
     handle: function(e) {

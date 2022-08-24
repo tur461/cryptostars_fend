@@ -9,7 +9,9 @@
   border-radius: 1rem;
   transition: all 0.3s linear;
   @media (max-width: 767px) {
-    font-size: 28px;
+    font-size: 18px;
+    text-transform: capitalize;
+    padding: 2px;
   }
 }
 
