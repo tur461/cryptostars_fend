@@ -506,6 +506,11 @@ const useSwap = props => {
 		const priceDiff = tokenB_price_old - tokenB_price_new;
 		// in-terms of old pricing
 		const priceImpactPercent = (priceDiff / tokenB_price_old) * 100;
+		// log.i('[priceImpact');
+		// log.i('tokenB_price_old', tokenB_price_old);
+		// log.i('tokenB_price_new', tokenB_price_new);
+		// log.i('sellAmount', sellAmount);
+		// log.i('buyAmount', buyAmount);
 		return toFixed(priceImpactPercent, 3);
 	}
 
@@ -588,11 +593,12 @@ const useSwap = props => {
 
 	async function setToMaxAmount(selectedToken) {
 		if(rEqual(selectedToken, TOKEN.A)) {
-			const ok = await setOtherTokenValue(token1_bal.actual, TOKEN.A, !1);
+			log.i('set max to bal:', token1_bal);
+			const ok = await setOtherTokenValue(`${token1_bal.actual}`, TOKEN.A, !1);
 			setShowMaxBtn1(!ok);
 		}
 		else {
-			const ok = await setOtherTokenValue(token2_bal.actual, TOKEN.B, !1);
+			const ok = await setOtherTokenValue(`${token2_bal.actual}`, TOKEN.B, !1);
 			setShowMaxBtn2(!ok);
 		}
 	}

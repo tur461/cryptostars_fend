@@ -299,7 +299,7 @@ useEffect(_ => {
                               {`${swapHook.state.xchangeEquivalent} ${swapHook.token(swap.token1_addr)?.sym}`}
                             </span>
                           </div>
-                          <div className="price-impact">
+                          <div className="price-impact d-none">
                             <span>Price Impact</span>
                             <span>
                               {`${swapHook.state.priceImpactPercent}%`}
