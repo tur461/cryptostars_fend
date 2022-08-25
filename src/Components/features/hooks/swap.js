@@ -340,7 +340,7 @@ const useSwap = props => {
 				log.i('SELL AMOUNT:', sellAmount.toString());
 				
 				// code block to check balance of tokenA is greater than sellAmount
-				if(balance.lte(sellAmount)) 
+				if(balance.lt(sellAmount)) 
 					return handleInputErr(
 						`${ERR.LOW_BAL_FOR}${swap.token1_sym}`, 
 						!0, 
