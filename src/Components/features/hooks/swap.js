@@ -432,15 +432,10 @@ const useSwap = props => {
 				const buyAmount = xactIn ? fetchedAmount.toString() : param[0];
 				
 				await setSwapPrerequisites(pair, fetchedAmount, xactIn, ipNum)
-				// set another token value
-				log.i('xchange rate:', xchangeEquivalent);
-				setXchangeEquivalent(xchangePrice);
-				setIsFetching(!1);
-				setShowXchangeRate(!0);
-				
+				// log.i('xchange rate:', xchangeEquivalent);
 				const priceImpactPercent = await getPriceImpactPercent(pair, sellAmount.toString(), buyAmount);
-				log.i('Price Impact:', priceImpactPercent);
-				setPriceImpactPercent(priceImpactPercent);
+				// log.i('Price Impact:', priceImpactPercent);
+				
 				dispatch(
 					setTokenValue({
 						v: {
@@ -450,6 +445,12 @@ const useSwap = props => {
 						n: otherTokenNum
 					})
 				);
+				setIsErr(!1);
+				setIsDisabled(!1);
+				setIsFetching(!1);
+				setShowXchangeRate(!0);
+				setXchangeEquivalent(xchangePrice);
+				setPriceImpactPercent(priceImpactPercent);
 			} catch(e) {
 				Err.handle(e);
 			}
@@ -603,11 +604,13 @@ const useSwap = props => {
 
 	async function setToMaxAmount(selectedToken) {
 		if(rEqual(selectedToken, TOKEN.A)) {
-			const ok = await setOtherTokenValue(`${token1_bal.actual}`, TOKEN.A, !1);
+			setTokenIp(`${token1_bal.actual}`, TOKEN.A);
+			const ok = await setOtherTokenValue(TOKEN.A, !1);
 			setShowMaxBtn1(!ok);
 		}
 		else {
-			const ok = await setOtherTokenValue(`${token2_bal.actual}`, TOKEN.B, !1);
+			setTokenIp(`${token2_bal.actual}`, TOKEN.B);
+			const ok = await setOtherTokenValue(TOKEN.B, !1);
 			setShowMaxBtn2(!ok);
 		}
 	}

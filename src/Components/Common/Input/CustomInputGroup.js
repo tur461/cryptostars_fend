@@ -32,7 +32,8 @@ const CustomInputGroup = ({ className, icon, title, states }) => {
               onClick={states.token.setToMaxAmount}
             >
               <span>Balance:</span>
-              <span className={states.token.showMaxBtn ? ' btn--max-amount' : ''}>{states.token.balance}</span>
+              <span className={`ui--max-balance-value${states.token.showMaxBtn ? ' btn--max-amount' : ''}`}>{states.token.balance}</span>
+              <span className="hover-balance">{states.token.onHoverBalance}</span>
             </p>
           </div>
           <SelectTokenModal show={show} hideCbk={handleClose} state={states.tList} />

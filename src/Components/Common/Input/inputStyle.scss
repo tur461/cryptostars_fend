@@ -78,11 +78,12 @@
           }
         }
         .block--token-balance {
+          position: relative;
           span {
             display: inline-block;
             font-size: 0.8rem;
             color: rgb(143, 150, 172);
-            &:last-child.btn--max-amount:after {
+            &:nth-child(2).btn--max-amount:after {
               cursor: pointer;
               content: "MAX";
               color: rgb(33, 114, 229);
@@ -90,7 +91,26 @@
               font-weight: 600;
               padding: 0.4rem;
             }
+            
           }
+
+          span.hover-balance {
+            top: 20px;
+            left: 60px;
+            display: none;
+            padding: .2rem;
+            color: yellow;
+            font-size: .5rem;
+            position: absolute;
+            border-radius: .5rem;
+            border: 1px solid white;
+          }
+
+          span.ui--max-balance-value:hover + 
+          span.hover-balance {
+            display: inline-block;
+          }
+    
         }
       }
     }

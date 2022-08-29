@@ -75,7 +75,6 @@ const Swap = () => {
   const [settingsShow, setSettingsShow] = useState(!1);
 
   useEffect(_ => { swapHook.resetStates() }, [swap.slippage])
-  useEffect(_ => { swapHook.setIsDisabled(swapHook.state.isErr) }, [])
   useEffect(_ => { log.i('Exact In state changed to: ' + swap.isExactIn) }, [swap.isExactIn]);
   
   useEffect(_ => {
@@ -194,6 +193,7 @@ const Swap = () => {
                             balance: swapHook.state.token1_bal.ui,
                             showMaxBtn: swapHook.state.showMaxBtn1,
                             showBalance: swapHook.state.showBalance1,
+                            onHoverBalance: swapHook.state.token1_bal.actual,
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.A),
                             disabled: swapHook.state.isFetching && !swapHook.state.isExactIn,
                             inputCallback: e => {
@@ -244,6 +244,7 @@ const Swap = () => {
                             balance: swapHook.state.token2_bal.ui,
                             showMaxBtn: swapHook.state.showMaxBtn2,
                             showBalance: swapHook.state.showBalance2,
+                            onHoverBalance: swapHook.state.token2_bal.actual,
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.B),
                             disabled: swapHook.state.isFetching && swapHook.state.isExactIn,
                             inputCallback: e => {
@@ -319,8 +320,8 @@ const Swap = () => {
                         </button> :
                         <button
                           disabled={
-                            
-                            !wallet.isConnected || 
+                            !wallet.isConnected ||
+                            swapHook.state.isDisabled || 
                             swapHook.state.isInvalidNetwork ||
                             swapHook.state.isFetching ||
                             swapHook.state.isErr
