@@ -1,6 +1,7 @@
 import { ADDRESS, EVENT, MISC, REGEX, URL } from "./constants/common";
 import {BigNumber} from '@ethersproject/bignumber';
 import { isBigNumberish } from "@ethersproject/bignumber/lib/bignumber";
+import log from "./logging/logger";
 
 // String.prototype.trim = function() {
 //   return this.replace(/(^\s*|\s*$)/g, "");
@@ -131,47 +132,42 @@ const toDateTimeStr = tStampJs => {
     return `${d[1]} ${d[2]}, ${d[4]}`;
 }
 
-const eHandle = e => {
-    e.preventDefault();
-    // e.stopPropagation();
-}
+const eHandle = e => e.preventDefault() || !0;
 
-var jsonp = (function(){
-  var that = {};
+const jsonp = (function(){
+    let that = {};
+    that.send = function(src, options) {
+        return new Promise((r, j) => {
+            const callback_name = options.callbackName || 'callback',
+                timeout = options.timeout || 10; // sec
+            const __getUrl = _ => {
+                if(contains(src, '?')) return `${src}&callback=${callback_name}`;
+                return `${src}?callback=${callback_name}`;
+            }
+            const timeout_trigger = window.setTimeout(function(){
+                window[callback_name] = nullFunc;
+                j('timed out!');
+            }, timeout * 1000);
 
-  that.send = function(src, options) {
-		return new Promise((r, j) => {
-			var callback_name = options.callbackName || 'callback',
-				timeout = options.timeout || 10; // sec
-			const __getUrl = _ => {
-				if(contains(src, '?')) return `${src}&callback=${callback_name}`;
-				return `${src}?callback=${callback_name}`;
-			}
-			var timeout_trigger = window.setTimeout(function(){
-				window[callback_name] = nullFunc;
-				j('timed out!');
-			}, timeout * 1000);
+            window[callback_name] = data => {
+                window.clearTimeout(timeout_trigger);
+                r(data);
+            }
+            
+            const id = btoa(`jsonp-CryptoStars-${options.id}`);
+            const el = document.getElementById(id);
+            if(notNull(el)) el.remove();
 
-			window[callback_name] = data => {
-				window.clearTimeout(timeout_trigger);
-				r(data);
-			}
-			
-			const id = btoa(`jsonp-CryptoStars-${options.id}`);
-			const el = document.getElementById(id);
-			if(notNull(el)) el.remove();
-
-			const script = document.createElement('script');
-			script.type = 'text/javascript';
-			script.async = true;
-			script.src = __getUrl();
-			script.id = id;
-			script.addEventListener('error', j);
-			document.getElementsByTagName('head')[0].appendChild(script);
-	})
-  }
-
-  return that;
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.async = !0;
+            script.src = __getUrl();
+            script.id = id;
+            script.addEventListener('error', j);
+            document.getElementsByTagName('head')[0].appendChild(script);
+        })
+    }
+    return that;
 })();
 
 const keepEyeOnInternetStatus = _ => {
@@ -193,32 +189,42 @@ const keepEyeOnInternetStatus = _ => {
 };
 
 const _DebouncerStore = {
-    timeOut: null,
-    callback: nullFunc,
+    ids: [],
+    index: -1,
+    timeOut: [],
+    callback: [],
     arguments: [],
-    debounceDelay: MISC.DEBOUNCE_DELAY,
+    debounceDelay: [],
 }
 
 // input debouncer
-const Debouncer = {
-    debounce: function(cbk, argList) {
-        if(!isFunc(cbk)) throw new Error('Expected Function as first param!');
-        if(!isArr(argList)) throw new Error('Expected Array as second param!');
-        const getDebounceFn = _ => {
-            const debounceFn = _ => {
-                console.log('debounceFn called');
-                clearTimeout(_DebouncerStore.timeOut);
-                _DebouncerStore.timeOut = setTimeout(
-                    _ => _DebouncerStore.callback(..._DebouncerStore.arguments), 
-                    _DebouncerStore.debounceDelay
-                );
-            };
-            return debounceFn();
-        }
-        _DebouncerStore.callback = cbk;
-        _DebouncerStore.arguments = argList;
-        return getDebounceFn();
-    },
+const debounce = (cbk, argList, id, delay = MISC.DEBOUNCE_DELAY) => {
+    if(notDefined(id) || isEmpty(id)) throw new Error('must pass an id');
+    if(!isFunc(cbk)) throw new Error('Expected Function as first param!');
+    if(!isArr(argList)) throw new Error('Expected Array as second param!');
+
+    let i = _DebouncerStore.ids.findIndex(_id => rEqual(_id, id));
+    
+    if(i < 0) {
+        i = ++_DebouncerStore.index;
+        _DebouncerStore.ids.push(id);
+        _DebouncerStore.callback.push(cbk);
+        _DebouncerStore.arguments.push(argList);
+        _DebouncerStore.debounceDelay.push(delay);
+    }
+    // stop previous timer if triggered before completion of the same. 
+    clearTimeout(_DebouncerStore.timeOut[i]);
+    log.i('debounce timer cleared for id: ' + id);
+    // set and start new timer 
+    _DebouncerStore.timeOut[i] = setTimeout(
+        // if no input or trigger until threshold delay, call callback
+        _ => {
+            log.i('timer up! for id: ' + id + ' and i: ' + i);
+            log.i('Debounce Store:', _DebouncerStore);
+            _DebouncerStore.callback[i](..._DebouncerStore.arguments[i])
+        }, 
+        _DebouncerStore.debounceDelay[i]
+    );
     
 }
 
@@ -233,7 +239,7 @@ export {
     isAddr,
     eHandle,
     isEmpty,
-		notZero,
+    notZero,
     jObject,
     notNull,
     jString,
@@ -245,7 +251,7 @@ export {
     tStampJs,
     notEmpty,
     toBigNum,
-    Debouncer,
+    debounce,
     tStampNix,
     isDefined,
     notDefined,
@@ -254,5 +260,5 @@ export {
     evDispatch,
     toDateTimeStr,
     isInvalidNumeric,
-		keepEyeOnInternetStatus,
+    keepEyeOnInternetStatus,
 }

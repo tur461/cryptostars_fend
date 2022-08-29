@@ -42,7 +42,7 @@ export const swapSlice = createSlice({
             }
         },
         setTokenInfo: (state, action) => {
-            log.i('setting token infos:', action.payload);
+            // log.i('setting token infos:', action.payload);
             if(rEqual(action.payload.n, 0)) {
                 if(action.payload.isUpDown) {
                     state.token1_sym = action.payload.sym[0];
@@ -81,6 +81,7 @@ export const swapSlice = createSlice({
                 if(rEqual(state[`token${otherN}_addr`], action.payload.addr)  && !action.payload.reset) {
                     l_t.w('both tokens can\'t be same!');
                 } else {
+                    // log.i('setTokenInfo to:', action.payload);
                     state.token1_value.ui = '';
                     state.token2_value.ui = '';
                     state.token1_value.actual = '';
@@ -119,7 +120,7 @@ export const swapSlice = createSlice({
             });
         },
 
-        setExactIn: (state, action) => { state.isExactIn = action.payload },
+        setIsExactIn: (state, action) => { state.isExactIn = action.payload },
         setDeadLine: (state, action) => { state.deadLine = action.payload },
         setSlippage: (state, action) => { state.slippage = action.payload },
         setXchangeEq: (state, action) => { state.xchangeEq = action.payload },
@@ -133,7 +134,7 @@ const {reducer, actions } = swapSlice;
 
 export const { 
     setPair,
-    setExactIn,
+    setIsExactIn,
     saveTxHash,
     setDeadLine,
     setSlippage,

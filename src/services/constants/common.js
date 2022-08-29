@@ -75,6 +75,7 @@ export const VALID_CHAIN_ID = MISC.CHAIN_ID.CRO_TEST;
 // all local-storage keys are kept here!
 export const LS_KEYS = {
     JWT: 'jwtToken',
+    EXACT_IN: 'is_exact_in',
     WALLET_TYPE: 'wallet_type',
     SHOW_BAL_1: 'show_balance_1',
     SHOW_BAL_2: 'show_balance_2',
@@ -106,6 +107,12 @@ export const EVENT = {
 
 export const REGEX = {
     NUMERIC: /^[0-9]*(\.[0-9]*)?$/,
+}
+
+export const DEBOUNCE_ID = {
+    IP_A: 'input_1',
+    IP_B: 'input_2',
+    UPSIDE_DOWN: 'upside-down',
 }
 
 export const TOKEN = {

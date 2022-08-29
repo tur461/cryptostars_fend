@@ -22,7 +22,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import React, { useEffect, useRef, useState } from "react";
 import CommonF from "../../../../services/contracts/common";
 import { Container, Row, Col, Form } from "react-bootstrap";
-import { nullFunc, isEmpty, Debouncer, rEqual, notEqual } from "../../../../services/utils";
+import { nullFunc, isEmpty, Debouncer, rEqual, notEqual, eHandle, debounce } from "../../../../services/utils";
 import swapicon from "../../../../Assets/Images/swap-icon.png";
 import headerImg from "../../../../Assets/Images/headerImg.png";
 import draco from "../../../../Assets/Images/draco-roadmap.png";
@@ -30,7 +30,7 @@ import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
 import settings from "../../../../Assets/Images/Settings-Icon.svg";
 import {  setConnectTitle, walletConnected } from '../../../features/wallet';
 import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
-import { ERR, TOKEN } from "../../../../services/constants/common";
+import { DEBOUNCE_ID, ERR, TOKEN } from "../../../../services/constants/common";
 import l_t from "../../../../services/logging/l_t";
 
 
@@ -74,27 +74,19 @@ const Swap = () => {
   const settingHndClose = () => setSettingsShow(!1);
   const [settingsShow, setSettingsShow] = useState(!1);
 
+  useEffect(_ => { swapHook.resetStates() }, [swap.slippage])
+  useEffect(_ => { swapHook.setIsDisabled(swapHook.state.isErr) }, [])
+  useEffect(_ => { log.i('Exact In state changed to: ' + swap.isExactIn) }, [swap.isExactIn]);
   
-useEffect(_ => {
-  // if(conditionalLock.current) {
-    if(wallet.isConnected) {
-      swapHook.initialSteps(TOKEN.A);
-      swapHook.checkIfCSTClaimed();
-      CommonF.init({from: wallet.priAccount})
-    //   conditionalLock.current = !1;
-    } else {
-      swapHook.initialSteps(TOKEN.BOTH);
-    }
-  // }
-}, [wallet.isConnected])
-
   useEffect(_ => {
-    swapHook.resetStates();
-  }, [swap.slippage])
-
-  useEffect(_=>{
-    swapHook.setIsDisabled(swapHook.state.isErr);
-  }, [])
+      if(wallet.isConnected) {
+        swapHook.initialSteps(TOKEN.A);
+        swapHook.checkIfCSTClaimed();
+        CommonF.init({from: wallet.priAccount})
+      } else {
+        swapHook.initialSteps(TOKEN.BOTH);
+      }
+  }, [wallet.isConnected])
 
   return (
     <>
@@ -205,9 +197,9 @@ useEffect(_ => {
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.A),
                             disabled: swapHook.state.isFetching && !swapHook.state.isExactIn,
                             inputCallback: e => {
-                              log.i('on key down e:', e);
+                              swapHook.setTokenIp(e.target.value, TOKEN.A);
                               swapHook.setShowMaxBtn1(!0);
-                              Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, TOKEN.A, !1])
+                              debounce(swapHook.setOtherTokenValue, [TOKEN.A, !1], DEBOUNCE_ID.IP_A)
                             }
                           },
                           tList: {
@@ -235,7 +227,11 @@ useEffect(_ => {
                     />
                     <button
                       className="swapSwitch" 
-                      onClick={swapHook.upsideDown}
+                      onClick={e => {
+                        eHandle(e);
+                        swapHook.upsideDown_wrap();
+                        // debounce(swapHook.upsideDown_wrap, [], DEBOUNCE_ID.UPSIDE_DOWN, 1500);
+                      }}
                     > <img src={swapicon} alt="swap_icon" /> 
                     </button>
                     <CustomInputGroup
@@ -251,9 +247,9 @@ useEffect(_ => {
                             setToMaxAmount: _ => swapHook.setToMaxAmount(TOKEN.B),
                             disabled: swapHook.state.isFetching && swapHook.state.isExactIn,
                             inputCallback: e => {
-                              log.i('on key up e:', e);
+                              swapHook.setTokenIp(e.target.value, TOKEN.B);
                               swapHook.setShowMaxBtn2(!0);
-                              Debouncer.debounce(swapHook.setOtherTokenValue, [e.target.value, TOKEN.B, !1])
+                              debounce(swapHook.setOtherTokenValue, [TOKEN.B, !1], DEBOUNCE_ID.IP_B)
                             }
                           },
                           tList: {

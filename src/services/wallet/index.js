@@ -58,7 +58,7 @@ let Wallet = {
             
             this._walletType = walletType;
             log.s('init done', this._accounts, this.priAccount);
-        } else log.i('we already have a provider!', this.provider);
+        } //else log.i('we already have a provider!', this.provider);
         return this;
     },
     ensureChain: async function() {

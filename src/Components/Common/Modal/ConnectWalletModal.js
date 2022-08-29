@@ -12,13 +12,13 @@ import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { PROVIDER_EVENT, WALLET_TYPE } from "../../../services/constants/wallet";
 import { useEffect } from "react";
-import { isAddr, rEqual } from "../../../services/utils";
+import { isAddr, isDefined, notEmpty, rEqual } from "../../../services/utils";
 import { Err, LocalStore } from "../../../services/xtras";
 import METAMASK_LOGO from '../../../Assets/Images/wallet-logos/metamask.png';
 import WALLET_CONNECT_LOGO from '../../../Assets/Images/wallet-logos/walletconnect.png';
 
 
-const trunc = a => `${a.slice(0, 5)}..${a.slice(39, 42)}`;
+const truncAddr = a => isDefined(a) && notEmpty(a) ? `${a.slice(0, 5)}..${a.slice(39, 42)}` : MISC.CONNECT_TTL;
 
 const ConnectWalletModal = (props) => {
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ const ConnectWalletModal = (props) => {
     CommonF.init({from: addr});
     dispatch(setPriAccount(addr));
     dispatch(walletConnected(isAddr(addr)));
-    props.conTitleCbk(isAddr(addr) ? trunc(addr) : MISC.CONNECT_TTL);
+    props.conTitleCbk(isAddr(addr) ? truncAddr(addr) : MISC.CONNECT_TTL);
 
   }
 
@@ -43,7 +43,7 @@ const ConnectWalletModal = (props) => {
             if(LocalStore.has(LS_KEYS.WALLET_TYPE)) {
               await connect2wallet(LocalStore.get(LS_KEYS.WALLET_TYPE));
               let acc = Wallet.priAccount;
-              props.conTitleCbk(trunc(acc));
+              props.conTitleCbk(truncAddr(acc));
             }
           } else{
             props.conTitleCbk(MISC.CONNECT_TTL)
@@ -54,14 +54,11 @@ const ConnectWalletModal = (props) => {
     )()
     document.addEventListener(EVENT.ACC_CHANGE, e => {
       l_t.s('Account changed!', {position: 'top-left'});
-      props.conTitleCbk(trunc(e.detail.newAccount));
+      props.conTitleCbk(truncAddr(e.detail.newAccount));
     })
 }, [wallet.isConnected])
 
   const connect2wallet = async walletType => {
-    // if(wallet.isConnected) {
-    //   disconnect();
-    // }
     try {
       await Wallet.init(walletType);
       await Wallet.ensureChain();

@@ -8,7 +8,7 @@ const CommonF = {
         this.from = p.from;
     },
     sendTx: async function(txObj) {
-        Wallet.init();
+        // Wallet.init();
         try {
             let estimate = await Wallet.provider.estimateGas(txObj);
             txObj['gas'] = estimate.toHexString();

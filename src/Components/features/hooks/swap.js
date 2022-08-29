@@ -1,4 +1,5 @@
 import { 
+	setIsExactIn,
 	saveTxHash, 
 	setTokenInfo, 
 	setTokenValue,
@@ -17,7 +18,8 @@ import {
 	toBigNum, 
 	stdRaiseBy, 
 	isInvalidNumeric,
-	notZero, 
+	notZero,
+	notNull, 
 } from "../../../services/utils";
 
 import { 
@@ -46,6 +48,10 @@ import toast from "../../../services/logging/toast";
 import { useDispatch, useSelector } from "react-redux";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
+import { useEffect } from "react";
+
+var interval = null;
+var typedValueGlobal = '';
 
 const useSwap = props => {
 	const dispatch = useDispatch();
@@ -58,7 +64,6 @@ const useSwap = props => {
 	const [errText, setErrText] = useState('');
 	const [reserves, setReserves] = useState([]);
 	const [amountIn, setAmountIn] = useState('0');
-	const [isExactIn, setIsExactIn] = useState('0');
 	const [pairTokens, setPairTokens] = useState([]);
 	const [isDisabled, setIsDisabled] = useState(!0);
 	const [isClaiming, setIsClaiming] = useState(!1);
@@ -79,6 +84,74 @@ const useSwap = props => {
 	const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 	const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
 
+	function resetStates() {
+		setTokenApproved(!0);
+		setIsDisabled(!0);
+		setShowXchangeRate(!1);
+	}
+
+	function token(addr) {
+		return swap.tokenList.filter(t => t.addr === addr)[0];
+	}
+	
+	function resetTList_chg() {
+		dispatch(changeTokenList(swap.tokenList));
+	}
+	
+	function resetBalances() {
+		log.w('balances reset');
+		setShowBalance1(!1);
+		setShowBalance2(!1);
+		setToken1_bal(TOKEN_INIT.BAL());
+		setToken2_bal(TOKEN_INIT.BAL());
+	}
+
+	function resetTokenValues() {
+		dispatch(setTokenValue({
+	v: '', 
+	n: 0
+	}));
+	}
+
+	function resetTokenInfos(n) {
+		dispatch(setTokenInfo({
+			n,
+					isUpDown: !1,
+					reset: !0,
+			sym: MISC.DEF_TOKEN.SYM,
+			addr: MISC.DEF_TOKEN.ADDR,
+			icon: MISC.DEF_TOKEN.ICON,
+		}));
+	}
+
+	function isNotOKToProceed() {
+		log.i(swap.token1_sym, swap.token2_sym)
+		let errMsg = !wallet.isConnected ? ERR.CONNECT_WALLET : 
+		rEqual(swap.token1_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_1 : 
+		rEqual(swap.token2_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_2 :
+		'';
+		const isNotOK = notEmpty(errMsg);
+		isNotOK && l_t.e(errMsg);
+		return isNotOK;
+	}
+
+	function handleInputErr(erTxt, toDispatch, v, ipNum) {
+		setIsErr(!0);
+		setIsFetching(!1);
+		setIsDisabled(!0);
+		setShowXchangeRate(!1);
+		setErrText(erTxt);
+		toDispatch &&
+		dispatch(
+			setTokenValue({
+				v: {
+					actual: v,
+					ui: rEqual(v, '') ? v : toFixed(v, MISC.OTHER_TOKEN_DEC_PLACES),
+				}, 
+				n: ipNum,
+			})
+		);
+	}
 
     async function approveWithMaxAmount(e) {
 		log.i('approving..')
@@ -91,13 +164,22 @@ const useSwap = props => {
 		setTokenApproved(!0);
 	}
 
-	function resetStates() {
-		setTokenApproved(!0);
-		setIsDisabled(!0);
-		setShowXchangeRate(!1);
-		// setBtnText('Swap');
-		// dispatch(setTokenValue({v: '', n: 0}));
+	async function isLiquidityLowForPair(pair, amount) {
+		const pairAddr = await FactoryContract.getPair(...pair);
+		PairContract.init(pairAddr);
+		const reserves = await PairContract.getReserves();
+		const t0 = await PairContract.getToken0();
+		const t1 = await PairContract.getToken1();
+		const [tokenB, reserveB] = rEqual(swap.token2_addr, t0) ? 
+		[t0, reserves[0]] :
+		[t1, reserves[1]];
+		setReserves(reserves);
+		setTokenB_addr(tokenB);
+		setPairTokens([t0, t1]);
+		if(amount.gt(reserveB)) return !0;
+		return !1;
 	}
+
 	// assumes Center Token is CST token
 	async function tryNormalizePair(p) {
 		let pAddr = await FactoryContract.getPair(p[0], p[1]);
@@ -117,19 +199,17 @@ const useSwap = props => {
 		return [];
 	}
 
-	async function setSwapPrerequisites(amount, pr, fetchedAmount, xactIn) {
+	async function setSwapPrerequisites(pr, fetchedAmount, xactIn) {
 		log.i(arguments, swap.slippage);
-		const sellTokenAddr = isExactIn ? swap.token1_addr : swap.token2_addr;
-		const buyTokenAddr = isExactIn ? swap.token2_addr : swap.token1_addr;
+		const sellTokenAddr = swap.isExactIn ? swap.token1_addr : swap.token2_addr;
+		const buyTokenAddr = swap.isExactIn ? swap.token2_addr : swap.token1_addr;
 		TokenContract.init(sellTokenAddr);
 		const sellTokenDec = await TokenContract.decimals();
 		TokenContract.init(buyTokenAddr);
 		const buyTokenDec = await TokenContract.decimals();
 		
-		let xactAmount = toStd(amount * 10**(xactIn ? sellTokenDec : buyTokenDec));
-		log.i('fetchedAmount:', fetchedAmount.to);
+		let xactAmount = toStd(typedValueGlobal * 10**(xactIn ? sellTokenDec : buyTokenDec));
 		let thAmount = getThresholdAmountFromTolerance(fetchedAmount, swap.slippage, xactIn, xactIn ? buyTokenDec : sellTokenDec)
-		log.i('Final TH amount:', thAmount);
 		log.s(btnText);
 		setPair(pr);
 		setAmountIn(xactAmount);
@@ -156,7 +236,7 @@ const useSwap = props => {
 				wallet.priAccount,
 				getDeadline(swap.deadLine),
 			],
-			isExactIn,
+			swap.isExactIn,
 		).then(async tx => {
 			setIsFetching(!1);
 			resetTokenValues();
@@ -174,84 +254,61 @@ const useSwap = props => {
 		}) 
 	}
 
-	async function upsideDown(e) {
-		e.preventDefault();
-		let t = [swap.token1_value.actual, swap.token2_value.actual],
-				s = [swap.token1_sym, swap.token2_sym],
-				a = [swap.token1_addr, swap.token2_addr],
-				icn = [swap.token1_icon, swap.token2_icon];
+	function upsideDown_wrap() {
+		if(notNull(interval)) {
+			clearTimeout(interval);
+			interval = null;
+		}
+		interval = setTimeout(upsideDown, 1000);
+	}
 
-		await handleBalanceForSelectedToken(TOKEN.BOTH, [a[1], a[0]]);
+	async function upsideDown() {
+		log.i('call to upside down');
+		if(isNotOKToProceed()) return;
 
-		isExactIn ? 
-		await setOtherTokenValue(t[0], 2, !0) :
-		await setOtherTokenValue(t[1], 1, !0);
+		
+
+		let t1val = `${swap.token1_value.actual}`, 
+			t2val = `${swap.token2_value.actual}`,
+			sym1 = swap.token1_sym, 
+			sym2 = swap.token2_sym,
+			addr1 = swap.token1_addr, 
+			addr2 = swap.token2_addr,
+			icon1 = swap.token1_icon, 
+			icon2 = swap.token2_icon;
+		
+		await handleBalanceForSelectedToken(TOKEN.BOTH, [addr2, addr1]);
+		log.i('[ud] exact in:', swap.isExactIn);
+		if(swap.isExactIn) {
+			setTokenIp(t1val, TOKEN.B);
+			await setOtherTokenValue(TOKEN.B, !0);
+		} else {
+			setTokenIp(t2val, TOKEN.A);
+			await setOtherTokenValue(TOKEN.A, !0);
+		}
 		// switch tokenInfo
-		dispatch(setTokenInfo({sym: [s[1], s[0]], addr: [a[1], a[0]], n: 0, icon: [icn[1], icn[0]], isUpDown: !0}));
-	}
-
-	function isNotOKToProceed() {
-		let errMsg = !wallet.isConnected ? ERR.CONNECT_WALLET : 
-		rEqual(swap.token1_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_1 : 
-		rEqual(swap.token2_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_2 :
-		'';
-		const isNotOK = notEmpty(errMsg);
-		isNotOK && l_t.e(errMsg);
-		return isNotOK;
-	}
-
-	async function isLiquidityLowForPair(pair, amount) {
-		const pairAddr = await FactoryContract.getPair(...pair);
-		PairContract.init(pairAddr);
-		const reserves = await PairContract.getReserves();
-		const t0 = await PairContract.getToken0();
-		const t1 = await PairContract.getToken1();
-		const [tokenB, reserveB] = rEqual(swap.token2_addr, t0) ? 
-		[t0, reserves[0]] :
-		[t1, reserves[1]];
-		setReserves(reserves);
-		setTokenB_addr(tokenB);
-		setPairTokens([t0, t1]);
-		if(amount.gt(reserveB)) return !0;
-		// log.i('[isLiquidityLowForPair]');
-		// log.i('amount of tokenB:', amount.toString()/10**18);
-		// log.i('pair:', pair);
-		// log.i('tokenB: ' + tokenB);
-		// log.i('reserves:', reserveB.toString()/10**18);
-		return !1;
-	}
-
-	function handleInputErr(erTxt, toDispatch, v, ipNum) {
-		setIsErr(!0);
-		setIsFetching(!1);
-		setIsDisabled(!0);
-		setShowXchangeRate(!1);
-		setErrText(erTxt);
-		toDispatch &&
 		dispatch(
-			setTokenValue({
-				v: {
-					actual: v,
-					ui: rEqual(v, '') ? v : toFixed(v, MISC.OTHER_TOKEN_DEC_PLACES),
-				}, 
-				n: ipNum,
+			setTokenInfo({
+				sym: [sym2, sym1], 
+				addr: [addr2, addr1], 
+				n: TOKEN.BOTH, 
+				icon: [icon2, icon1], 
+				isUpDown: !0
 			})
 		);
 	}
 
-	// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
-	// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
-	async function setOtherTokenValue(typedValue, ipNum, isUpsideDown) {
-		log.i('you typed:', typedValue);
-		// resetStates();
-		if(isNotOKToProceed()) return !1;
+	function setTokenIp(typedValue, ipNum) {
+		log.i('actual typed:', typedValue);
+		typedValueGlobal = typedValue;
+		if(isNotOKToProceed()) {
+			typedValueGlobal = '';
+			return !1;
+		}
 
-		const xactIn = !(ipNum - 1);
-		const otherTokenNum = ipNum - 1 ? 1: 2;
-		setIsExactIn(xactIn);
-		// CHheck for invalid input
 		if(isInvalidNumeric(typedValue)) {
-			log.i('[setOtherTokenValue] num invalid');
+			log.i('ip num invalid');
+			typedValueGlobal = '';
 			return dispatch(
 				setTokenValue({ 
 					v: '',
@@ -268,17 +325,27 @@ const useSwap = props => {
 				}, n: ipNum
 			})
 		);
+	}
+
+	// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
+	// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
+	async function setOtherTokenValue(ipNum, isUpsideDown) {
+		log.i('typed value received: ', typedValueGlobal);
+		const xactIn = !(ipNum - 1);
+		const otherTokenNum = ipNum - 1 ? 1: 2;
+		dispatch(setIsExactIn(xactIn));
+		log.i('exactIn set to: ' + xactIn);
 		setIsFetching(!0);
 		// check if given value is non-zero
-		if(notEmpty(typedValue) && notZero(typedValue)) {
-			log.i('not empty', typedValue);
+		if(notEmpty(typedValueGlobal) && notZero(typedValueGlobal)) {
+			log.i('not empty', typedValueGlobal);
 			try {
 				const addrList = isUpsideDown ? 
 					[swap.token2_addr, swap.token1_addr] : 
 					[swap.token1_addr, swap.token2_addr];
 				const pair = await tryNormalizePair(addrList);
 				// code block to check if the pair is valid
-				if(isEmpty(pair)) return handleInputErr(ERR.POOL_NOT_EXIST, !0, typedValue, ipNum);
+				if(isEmpty(pair)) return handleInputErr(ERR.POOL_NOT_EXIST, !0, typedValueGlobal, ipNum);
 				// get contract instance
 				TokenContract.init(
 					isUpsideDown ? // if coming from upsideDown()
@@ -286,11 +353,10 @@ const useSwap = props => {
 					swap[`token${ipNum}_addr`] // otherwise addr of exact token
 				);
 				let dec = await TokenContract.decimals();
-				const param = [stdRaiseBy(typedValue, dec), pair];
+				const param = [stdRaiseBy(typedValueGlobal, dec), pair];
 				// code block to check if enough liquidity for the pair
 				if(rEqual(ipNum, TOKEN.B)) {
 					const isLiqLow = await isLiquidityLowForPair(pair, toBigNum(param[0]));
-					log.i('liq low?:', isLiqLow);
 					if(isLiqLow) {
 						setIsErr(!0);
 						setIsFetching(!1);
@@ -314,8 +380,8 @@ const useSwap = props => {
 				let fetchedAmountFraction = toDec(fetchedAmount, dec);
 				const xchangePrice = toFixed(
 					xactIn ? 
-					typedValue / fetchedAmountFraction : 
-					fetchedAmountFraction / typedValue, 
+					typedValueGlobal / fetchedAmountFraction : 
+					fetchedAmountFraction / typedValueGlobal, 
 					MISC.XCHANGE_PRICE_DEC_PLACES
 				);
 				
@@ -365,7 +431,7 @@ const useSwap = props => {
 
 				const buyAmount = xactIn ? fetchedAmount.toString() : param[0];
 				
-				await setSwapPrerequisites(typedValue, pair, fetchedAmount, xactIn, ipNum)
+				await setSwapPrerequisites(pair, fetchedAmount, xactIn, ipNum)
 				// set another token value
 				log.i('xchange rate:', xchangeEquivalent);
 				setXchangeEquivalent(xchangePrice);
@@ -377,11 +443,11 @@ const useSwap = props => {
 				setPriceImpactPercent(priceImpactPercent);
 				dispatch(
 					setTokenValue({
-							v: {
-								actual: fetchedAmountFraction,
-								ui: toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES)
-							}, 
-							n: otherTokenNum
+						v: {
+							actual: fetchedAmountFraction,
+							ui: toFixed(fetchedAmountFraction, MISC.OTHER_TOKEN_DEC_PLACES)
+						}, 
+						n: otherTokenNum
 					})
 				);
 			} catch(e) {
@@ -395,18 +461,14 @@ const useSwap = props => {
 			'',
 			otherTokenNum,
 		);
-		handleInputErr(
-			ERR.INTERNAL,
-			!0,
-			'',
-			otherTokenNum,
-		);
 	}
 
-	function token(addr) {
-		return swap.tokenList.filter(t => t.addr === addr)[0];
+	function importToken() {
+		let token = swap.tokenList_chg[0];
+		dispatch(addToTokenList({...token, imported: !0}));
+		dispatch(changeTokenList([{...token, imported: !0}]));
 	}
-
+	
 	async function searchOrImportToken(v) {
 		v = v.trim();
 		if(!v.length) v = swap.tokenList;
@@ -430,18 +492,10 @@ const useSwap = props => {
 		dispatch(changeTokenList(v));
 	}
 
-	function importToken() {
-		let token = swap.tokenList_chg[0];
-		dispatch(addToTokenList({...token, imported: !0}));
-		dispatch(changeTokenList([{...token, imported: !0}]));
-	}
-
-	function resetTList_chg() {
-		dispatch(changeTokenList(swap.tokenList));
-	}
-
-	async function checkIfCSTClaimed(account) {
-		setIsCSTClaimed(await FaucetContract.hasClaimed(account || wallet.priAccount))
+	async function checkIfCSTClaimed(account = wallet.priAccount) {
+		setIsCSTClaimed(
+			await FaucetContract.hasClaimed(account)
+		)
 	}
 
 	async function claimCST(e) {
@@ -455,33 +509,6 @@ const useSwap = props => {
 			l_t.s('claim success!. please check your account.');
 		} catch(e){ Err.handle(e); setIsClaiming(!1); }
 	}
-
-	function resetBalances() {
-		log.w('balances reset');
-		setShowBalance1(!1);
-		setShowBalance2(!1);
-		setToken1_bal(TOKEN_INIT.BAL());
-		setToken2_bal(TOKEN_INIT.BAL());
-	}
-
-	function resetTokenValues() {
-		dispatch(setTokenValue({
-	v: '', 
-	n: 0
-	}));
-	}
-
-	function resetTokenInfos(n) {
-		dispatch(setTokenInfo({
-	n,
-			isUpDown: !1,
-			reset: !0,
-	sym: MISC.DEF_TOKEN.SYM,
-	addr: MISC.DEF_TOKEN.ADDR,
-	icon: MISC.DEF_TOKEN.ICON,
-	}));
-	}
-
 
 	// this function is supposed to be called 
 	// at the end of setOtherTokenValue function
@@ -506,25 +533,16 @@ const useSwap = props => {
 		const priceDiff = tokenB_price_old - tokenB_price_new;
 		// in-terms of old pricing
 		const priceImpactPercent = (priceDiff / tokenB_price_old) * 100;
-		// log.i('[priceImpact');
-		// log.i('tokenB_price_old', tokenB_price_old);
-		// log.i('tokenB_price_new', tokenB_price_new);
-		// log.i('sellAmount', sellAmount);
-		// log.i('buyAmount', buyAmount);
 		return toFixed(priceImpactPercent, 3);
 	}
 
 	async function  fetchBalanceOf(selectedToken, addrList) {
-		log.i('selected token:', selectedToken);
-		// log.t('selected token:', selectedToken);
 		let bal, dec;
 		const b = TOKEN_INIT.BAL();
-		log.i('Balance for selected token # ' + selectedToken);
 		if(rEqual(selectedToken, TOKEN.A)) {
 			TokenContract.init(addrList[0]);
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
-			log.i('Bal for token 1:', toFixed(toDec(bal, dec), 2));
 			b.actual = toDec(bal, dec);
 			b.ui = toFixed(b.actual, 2);
 			setToken1_bal(b);
@@ -532,7 +550,6 @@ const useSwap = props => {
 			TokenContract.init(addrList[0]);
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
-			log.i('Bal for token 2:', toDec(bal, dec));
 			b.actual = toDec(bal, dec);
 			b.ui = toFixed(b.actual, 2);
 			setToken2_bal(b);
@@ -543,24 +560,19 @@ const useSwap = props => {
 			b.actual = toDec(bal, dec);
 			b.ui = toFixed(b.actual, 2);
 			setToken1_bal({...b});
-			log.i('Bal for token 1:', toFixed(toDec(bal, dec), 2));
 			TokenContract.init(addrList[1]);
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 			b.actual = toDec(bal, dec);
 			b.ui = toFixed(b.actual, 2);
 			setToken2_bal({...b});
-			log.i('Bal for token 2:', toDec(bal, dec));
-			log.i('addrList:', addrList);
 		}
 	}
 
 	async function handleBalanceForSelectedToken(selectedToken, addrList) {
-		log.w('handling bal for token # ' + selectedToken);
 		if(
 			rEqual(selectedToken, TOKEN.A)
 		) {
-				log.w('showing balance 1', swap.token1_sym);
 				await fetchBalanceOf(TOKEN.A, addrList);
 				setShowMaxBtn1(!0);
 				setShowBalance1(!0);
@@ -568,7 +580,6 @@ const useSwap = props => {
 		else if(
 			rEqual(selectedToken, TOKEN.B) 
 		) {
-				log.w('showing balance 2', swap.token2_sym);
 				await fetchBalanceOf(TOKEN.B, addrList);
 				setShowMaxBtn2(!0);
 				setShowBalance2(!0);
@@ -580,7 +591,6 @@ const useSwap = props => {
 			setShowBalance1(!0);
 			setShowBalance2(!0);
 		} else {
-			log.w('bal 1:', showBalance1, 'bal 2:', showBalance2);
 			if(rEqual(selectedToken, TOKEN.A)) {
 				if(showBalance1) {
 					setShowBalance1(!1);
@@ -593,7 +603,6 @@ const useSwap = props => {
 
 	async function setToMaxAmount(selectedToken) {
 		if(rEqual(selectedToken, TOKEN.A)) {
-			log.i('set max to bal:', token1_bal);
 			const ok = await setOtherTokenValue(`${token1_bal.actual}`, TOKEN.A, !1);
 			setShowMaxBtn1(!ok);
 		}
@@ -604,12 +613,12 @@ const useSwap = props => {
 	}
 
 	function eventListeners() {
-		const disableScroll = e => {
+		const onInputChangeDisableScroll = e => {
 			if(rEqual(document.activeElement.type, 'number'))
 				document.activeElement.blur();
 		}
 		
-		const handleTokenSelected = e => {
+		const onTokenSelected = e => {
 			log.w('EVENT: ' + EVENT.TOKEN_SELECTION, e.detail);
 			const addrList = e.detail.addrList;
 			wallet.isConnected && isAddr(addrList[0]) &&
@@ -629,9 +638,8 @@ const useSwap = props => {
 		// disable scrolling on input type number!
 		document.addEventListener(EVENT.CHAIN_CHANGE, onChainChanged)
 		document.addEventListener(EVENT.ACC_CHANGE, onAccountChanged)
-		document.addEventListener(EVENT.MOUSE_SCROLL, disableScroll);
-		document.addEventListener(EVENT.TOKEN_SELECTION, handleTokenSelected);
-		log.w('event listeners setup done.');
+		document.addEventListener(EVENT.TOKEN_SELECTION, onTokenSelected);
+		document.addEventListener(EVENT.MOUSE_SCROLL, onInputChangeDisableScroll);
 	}
 
 	function initialSteps(n) {
@@ -647,6 +655,7 @@ const useSwap = props => {
 		token,
 		claimCST,
 		upsideDown,
+		setTokenIp,
 		resetStates,
 		performSwap,
 		importToken,
@@ -656,6 +665,7 @@ const useSwap = props => {
 		fetchBalanceOf,
 		resetTList_chg,
 		setToMaxAmount,
+		upsideDown_wrap,
 		resetTokenInfos,
 		resetTokenValues,
 		checkIfCSTClaimed,
@@ -670,7 +680,6 @@ const useSwap = props => {
 			errText,
 			btnText,
 			amountIn,
-			isExactIn,
 			isClaiming,
 			token1_bal,
 			token2_bal,
@@ -687,6 +696,7 @@ const useSwap = props => {
 			isInvalidNetwork,
 			xchangeEquivalent,
 			priceImpactPercent,
+			isExactIn: swap.isExactIn,
 		},
 		// stateSetters
 		setPair,
@@ -694,7 +704,6 @@ const useSwap = props => {
 		setErrText,
 		setBtnText,
 		setAmountIn,
-		setIsExactIn,
 		setToken1_bal,
 		setToken2_bal,
 		setIsFetching,
@@ -707,6 +716,7 @@ const useSwap = props => {
 		setThresholdAmount,
 		setIsInvalidNetwork,
 		setXchangeEquivalent,
+		setIsExactIn: setIsExactIn,
     }
 }
 
