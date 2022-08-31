@@ -135,10 +135,10 @@ const useSwap = props => {
 		return isNotOK;
 	}
 
-	function handleInputErr(erTxt, toDispatch, v, ipNum) {
+	function handleInputErr(erTxt, toDispatch, v, ipNum, disable) {
 		setIsErr(!0);
 		setIsFetching(!1);
-		setIsDisabled(!0);
+		setIsDisabled(disable);
 		setShowXchangeRate(!1);
 		setErrText(erTxt);
 		toDispatch &&
@@ -345,7 +345,7 @@ const useSwap = props => {
 					[swap.token1_addr, swap.token2_addr];
 				const pair = await tryNormalizePair(addrList);
 				// code block to check if the pair is valid
-				if(isEmpty(pair)) return handleInputErr(ERR.POOL_NOT_EXIST, !0, typedValueGlobal, ipNum);
+				if(isEmpty(pair)) return handleInputErr(ERR.POOL_NOT_EXIST, !0, typedValueGlobal, ipNum, !1);
 				// get contract instance
 				TokenContract.init(
 					isUpsideDown ? // if coming from upsideDown()
@@ -411,7 +411,8 @@ const useSwap = props => {
 						`${ERR.LOW_BAL_FOR}${swap.token1_sym}`, 
 						!0, 
 						fetchedAmountFraction, 
-						otherTokenNum
+						otherTokenNum,
+						!0
 					)
 				
 				// check allowance for token 1
@@ -424,8 +425,9 @@ const useSwap = props => {
 					handleInputErr(
 						`${ERR.APPROVE}${swap.token1_sym}`,
 						!0,
-						'',
+						fetchedAmountFraction,
 						otherTokenNum,
+						!1,
 					)
 				} else setIsErr(!1);
 
@@ -461,6 +463,7 @@ const useSwap = props => {
 			!0,
 			'',
 			otherTokenNum,
+			!0,
 		);
 	}
 
