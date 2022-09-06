@@ -55,7 +55,6 @@ import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/
 import { useEffect } from "react";
 import { useCallback } from "react";
 import { useRef } from "react";
-import { retrieveTokenList } from "../../../services/API";
 
 var interval = null;
 var typedValueGlobal = '';
