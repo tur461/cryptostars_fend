@@ -49,6 +49,7 @@ import { useDispatch, useSelector } from "react-redux";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
 import { useEffect } from "react";
+import { useCallback } from "react";
 
 var interval = null;
 var typedValueGlobal = '';
@@ -83,6 +84,18 @@ const useSwap = props => {
 	const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
 	const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 	const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
+
+	const debounced = (func, delay=1000) => {
+		let timer;
+		return (...args) => {
+			timer && clearTimeout(timer);
+			timer = setTimeout(_ => {
+				timer = null;
+				log.i('applying arguments to setOtherTokenValue:', args);
+				func(...args);
+			}, delay);
+		}
+	}
 
 	function resetStates() {
 		setTokenApproved(!0);
@@ -254,23 +267,19 @@ const useSwap = props => {
 		}) 
 	}
 
-	function upsideDown_wrap() {
-		if(notNull(interval)) {
-			clearTimeout(interval);
-			interval = null;
-		}
-		interval = setTimeout(upsideDown, 1000);
-	}
+	useEffect(_ => {
+		log.i('[useEffect] isUpdown:', swap.isUpDownToggle);
+		(async _ => {
+			setTokenIp(`${swap.token2_value.actual}`, TOKEN.A);
+			await setOtherTokenValue(TOKEN.A, !0, [swap.token1_addr, swap.token2_addr]);
+		})();
+	}, [swap.isUpDownToggle])
 
 	async function upsideDown() {
 		log.i('call to upside down');
 		if(isNotOKToProceed()) return;
 
-		
-
-		let t1val = `${swap.token1_value.actual}`, 
-			t2val = `${swap.token2_value.actual}`,
-			sym1 = swap.token1_sym, 
+		let sym1 = swap.token1_sym, 
 			sym2 = swap.token2_sym,
 			addr1 = swap.token1_addr, 
 			addr2 = swap.token2_addr,
@@ -278,14 +287,7 @@ const useSwap = props => {
 			icon2 = swap.token2_icon;
 		
 		await handleBalanceForSelectedToken(TOKEN.BOTH, [addr2, addr1]);
-		log.i('[ud] exact in:', swap.isExactIn);
-		if(swap.isExactIn) {
-			setTokenIp(t1val, TOKEN.B);
-			await setOtherTokenValue(TOKEN.B, !0);
-		} else {
-			setTokenIp(t2val, TOKEN.A);
-			await setOtherTokenValue(TOKEN.A, !0);
-		}
+		
 		// switch tokenInfo
 		dispatch(
 			setTokenInfo({
@@ -296,7 +298,26 @@ const useSwap = props => {
 				isUpDown: !0
 			})
 		);
+		
+		
+		
+		
 	}
+
+	const debouncedUpsideDown = useCallback(debounced(upsideDown, 1000), [
+		swap.isExactIn,
+		swap.token1_addr,
+		swap.token2_addr,
+		swap.token1_value.actual,
+		swap.token2_value.actual,
+	])
+
+	const debouncedIP = useCallback(debounced(setOtherTokenValue), [
+		wallet.priAccount,
+		swap.token1_addr,
+		swap.token2_addr,
+		swap.token1_sym
+	]);
 
 	function setTokenIp(typedValue, ipNum) {
 		log.i('actual typed:', typedValue);
@@ -329,7 +350,7 @@ const useSwap = props => {
 
 	// if n is 1, exact is input (exactIn) => we need to get amount for out i.e. getAmountsOut()
 	// if n is 2, exact is output (exactOut) => we need to get amount for in i.e. getAmountsIn()
-	async function setOtherTokenValue(ipNum, isUpsideDown) {
+	async function setOtherTokenValue(ipNum, isUpsideDown, _pair) {
 		log.i('typed value received: ', typedValueGlobal);
 		const xactIn = !(ipNum - 1);
 		const otherTokenNum = ipNum - 1 ? 1: 2;
@@ -343,7 +364,9 @@ const useSwap = props => {
 				const addrList = isUpsideDown ? 
 					[swap.token2_addr, swap.token1_addr] : 
 					[swap.token1_addr, swap.token2_addr];
+					log.i('addrList:', addrList);
 				const pair = await tryNormalizePair(addrList);
+				_pair = _pair || pair;
 				// code block to check if the pair is valid
 				if(isEmpty(pair)) return handleInputErr(ERR.POOL_NOT_EXIST, !0, typedValueGlobal, ipNum, !1);
 				// get contract instance
@@ -352,7 +375,9 @@ const useSwap = props => {
 					addrList[ipNum - 1] : // select addr of second token 
 					swap[`token${ipNum}_addr`] // otherwise addr of exact token
 				);
+				log.i('token contract:', TokenContract);
 				let dec = await TokenContract.decimals();
+				log.i('Dec:', dec);
 				const param = [stdRaiseBy(typedValueGlobal, dec), pair];
 				// code block to check if enough liquidity for the pair
 				if(rEqual(ipNum, TOKEN.B)) {
@@ -378,10 +403,10 @@ const useSwap = props => {
 					fetchedAmounts[0]; 
 				
 				let fetchedAmountFraction = toDec(fetchedAmount, dec);
+				log.i('isExact in', xactIn, swap.isExactIn);
+				log.i(fetchedAmount, 'fetchedAmount frac:', fetchedAmountFraction, param);
 				const xchangePrice = toFixed(
-					xactIn ? 
-					typedValueGlobal / fetchedAmountFraction : 
-					fetchedAmountFraction / typedValueGlobal, 
+					toDec((await RouterContract.getAmountsIn([stdRaiseBy('1', dec), _pair]))[0], dec), 
 					MISC.XCHANGE_PRICE_DEC_PLACES
 				);
 				
@@ -662,6 +687,7 @@ const useSwap = props => {
 		claimCST,
 		upsideDown,
 		setTokenIp,
+		debouncedIP,
 		resetStates,
 		performSwap,
 		importToken,
@@ -671,11 +697,11 @@ const useSwap = props => {
 		fetchBalanceOf,
 		resetTList_chg,
 		setToMaxAmount,
-		upsideDown_wrap,
 		resetTokenInfos,
 		resetTokenValues,
 		checkIfCSTClaimed,
 		setOtherTokenValue,
+		debouncedUpsideDown,
 		searchOrImportToken,
 		approveWithMaxAmount,
 		handleBalanceForSelectedToken,

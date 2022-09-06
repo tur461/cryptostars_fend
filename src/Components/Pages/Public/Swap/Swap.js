@@ -199,7 +199,7 @@ const Swap = () => {
                             inputCallback: e => {
                               swapHook.setTokenIp(e.target.value, TOKEN.A);
                               swapHook.setShowMaxBtn1(!0);
-                              debounce(swapHook.setOtherTokenValue, [TOKEN.A, !1], DEBOUNCE_ID.IP_A)
+                              swapHook.debouncedIP(TOKEN.A, !1);
                             }
                           },
                           tList: {
@@ -229,7 +229,7 @@ const Swap = () => {
                       className="swapSwitch" 
                       onClick={e => {
                         eHandle(e);
-                        swapHook.upsideDown_wrap();
+                        swapHook.debouncedUpsideDown();
                         // debounce(swapHook.upsideDown_wrap, [], DEBOUNCE_ID.UPSIDE_DOWN, 1500);
                       }}
                     > <img src={swapicon} alt="swap_icon" /> 
@@ -250,7 +250,7 @@ const Swap = () => {
                             inputCallback: e => {
                               swapHook.setTokenIp(e.target.value, TOKEN.B);
                               swapHook.setShowMaxBtn2(!0);
-                              debounce(swapHook.setOtherTokenValue, [TOKEN.B, !1], DEBOUNCE_ID.IP_B)
+                              swapHook.debouncedIP(TOKEN.B, !1);
                             }
                           },
                           tList: {

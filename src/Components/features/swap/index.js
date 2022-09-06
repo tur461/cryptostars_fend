@@ -25,6 +25,7 @@ export const swapSlice = createSlice({
         tokenList_chg: TOKEN_LIST_STATIC, 
         token1_addr: '',
         token1_icon: `${GEN_ICON}`,
+        isUpDownToggle: !1,
     },
 
     reducers: {
@@ -42,7 +43,7 @@ export const swapSlice = createSlice({
             }
         },
         setTokenInfo: (state, action) => {
-            // log.i('setting token infos:', action.payload);
+            log.i('setting token infos:', action.payload);
             if(rEqual(action.payload.n, 0)) {
                 if(action.payload.isUpDown) {
                     state.token1_sym = action.payload.sym[0];
@@ -53,6 +54,8 @@ export const swapSlice = createSlice({
     
                     state.token1_addr = action.payload.addr[0];
                     state.token2_addr = action.payload.addr[1];
+                    state.isUpDownToggle = !state.isUpDownToggle;
+
                 } else {
                     state.token1_sym = MISC.SEL_TOKEN;
                     state.token2_sym = MISC.SEL_TOKEN;

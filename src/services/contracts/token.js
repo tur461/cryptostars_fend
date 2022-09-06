@@ -9,7 +9,7 @@ import CommonF from "./common";
 const TokenContract = {
     _address: null,
     get contract() {
-        Wallet.init();
+        // Wallet.init();
         return new ethers.Contract(
             this._address, 
             ABI.Token,
@@ -20,6 +20,7 @@ const TokenContract = {
         return new ethers.utils.Interface(ABI.Token);
     },
     init: function(addr) {
+        console.log('Token contract init with ' + addr);
         this._address = addr;
         return this;
     },
