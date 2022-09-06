@@ -89,7 +89,7 @@ const useSwap = props => {
 	const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
 	const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 	const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
-
+	// working
 	const debounced = (func, delay=1000) => {
 		let timer;
 		return (...args) => {
