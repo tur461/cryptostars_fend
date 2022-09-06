@@ -54,6 +54,7 @@ export const MISC = {
 }
 
 export const URL = {
+    API_BACKEND_URL: 'https://admin-staging.crypto-stars.net',
     RPC: {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',
@@ -75,6 +76,7 @@ export const VALID_CHAIN_ID = MISC.CHAIN_ID.CRO_TEST;
 // all local-storage keys are kept here!
 export const LS_KEYS = {
     JWT: 'jwtToken',
+    TOKEN_LIST: 'token_list',
     EXACT_IN: 'is_exact_in',
     WALLET_TYPE: 'wallet_type',
     SHOW_BAL_1: 'show_balance_1',
