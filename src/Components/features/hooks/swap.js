@@ -19,7 +19,10 @@ import {
 	stdRaiseBy, 
 	isInvalidNumeric,
 	notZero,
-	notNull, 
+	notNull,
+	jString,
+	notEqual,
+	isNull, 
 } from "../../../services/utils";
 
 import { 
@@ -37,11 +40,12 @@ import {
 	ADDRESS, 
 	INIT_VAL, 
 	TOKEN_INIT,
-	ERR, 
+	ERR,
+	LS_KEYS, 
 } from "../../../services/constants/common";
 
 import { useState } from "react";
-import { Err } from "../../../services/xtras";
+import { Err, LocalStore } from "../../../services/xtras";
 import l_t from "../../../services/logging/l_t";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
@@ -50,6 +54,8 @@ import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
 import { useEffect } from "react";
 import { useCallback } from "react";
+import { useRef } from "react";
+import { retrieveTokenList } from "../../../services/API";
 
 var interval = null;
 var typedValueGlobal = '';
@@ -84,6 +90,24 @@ const useSwap = props => {
 	const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
 	const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 	const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
+
+	const lock = useRef(!0);
+	useEffect(_ => {
+		// onLoad
+		if(lock.current) {
+			setInterval(_ => {
+				retrieveTokenList()
+				.then(res => {
+					const resStr = jString(res);
+					const tListStr = LocalStore.get(LS_KEYS.TOKEN_LIST);
+					if(isNull(tListStr) || notEqual(tListStr, resStr)) {
+						LocalStore.add(LS_KEYS.TOKEN_LIST, resStr);
+
+					}
+				})
+			}, 10 * 1000);
+		}	
+	}, [])
 
 	const debounced = (func, delay=1000) => {
 		let timer;
@@ -632,12 +656,12 @@ const useSwap = props => {
 
 	async function setToMaxAmount(selectedToken) {
 		if(rEqual(selectedToken, TOKEN.A)) {
-			setTokenIp(`${token1_bal.actual}`, TOKEN.A);
+			setTokenIp(`${token1_bal.actual - (token1_bal.actual * 0.001)}`, TOKEN.A);
 			const ok = await setOtherTokenValue(TOKEN.A, !1);
 			setShowMaxBtn1(!ok);
 		}
 		else {
-			setTokenIp(`${token2_bal.actual}`, TOKEN.B);
+			setTokenIp(`${token2_bal.actual - (token2_bal.actual * 0.001)}`, TOKEN.B);
 			const ok = await setOtherTokenValue(TOKEN.B, !1);
 			setShowMaxBtn2(!ok);
 		}
