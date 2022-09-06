@@ -90,24 +90,6 @@ const useSwap = props => {
 	const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 	const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
 
-	const lock = useRef(!0);
-	useEffect(_ => {
-		// onLoad
-		if(lock.current) {
-			setInterval(_ => {
-				retrieveTokenList()
-				.then(res => {
-					const resStr = jString(res);
-					const tListStr = LocalStore.get(LS_KEYS.TOKEN_LIST);
-					if(isNull(tListStr) || notEqual(tListStr, resStr)) {
-						LocalStore.add(LS_KEYS.TOKEN_LIST, resStr);
-
-					}
-				})
-			}, 10 * 1000);
-		}	
-	}, [])
-
 	const debounced = (func, delay=1000) => {
 		let timer;
 		return (...args) => {
