@@ -105,6 +105,7 @@ const useSwap = props => {
 				tokenList.push(token);
 				addTokenToList(i+1);
 			})
+			.catch(e => {throw e})
 		}
 		list.length && addTokenToList(0);
 	}
@@ -114,19 +115,22 @@ const useSwap = props => {
 		// onLoad
 		if(lock.current) {
 			log.i('setting retrieve token list interval..');
-			setInterval(_ => {
-				retrieveTokenList()
-				.then(res => {
-					const tListStr = LocalStore.get(LS_KEYS.TOKEN_LIST);
-					try {
-						if(isNull(tListStr)) updateTokenList(res)
-						else updateTokenList(getTokenListDiff(res, jObject(tListStr)))
-						LocalStore.add(LS_KEYS.TOKEN_LIST, jString(res));
-					} catch(e) {
-
-					}
-				})
-			}, MISC.RETRIEVE_TOKEN_LIST_REQ_DELAY);
+			if(isNull(interval)) {
+				LocalStore.del(LS_KEYS.TOKEN_LIST);
+				interval = setInterval(_ => {
+					retrieveTokenList()
+					.then(res => {
+						const tListStr = LocalStore.get(LS_KEYS.TOKEN_LIST);
+						try {
+							if(isNull(tListStr)) updateTokenList(res)
+							else updateTokenList(getTokenListDiff(res, jObject(tListStr)))
+							LocalStore.add(LS_KEYS.TOKEN_LIST, jString(res));
+						} catch(e) {
+	
+						}
+					})
+				}, MISC.RETRIEVE_TOKEN_LIST_REQ_DELAY);
+			}
 			lock.current = !1;
 		}	
 	}, []);
