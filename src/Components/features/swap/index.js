@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import l_t from '../../../services/logging/l_t';
 import log from '../../../services/logging/logger';
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
-import { evDispatch, isNaNy, rEqual, toFixed, tStampJs } from '../../../services/utils';
+import { evDispatch, getTokenListDiff, isNaNy, rEqual, toFixed, tStampJs } from '../../../services/utils';
 import { EVENT, MISC, TOKEN_INIT, TOKEN_LIST_STATIC } from '../../../services/constants/common';
 
 export const swapSlice = createSlice({
@@ -131,8 +131,8 @@ export const swapSlice = createSlice({
         setToken1Approved: (state, action) => { state.token1_approved = action.payload },
         changeTokenList: (state, action) => { state.tokenList_chg = [...action.payload] },
         addTokensToTokenList: (state, action) => { 
-            state.tokenList = [...action.payload] 
-            state.tokenList_chg = [...action.payload] 
+            state.tokenList = [...state.tokenList, ...getTokenListDiff(action.payload, state.tokenList)] 
+            state.tokenList_chg = [...state.tokenList, ...getTokenListDiff(action.payload, state.tokenList)] 
         },
     }
 });

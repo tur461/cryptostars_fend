@@ -121,9 +121,13 @@ const useSwap = props => {
 				retrieveTokenList()
 				.then(res => {
 					const tListStr = LocalStore.get(LS_KEYS.TOKEN_LIST);
-					if(isNull(tListStr)) updateTokenList(res)
-					else updateTokenList(getTokenListDiff(res, jObject(tListStr)))
-					LocalStore.add(LS_KEYS.TOKEN_LIST, jString(res));
+					try {
+						if(isNull(tListStr)) updateTokenList(res)
+						else updateTokenList(getTokenListDiff(res, jObject(tListStr)))
+						LocalStore.add(LS_KEYS.TOKEN_LIST, jString(res));
+					} catch(e) {
+
+					}
 				})
 			}, MISC.RETRIEVE_TOKEN_LIST_REQ_DELAY);
 			lock.current = !1;
@@ -183,7 +187,6 @@ const useSwap = props => {
 	}
 
 	function isNotOKToProceed() {
-		log.t('i will fuck u');
 		log.i(swap.token1_sym, swap.token2_sym)
 		let errMsg = !wallet.isConnected ? ERR.CONNECT_WALLET : 
 		rEqual(swap.token1_sym, MISC.SEL_TOKEN) ? ERR.SELECT_TOKEN_1 : 
@@ -694,14 +697,14 @@ const useSwap = props => {
 		if(rEqual(selectedToken, TOKEN.A)) {
 			setTokenIp(`${token1_bal.actual - (token1_bal.actual * 0.001)}`, TOKEN.A);
 			const ok = await setOtherTokenValue(TOKEN.A, !1);
-			setShowMaxBtn1(!ok);
-			setShowMaxBtn2(ok);
+			setShowMaxBtn1(!1);
+			setShowMaxBtn2(!0);
 		}
 		else {
 			setTokenIp(`${token2_bal.actual - (token2_bal.actual * 0.001)}`, TOKEN.B);
 			const ok = await setOtherTokenValue(TOKEN.B, !1);
-			setShowMaxBtn2(!ok);
-			setShowMaxBtn1(ok);
+			setShowMaxBtn1(!0);
+			setShowMaxBtn2(!1);
 		}
 	}
 
