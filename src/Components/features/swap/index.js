@@ -130,6 +130,10 @@ export const swapSlice = createSlice({
         setValidSwap: (state, action) => { state.validSwap = action.payload },
         setToken1Approved: (state, action) => { state.token1_approved = action.payload },
         changeTokenList: (state, action) => { state.tokenList_chg = [...action.payload] },
+        addTokensToTokenList: (state, action) => { 
+            state.tokenList = [...action.payload] 
+            state.tokenList_chg = [...action.payload] 
+        },
     }
 });
 
@@ -148,6 +152,7 @@ export const {
     addToTokenList,
     changeTokenList,
     setToken1Approved,
+    addTokensToTokenList
 } = actions;
 
 export default reducer;
