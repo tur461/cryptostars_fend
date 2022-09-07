@@ -5,6 +5,7 @@ import {
 	setTokenValue,
 	addToTokenList, 
 	changeTokenList, 
+	addTokensToTokenList,
 } from "../swap";
 
 import { 
@@ -22,7 +23,9 @@ import {
 	notNull,
 	jString,
 	notEqual,
-	isNull, 
+	isNull,
+	jObject,
+	getTokenListDiff, 
 } from "../../../services/utils";
 
 import { 
@@ -44,19 +47,18 @@ import {
 	LS_KEYS, 
 } from "../../../services/constants/common";
 
-import { useState } from "react";
-import { Err, LocalStore } from "../../../services/xtras";
 import l_t from "../../../services/logging/l_t";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { useDispatch, useSelector } from "react-redux";
+import { retrieveTokenList } from "../../../services/API";
+import { Err, LocalStore } from "../../../services/xtras";
+import { useRef, useState, useEffect, useCallback } from "react";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
 import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/contracts/utils";
-import { useEffect } from "react";
-import { useCallback } from "react";
-import { useRef } from "react";
 
 var interval = null;
+window.hasLoaded = !1;
 var typedValueGlobal = '';
 
 const useSwap = props => {
@@ -89,7 +91,46 @@ const useSwap = props => {
 	const [token2_bal, setToken2_bal] = useState(TOKEN_INIT.BAL());
 	const [xchangeEquivalent, setXchangeEquivalent] = useState('0');
 	const [priceImpactPercent, setPriceImpactPercent] = useState('0.0');
-	// working
+
+	const updateTokenList = list => {
+		let tokenList = []
+		const addTokenToList = i => {
+			if(rEqual(i, list.length)) {
+				tokenList.length && dispatch(addTokensToTokenList(tokenList));
+				return;
+			}
+			
+			searchOrImportToken(list[i])
+			.then(token => {
+				tokenList.push(token);
+				addTokenToList(i+1);
+			})
+		}
+		list.length && addTokenToList(0);
+	}
+
+	const lock = useRef(!0);
+	useEffect(_ => {
+		// onLoad
+		if(lock.current) {
+			log.i('setting retrieve token list interval..');
+			setInterval(_ => {
+				retrieveTokenList()
+				.then(res => {
+					const tListStr = LocalStore.get(LS_KEYS.TOKEN_LIST);
+					try {
+						if(isNull(tListStr)) updateTokenList(res)
+						else updateTokenList(getTokenListDiff(res, jObject(tListStr)))
+						LocalStore.add(LS_KEYS.TOKEN_LIST, jString(res));
+					} catch(e) {
+
+					}
+				})
+			}, MISC.RETRIEVE_TOKEN_LIST_REQ_DELAY);
+			lock.current = !1;
+		}	
+	}, []);
+
 	const debounced = (func, delay=1000) => {
 		let timer;
 		return (...args) => {
@@ -273,11 +314,12 @@ const useSwap = props => {
 	}
 
 	useEffect(_ => {
-		log.i('[useEffect] isUpdown:', swap.isUpDownToggle);
-		(async _ => {
-			setTokenIp(`${swap.token2_value.actual}`, TOKEN.A);
-			await setOtherTokenValue(TOKEN.A, !0, [swap.token1_addr, swap.token2_addr]);
-		})();
+		if(window.hasLoaded) {
+			(async _ => {
+				setTokenIp(`${swap.token2_value.actual}`, TOKEN.A);
+				await setOtherTokenValue(TOKEN.A, !0, [swap.token1_addr, swap.token2_addr]);
+			})();
+		}
 	}, [swap.isUpDownToggle])
 
 	async function upsideDown() {
@@ -342,7 +384,7 @@ const useSwap = props => {
 				})
 			);
 		}
-		
+		if(!window.hasLoaded) window.hasLoaded = !0;
 		dispatch(
 			setTokenValue({
 				v: {
@@ -503,27 +545,40 @@ const useSwap = props => {
 		dispatch(changeTokenList([{...token, imported: !0}]));
 	}
 	
-	async function searchOrImportToken(v) {
-		v = v.trim();
-		if(!v.length) v = swap.tokenList;
-		else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
-			
-			TokenContract.init(v);
-			let name = await TokenContract.name();
-			let sym = await TokenContract.symbol();
-			let dec = await TokenContract.decimals();
-			// wallet must be connected for this!
+	// async function searchOrImportToken(v) {
+	// 	v = v.trim();
+	// 	if(!v.length) v = swap.tokenList;
+	// 	else if(isAddr(v) && !swap.tokenList.filter(tkn => tkn.addr === v).length) {
+	// 		TokenContract.init(v);
+	// 		let name = await TokenContract.name();
+	// 		let sym = await TokenContract.symbol();
+	// 		let dec = await TokenContract.decimals();
+	// 		// wallet must be connected for this!
+	// 		let bal = await TokenContract.balanceOf(wallet.priAccount);
+	// 		bal = bal.toBigInt().toString();
+	// 		v = [{name, sym, dec, bal, addr: v, icon: GEN_ICON, imported: !1}]
+	// 	} else {
+	// 		v = swap.tokenList.filter(tkn => {
+	// 			if(tkn.sym.toLowerCase().indexOf(v.toLowerCase()) >= 0) return !0;
+	// 			if(tkn.addr === v) return !0;
+	// 			return !1;
+	// 		});
+	// 	}
+	// 	dispatch(changeTokenList(v));
+	// }
+	async function searchOrImportToken(token) {
+			TokenContract.init(token.addr);
 			let bal = await TokenContract.balanceOf(wallet.priAccount);
 			bal = bal.toBigInt().toString();
-			v = [{name, sym, dec, bal, addr: v, icon: GEN_ICON, imported: !1}]
-		} else {
-			v = swap.tokenList.filter(tkn => {
-				if(tkn.sym.toLowerCase().indexOf(v.toLowerCase()) >= 0) return !0;
-				if(tkn.addr === v) return !0;
-				return !1;
-			});
-		}
-		dispatch(changeTokenList(v));
+			return {
+				bal, 
+				imported: !0,
+				sym: token.sym, 
+				dec: token.dec, 
+				icon: GEN_ICON, 
+				addr: token.addr, 
+				name: token.name, 
+			}
 	}
 
 	async function checkIfCSTClaimed(account = wallet.priAccount) {
@@ -639,12 +694,14 @@ const useSwap = props => {
 		if(rEqual(selectedToken, TOKEN.A)) {
 			setTokenIp(`${token1_bal.actual - (token1_bal.actual * 0.00001)}`, TOKEN.A);
 			const ok = await setOtherTokenValue(TOKEN.A, !1);
-			setShowMaxBtn1(!ok);
+			setShowMaxBtn1(!1);
+			setShowMaxBtn2(!0);
 		}
 		else {
 			setTokenIp(`${token2_bal.actual - (token2_bal.actual * 0.00001)}`, TOKEN.B);
 			const ok = await setOtherTokenValue(TOKEN.B, !1);
-			setShowMaxBtn2(!ok);
+			setShowMaxBtn1(!0);
+			setShowMaxBtn2(!1);
 		}
 	}
 

@@ -228,6 +228,13 @@ const debounce = (cbk, argList, id, delay = MISC.DEBOUNCE_DELAY) => {
     
 }
 
+// one-level diff
+const getTokenListDiff = (a, b) => {
+    if(!isArr(a)) a = jObject(a);
+    if(!isArr(b)) b = jObject(b);
+    return a.filter(n => !b.filter(m => rEqual(m.addr, n.addr)).length);
+}
+
 
 export {
     isNum,
@@ -260,5 +267,6 @@ export {
     evDispatch,
     toDateTimeStr,
     isInvalidNumeric,
+    getTokenListDiff,
     keepEyeOnInternetStatus,
 }

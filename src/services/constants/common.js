@@ -49,11 +49,13 @@ export const MISC = {
     XCHANGE_PRICE_DEC_PLACES: 4,
     CONNECT_TTL: 'Connect Wallet',
     NET_STATUS_CHECK_DELAY: 2200, // ms
+    RETRIEVE_TOKEN_LIST_REQ_DELAY: 10 * 1000, // ms
     PVT_KEY: process.env.REACT_APP_PRIVATE_KEY,
     MAX_256: '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 }
 
 export const URL = {
+    API_BACKEND_URL: 'https://admin-staging.crypto-stars.net',
     RPC: {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',
@@ -75,6 +77,7 @@ export const VALID_CHAIN_ID = MISC.CHAIN_ID.CRO_TEST;
 // all local-storage keys are kept here!
 export const LS_KEYS = {
     JWT: 'jwtToken',
+    TOKEN_LIST: 'token_list',
     EXACT_IN: 'is_exact_in',
     WALLET_TYPE: 'wallet_type',
     SHOW_BAL_1: 'show_balance_1',
@@ -135,31 +138,6 @@ export const TOKEN_INIT = {
 export const TOKEN_LIST_STATIC = [
     {
         imported: !0,
-        icon: TUR_ICON,
-        sym: "TUR",
-        name: 'TUR',
-        bal: '0',
-        dec: 18,
-        disabled: !1,
-        tokenNum1: !1,
-        tokenNum2: !1,
-        addr: '0x283260A3461A435faa5dc30cc8F3B16445eD5cc5',
-    
-    },
-    {
-        imported: !0,
-        icon: DIY_ICON,
-        sym: "DIY",
-        name: 'DIY',
-        bal: '0',
-        dec: 18,
-        disabled: !1,
-        tokenNum1: !1,
-        tokenNum2: !1,
-        addr: '0x2969ff4c56D5f33A8Bf36F20150f82B2a2a1F52C',
-    },
-    {
-        imported: !0,
         icon: CST_ICON,
         sym: "CST",
         name: 'crypto-star erc20 token',
@@ -172,16 +150,41 @@ export const TOKEN_LIST_STATIC = [
     },
     {
         imported: !0,
-        icon: GEN_ICON,
-        sym: "DT",
-        name: 'DemoToken erc20 token',
-        bal: '1234',
+        icon: TUR_ICON,
+        sym: "TUR",
+        name: 'TUR',
+        bal: '0',
         dec: 18,
         disabled: !1,
         tokenNum1: !1,
         tokenNum2: !1,
-        addr: '0xEFcA1aD4445cfBe4a3521e0a8e0572Fb5905DfA4',
+        addr: '0x283260A3461A435faa5dc30cc8F3B16445eD5cc5',
+    
     },
+    // {
+    //     imported: !0,
+    //     icon: DIY_ICON,
+    //     sym: "DIY",
+    //     name: 'DIY',
+    //     bal: '0',
+    //     dec: 18,
+    //     disabled: !1,
+    //     tokenNum1: !1,
+    //     tokenNum2: !1,
+    //     addr: '0x2969ff4c56D5f33A8Bf36F20150f82B2a2a1F52C',
+    // },
+    // {
+    //     imported: !0,
+    //     icon: GEN_ICON,
+    //     sym: "DT",
+    //     name: 'DemoToken erc20 token',
+    //     bal: '1234',
+    //     dec: 18,
+    //     disabled: !1,
+    //     tokenNum1: !1,
+    //     tokenNum2: !1,
+    //     addr: '0xEFcA1aD4445cfBe4a3521e0a8e0572Fb5905DfA4',
+    // },
     // {
     //     imported: !0,
     //     icon: BUSD,
