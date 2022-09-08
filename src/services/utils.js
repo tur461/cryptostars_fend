@@ -61,7 +61,7 @@ const isDefined = v => notEqual(v, 'null') && notEqual(v, null) && notEqual(v, '
 
 const notDefined = v => !isDefined(v);
 
-const notEmpty = v => typeof v == 'string' ? 
+const notEmpty = v => isStr(v) ? 
         notEqual(v, '') && notEqual(v, '0') : 
         isArr(v) ? v.length :
         isObj(v) ? Object.entries(v).length : 
@@ -235,10 +235,14 @@ const getTokenListDiff = (a, b) => {
     return a.filter(n => !b.filter(m => rEqual(m.addr, n.addr)).length);
 }
 
+const doPageReload = (delay=0) => delay ? setTimeout(_ => window.location.reload(), delay * 1000) : window.location.reload();
+
+const toStr = v => isStr(v) ? v : isObj(v) ? jString(v) : `${v}`;
 
 export {
     isNum,
     toStd,
+    toStr,
     toDec,
     isNaNy,
     rEqual,
@@ -265,6 +269,7 @@ export {
     isNumInput,
     stdRaiseBy,
     evDispatch,
+    doPageReload,
     toDateTimeStr,
     isInvalidNumeric,
     getTokenListDiff,

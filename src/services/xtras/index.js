@@ -38,6 +38,7 @@ const Err = {
 }
 
 const LocalStore = {
+    clear: _ => localStorage.clear(),
     get: key  => localStorage.getItem(key),
     del: key  => localStorage.removeItem(key),
     has: key => notNull(localStorage.getItem(key)),

@@ -22,7 +22,7 @@ import PerfectScrollbar from "react-perfect-scrollbar";
 import React, { useEffect, useRef, useState } from "react";
 import CommonF from "../../../../services/contracts/common";
 import { Container, Row, Col, Form } from "react-bootstrap";
-import { nullFunc, isEmpty, Debouncer, rEqual, notEqual, eHandle, debounce } from "../../../../services/utils";
+import { nullFunc, isEmpty, Debouncer, rEqual, notEqual, eHandle, debounce, isNull } from "../../../../services/utils";
 import swapicon from "../../../../Assets/Images/swap-icon.png";
 import headerImg from "../../../../Assets/Images/headerImg.png";
 import draco from "../../../../Assets/Images/draco-roadmap.png";
@@ -30,8 +30,10 @@ import timer from "../../../../Assets/Images/ionic-ios-timer.svg";
 import settings from "../../../../Assets/Images/Settings-Icon.svg";
 import {  setConnectTitle, walletConnected } from '../../../features/wallet';
 import { setSlippage, setDeadLine, setTokenInfo } from "../../../features/swap";
-import { DEBOUNCE_ID, ERR, TOKEN } from "../../../../services/constants/common";
+import { DEBOUNCE_ID, ERR, LS_KEYS, TOKEN } from "../../../../services/constants/common";
 import l_t from "../../../../services/logging/l_t";
+import { retrieveProjectVersion } from "../../../../services/API";
+import { LocalStore } from "../../../../services/xtras";
 
 
 

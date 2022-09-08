@@ -44,6 +44,7 @@ export const MISC = {
     APPROVAL_AMOUNT: '', 
     DEBOUNCE_DELAY: 50, // ms
     SWAP_DEAD_LINE: 20.0, // 20 min from now
+    PROJECT_ID: 'front_end',
     SEL_TOKEN: 'Select a token',
     OTHER_TOKEN_DEC_PLACES: 4,
     XCHANGE_PRICE_DEC_PLACES: 4,
@@ -55,7 +56,7 @@ export const MISC = {
 }
 
 export const URL = {
-    API_BACKEND_URL: 'https://admin-staging.crypto-stars.net',
+    API_BACKEND_URL: 'http://localhost:8448',//'https://admin-staging.crypto-stars.net',
     RPC: {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',
@@ -82,6 +83,7 @@ export const LS_KEYS = {
     WALLET_TYPE: 'wallet_type',
     SHOW_BAL_1: 'show_balance_1',
     SHOW_BAL_2: 'show_balance_2',
+    PROJECT_VERSION: 'project_version',
 }
 
 export const ERR = {

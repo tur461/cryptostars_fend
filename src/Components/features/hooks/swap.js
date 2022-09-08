@@ -25,7 +25,9 @@ import {
 	notEqual,
 	isNull,
 	jObject,
-	getTokenListDiff, 
+	getTokenListDiff,
+	doPageReload,
+	toStr, 
 } from "../../../services/utils";
 
 import { 
@@ -51,7 +53,7 @@ import l_t from "../../../services/logging/l_t";
 import log from "../../../services/logging/logger";
 import toast from "../../../services/logging/toast";
 import { useDispatch, useSelector } from "react-redux";
-import { retrieveTokenList } from "../../../services/API";
+import { retrieveProjectVersion, retrieveTokenList } from "../../../services/API";
 import { Err, LocalStore } from "../../../services/xtras";
 import { useRef, useState, useEffect, useCallback } from "react";
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
@@ -110,8 +112,22 @@ const useSwap = props => {
 		list.length && addTokenToList(0);
 	}
 
+	const ensureProjectIsUptoDate = _ => {
+		retrieveProjectVersion()
+		.then(version => {
+			const prevVer = LocalStore.get(LS_KEYS.PROJECT_VERSION);
+			if(isNull(prevVer) || notEqual(toStr(prevVer), toStr(version))) {
+			LocalStore.clear();
+			LocalStore.add(LS_KEYS.PROJECT_VERSION, version);
+			toast.w('page reloads in 3 sec to get updated..');
+			doPageReload(3);
+			}
+		});
+	}
+
 	const lock = useRef(!0);
 	useEffect(_ => {
+		ensureProjectIsUptoDate();
 		// onLoad
 		if(lock.current) {
 			log.i('setting retrieve token list interval..');
