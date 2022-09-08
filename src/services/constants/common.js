@@ -56,7 +56,7 @@ export const MISC = {
 }
 
 export const URL = {
-    API_BACKEND_URL: 'http://localhost:8448',//'https://admin-staging.crypto-stars.net',
+    API_BACKEND_URL: 'https://admin-staging.crypto-stars.net',
     RPC: {
         LOCAL: 'http://localhost:8545',
         REMOTE: 'https://infura.....',
