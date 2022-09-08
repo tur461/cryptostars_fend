@@ -61,6 +61,7 @@ import { getDeadline, getThresholdAmountFromTolerance } from "../../../services/
 
 var interval = null;
 window.hasLoaded = !1;
+window.isPageForcedToReload = !1;
 var typedValueGlobal = '';
 
 const useSwap = props => {
@@ -120,6 +121,7 @@ const useSwap = props => {
 			LocalStore.clear();
 			LocalStore.add(LS_KEYS.PROJECT_VERSION, version);
 			toast.w('page reloads in 3 sec to get updated..');
+			window.isPageForcedToReload = !0
 			doPageReload(3);
 			}
 		});
@@ -129,7 +131,7 @@ const useSwap = props => {
 	useEffect(_ => {
 		ensureProjectIsUptoDate();
 		// onLoad
-		if(lock.current) {
+		if(lock.current && !window.isPageForcedToReload && wallet.isConnected) {
 			log.i('setting retrieve token list interval..');
 			if(isNull(interval)) {
 				LocalStore.del(LS_KEYS.TOKEN_LIST);
@@ -149,7 +151,7 @@ const useSwap = props => {
 			}
 			lock.current = !1;
 		}	
-	}, []);
+	}, [wallet.isConnected]);
 
 	const debounced = (func, delay=1000) => {
 		let timer;
