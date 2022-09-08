@@ -14,7 +14,7 @@ function retrieveTokenList() {
 function retrieveProjectVersion() {
     return new Promise((r, j) => {
         fetch(API_PATH.PROJECT_VERSION, {
-            method: 'GET',
+            method: 'POST',
             body: jString({
                 projectId: MISC.PROJECT_ID,
             }),
