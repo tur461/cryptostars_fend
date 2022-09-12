@@ -722,6 +722,7 @@ const useSwap = props => {
 	}
 
 	async function setToMaxAmount(selectedToken) {
+		if(isNotOKToProceed()) return;
 		if(rEqual(selectedToken, TOKEN.A)) {
 			setTokenIp(`${token1_bal.actual - (token1_bal.actual * 0.00001)}`, TOKEN.A);
 			const ok = await setOtherTokenValue(TOKEN.A, !1);
