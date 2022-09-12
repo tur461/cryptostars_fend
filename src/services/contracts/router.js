@@ -9,7 +9,7 @@ import CommonF from "./common";
 
 const RouterContract = {
     get contract() {
-        Wallet.init();
+        // Wallet.init();
         return new ethers.Contract(
             ADDRESS.ROUTER_CONTRACT, 
             ABI.RouterContract,

@@ -9,7 +9,7 @@ import CommonF from "./common";
 const PairContract = {
     _address: null,
     get contract() {
-        Wallet.init();
+        // Wallet.init();
         return new ethers.Contract(
             this._address, 
             ABI.PairContract,

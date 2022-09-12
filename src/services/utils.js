@@ -111,7 +111,7 @@ const toDec = (v, dec) => {
     return v / 10 ** (isDefined(dec) && notEmpty(dec) ? dec : 18);
 }
 
-const toStd = v => v.toLocaleString('fullwide', {useGrouping: !1});
+const toStd = v => Number(v).toLocaleString('fullwide', {useGrouping: !1});
 
 const toFixed = (v, by) => {
 	return trimZeroes(Number(v).toFixed(isDefined(by) && notEmpty(by) ? by : 0));

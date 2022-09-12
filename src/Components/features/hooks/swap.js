@@ -338,7 +338,7 @@ const useSwap = props => {
 	useEffect(_ => {
 		if(window.hasLoaded) {
 			(async _ => {
-				setTokenIp(`${swap.token2_value.actual}`, TOKEN.A);
+				setTokenIp(`${toFixed(swap.token2_value.actual, MISC.OTHER_TOKEN_DEC_PLACES)}`, TOKEN.A);
 				await setOtherTokenValue(TOKEN.A, !0, [swap.token1_addr, swap.token2_addr]);
 			})();
 		}
@@ -655,27 +655,27 @@ const useSwap = props => {
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 			b.actual = toDec(bal, dec);
-			b.ui = toFixed(b.actual, 2);
+			b.ui = toStd(toFixed(b.actual, 2));
 			setToken1_bal(b);
 		} else if(rEqual(selectedToken, TOKEN.B)) {
 			TokenContract.init(addrList[0]);
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 			b.actual = toDec(bal, dec);
-			b.ui = toFixed(b.actual, 2);
+			b.ui = toStd(toFixed(b.actual, 2));
 			setToken2_bal(b);
 		} else if(rEqual(selectedToken, TOKEN.BOTH)) {
 			TokenContract.init(addrList[0]);
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 			b.actual = toDec(bal, dec);
-			b.ui = toFixed(b.actual, 2);
+			b.ui = toStd(toFixed(b.actual, 2));
 			setToken1_bal({...b});
 			TokenContract.init(addrList[1]);
 			dec = await TokenContract.decimals();
 			bal = (await TokenContract.balanceOf(wallet.priAccount)).toString();
 			b.actual = toDec(bal, dec);
-			b.ui = toFixed(b.actual, 2);
+			b.ui = toStd(toFixed(b.actual, 2));
 			setToken2_bal({...b});
 		}
 	}

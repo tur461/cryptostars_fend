@@ -7,7 +7,7 @@ import CommonF from "./common";
 
 const FaucetContract = {
     get contract() {
-        Wallet.init();
+        // Wallet.init();
         return new ethers.Contract(
             ADDRESS.CST_FAUCET_CONTRACT, 
             ABI.CSTFaucetContract,

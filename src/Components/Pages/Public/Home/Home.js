@@ -33,7 +33,7 @@ const Home = () => {
       </section>
       <section className="fqs_Sec">
         <Container className="commonCont">
-          <h2 className="cmnHeading">FQS</h2>
+          <h2 className="cmnHeading">FAQS</h2>
           <Accordion className="customAccordian">
             <FaqAccordianItem
               eventKey={0}
