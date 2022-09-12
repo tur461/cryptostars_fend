@@ -683,6 +683,7 @@ const useSwap = props => {
 		if(contains(b.ui, 'e')) {
 			b.ui = truncForUI(toStd(b.ui));
 		}
+		log.i('balance:', {...b});
 	}
 
 	async function handleBalanceForSelectedToken(selectedToken, addrList) {
