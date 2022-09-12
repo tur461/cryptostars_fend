@@ -117,7 +117,7 @@ const toFixed = (v, by) => {
 	return trimZeroes(Number(v).toFixed(isDefined(by) && notEmpty(by) ? by : 0));
 }
 
-const truncForUI = v => v.length > 16 ? v.slice(0, 17) : v;
+const truncForUI = v => v.length > 16 ? `${v.slice(0, 17)}..` : v;
 
 const raiseBy = (v, dec) => Number(v) * 10 ** (isDefined(dec) && notEmpty(dec) ? dec : 18);
 
