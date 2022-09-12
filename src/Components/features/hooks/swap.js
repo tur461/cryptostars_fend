@@ -683,6 +683,9 @@ const useSwap = props => {
 		if(contains(b.ui, 'e')) {
 			b.ui = truncForUI(toStd(b.ui));
 		}
+		if(contains(`${b.actual}`, 'e')) {
+			b.actual = toStd(b.actual);
+		}
 		log.i('balance:', {...b});
 	}
 
