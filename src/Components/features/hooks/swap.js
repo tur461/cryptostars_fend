@@ -680,7 +680,7 @@ const useSwap = props => {
 			b.ui = toFixed(b.actual, 2);
 			setToken2_bal({...b});
 		}
-		if(contains(b.ui, 'e')) {
+		if(contains(`${b.ui}`, 'e')) {
 			b.ui = truncForUI(toStd(b.ui));
 		}
 		if(contains(`${b.actual}`, 'e')) {
