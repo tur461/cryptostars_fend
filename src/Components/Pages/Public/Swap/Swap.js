@@ -80,14 +80,14 @@ const Swap = () => {
   useEffect(_ => { log.i('Exact In state changed to: ' + swap.isExactIn) }, [swap.isExactIn]);
   
   useEffect(_ => {
-      if(wallet.isConnected) {
+      if(wallet.isConnected && !swapHook.state.isInvalidNetwork) {
         swapHook.initialSteps(TOKEN.A);
         swapHook.checkIfCSTClaimed();
         CommonF.init({from: wallet.priAccount})
       } else {
         swapHook.initialSteps(TOKEN.BOTH);
       }
-  }, [wallet.isConnected])
+  }, [wallet.isConnected, swapHook.state.isInvalidNetwork])
 
   return (
     <>
