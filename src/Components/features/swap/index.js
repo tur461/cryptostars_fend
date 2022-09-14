@@ -27,6 +27,7 @@ export const swapSlice = createSlice({
         token1_icon: `${GEN_ICON}`,
         isUpDownToggle: !1,
         tokenInfoForUI: {
+            icon: '',
             addr: '',
             name: '',
             symbol: '',

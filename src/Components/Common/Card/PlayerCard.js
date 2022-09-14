@@ -63,7 +63,7 @@ const PlayerCard = props => {
       <div className="playerCard_img">
         <Card.Img variant="top" src={SOCCER_BG} />
         <div className="playerToken">
-          <img src={LMES} alt="coin_img" />
+          <img src={props.tokenInfo.icon} alt="coin_img" />
           <button className="closeBtn" onClick={props.onClickCallback}>
             <img src={cross} alt="x_icon" />
           </button>

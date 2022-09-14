@@ -595,24 +595,22 @@ const useSwap = props => {
 	// 	dispatch(changeTokenList(v));
 	// }
 
-	async function getAndShowPlayerInfo(addr) {
-		if(rEqual(swap.tokenInfoForUI.addr, addr)) return setShowPlayerInfo(!0);
+	async function getAndShowPlayerInfo(player) {
+		if(rEqual(swap.tokenInfoForUI.addr, player.addr)) return setShowPlayerInfo(!0);
 		
-		TokenContract.init(addr);
+		TokenContract.init(player.addr);
 
-		const name = await TokenContract.name();
 		const dec = await TokenContract.decimals();
-		const symbol = await TokenContract.symbol();
 		const totalSupply = await TokenContract.totalSupply();
 		const initialSupply = await TokenContract.initSupply();
 		const balance = await TokenContract.balanceOf(wallet.priAccount);
 		
 		const burntAmount = initialSupply.sub(totalSupply);
-
 		dispatch(setTokenInfoForUI({
-			addr,
-			name,
-			symbol,
+			icon: player.icon,
+			addr: player.addr,
+			name: player.name,
+			symbol: player.symbol,
 			balance: truncForUI(toDec(balance.toString(), dec)),
 			totalSupply: truncForUI(toDec(totalSupply.toString(), dec)),
 			burntAmount: truncForUI(toDec(burntAmount.toString(), dec)),

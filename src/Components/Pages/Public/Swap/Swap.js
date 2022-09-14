@@ -51,7 +51,7 @@ const PlayerList = ({playerList, onClickCallback}) => {
     <li 
       style={{'cursor': 'pointer'}}
       key={index} 
-      onClick={e => eHandle(e) && onClickCallback(player.addr)}
+      onClick={e => eHandle(e) && onClickCallback(player)}
     >
       <img src={player.icon} alt="player_icon" />
       <span>
