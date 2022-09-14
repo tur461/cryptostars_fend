@@ -807,7 +807,7 @@ const useSwap = props => {
 
 	function initialSteps(n) {
 		log.w('swap initial steps');
-		dispatch(addPlayers([]));
+		// dispatch(addPlayers([]));
 		resetBalances();
 		eventListeners();
 		resetTokenInfos(n);
