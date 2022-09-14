@@ -8,6 +8,7 @@ import {
 	addTokensToTokenList,
 	addOnePlayer,
 	setTokenInfoForUI,
+	addPlayers,
 } from "../swap";
 
 import { 
@@ -806,6 +807,7 @@ const useSwap = props => {
 
 	function initialSteps(n) {
 		log.w('swap initial steps');
+		dispatch(addPlayers([]));
 		resetBalances();
 		eventListeners();
 		resetTokenInfos(n);
