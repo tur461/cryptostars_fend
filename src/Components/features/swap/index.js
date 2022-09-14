@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import l_t from '../../../services/logging/l_t';
 import log from '../../../services/logging/logger';
 import GEN_ICON from "../../../Assets/Images/token_icons/Gen.svg";
-import { evDispatch, getTokenListDiff, isNaNy, rEqual, toFixed, tStampJs } from '../../../services/utils';
+import { contains, evDispatch, getTokenListDiff, isNaNy, notEqual, rEqual, toFixed, tStampJs } from '../../../services/utils';
 import { EVENT, MISC, TOKEN_INIT, TOKEN_LIST_STATIC } from '../../../services/constants/common';
 
 export const swapSlice = createSlice({
@@ -26,6 +26,16 @@ export const swapSlice = createSlice({
         token1_addr: '',
         token1_icon: `${GEN_ICON}`,
         isUpDownToggle: !1,
+        tokenInfoForUI: {
+            addr: '',
+            name: '',
+            symbol: '',
+            balance: 0,
+            totalSupply: 0,
+            burntAmount: 0,
+            initialSupply: 0,
+        },
+        players: []
     },
 
     reducers: {
@@ -122,14 +132,16 @@ export const swapSlice = createSlice({
                 pair: action.payload.pair
             });
         },
-
-        setIsExactIn: (state, action) => { state.isExactIn = action.payload },
         setDeadLine: (state, action) => { state.deadLine = action.payload },
         setSlippage: (state, action) => { state.slippage = action.payload },
+        setIsExactIn: (state, action) => { state.isExactIn = action.payload },
         setXchangeEq: (state, action) => { state.xchangeEq = action.payload },
         setValidSwap: (state, action) => { state.validSwap = action.payload },
+        addPlayers: (state, action) => { state.players = [...action.payload] },
+        addOnePlayer: (state, action) => { state.players.push(action.payload) },
         setToken1Approved: (state, action) => { state.token1_approved = action.payload },
         changeTokenList: (state, action) => { state.tokenList_chg = [...action.payload] },
+        setTokenInfoForUI: (state, action) => { state.tokenInfoForUI = {...action.payload} },
         addTokensToTokenList: (state, action) => { 
             state.tokenList = [...state.tokenList, ...getTokenListDiff(action.payload, state.tokenList)] 
             state.tokenList_chg = [...state.tokenList, ...getTokenListDiff(action.payload, state.tokenList)] 
@@ -141,17 +153,20 @@ const {reducer, actions } = swapSlice;
 
 export const { 
     setPair,
-    setIsExactIn,
     saveTxHash,
+    addPlayers,
     setDeadLine,
     setSlippage,
     setValidSwap,
     setXchangeEq,
     setTokenInfo,
+    addOnePlayer,
+    setIsExactIn,
     setTokenValue,
     addToTokenList,
     changeTokenList,
     setToken1Approved,
+    setTokenInfoForUI,
     addTokensToTokenList
 } = actions;
 

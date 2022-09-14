@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Accordion } from "react-bootstrap";
 import ButtonPrimary from "../Button/ButtonPrimary";
+import SOCCER_BG from "../../../Assets/Images/soccer_bg.png";
 import Messi from "../../../Assets/Images/Players/messi.png";
 import cross from "../../../Assets/Images/cross-mark.svg";
 import LMES from "../../../Assets/Images/LMES.png";
@@ -56,14 +57,14 @@ const EventList = () => {
   ));
 };
 
-const PlayerCard = () => {
+const PlayerCard = props => {
   return (
     <Card className="playerCard_style">
       <div className="playerCard_img">
-        <Card.Img variant="top" src={Messi} />
+        <Card.Img variant="top" src={SOCCER_BG} />
         <div className="playerToken">
           <img src={LMES} alt="coin_img" />
-          <button className="closeBtn">
+          <button className="closeBtn" onClick={props.onClickCallback}>
             <img src={cross} alt="x_icon" />
           </button>
         </div>
@@ -72,22 +73,26 @@ const PlayerCard = () => {
         <div>
           <ul className="tokenInfo">
             <li>
-              Lionel Messi
+              {props.tokenInfo.name}
               <span>
-                LMES{""}/{""}CST
+                {props.tokenInfo.symbol}/{""}CST
               </span>
             </li>
             <li>
+              INITIAL SUPPLY:
+              <span>{props.tokenInfo.initialSupply}</span>
+            </li>
+            <li>
               TOTAL SUPPLY:
-              <span>12 000 000</span>
+              <span>{props.tokenInfo.totalSupply}</span>
             </li>
             <li>
               Tokens Burned
-              <span>62,000</span>
+              <span>{props.tokenInfo.burntAmount}</span>
             </li>
             <li>
-              Avg Price:
-              <span>$0.79</span>
+              Balance:
+              <span>{props.tokenInfo.balance}</span>
             </li>
             <li>
               Last 24 hs:
@@ -105,9 +110,9 @@ const PlayerCard = () => {
               <Accordion.Header>Next Events</Accordion.Header>
               <Accordion.Body>
                 <PerfectScrollbar>
-                  <ul className="eventList">
+                  {/* <ul className="eventList">
                     <EventList />
-                  </ul>
+                  </ul> */}
                 </PerfectScrollbar>
               </Accordion.Body>
             </Accordion.Item>

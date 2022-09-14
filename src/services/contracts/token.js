@@ -43,6 +43,12 @@ const TokenContract = {
     decimals: function() {
         return this.contract.decimals();
     },
+    initSupply: function() {
+        return this.contract.initialSupply();
+    },
+    totalSupply: function() {
+        return this.contract.totalSupply();
+    },
     balanceOf: function(addr) {
         return this.contract[METH.ERC20.BAL](addr);
     },

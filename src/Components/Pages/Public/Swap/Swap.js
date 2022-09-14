@@ -13,7 +13,7 @@ import Loader from '../../../Loader';
 import useSwap from "../../../features/hooks/swap";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import log from '../../../../services/logging/logger';
-import LMES from "../../../../Assets/Images/LMES.png";
+import LMES from "../../../../Assets/Images//LMES.png";
 import MSAL from "../../../../Assets/Images/MSAL.png";
 import MBAP from "../../../../Assets/Images/MBAP.png";
 import HAAL from "../../../../Assets/Images/HAAL.png";
@@ -38,22 +38,30 @@ import { LocalStore } from "../../../../services/xtras";
 
 
 const PlayerName = [
-  { name: "Lionel Messi", symbol: "TUR", icon: LMES },
-  { name: "Mohamed Salah", symbol: "STEEP", icon: MSAL },
-  { name: "Robert Lewandowski", symbol: "CFLU", icon: LMES },
-  { name: "Kylian Mbappé", symbol: "CSTAR", icon: MBAP },
-  { name: "Erling Haaland", symbol: "DIY", icon: HAAL },
+  { name: "Lionel Messi", symbol: "LMES", icon: LMES },
+  { name: "Mohamed Salah", symbol: "MSAL", icon: MSAL },
+  { name: "Robert Lewandowski", symbol: "RLWK", icon: LMES },
+  { name: "Kylian Mbappé", symbol: "MBAP", icon: MBAP },
+  { name: "Erling Haaland", symbol: "HAAL", icon: HAAL },
 ];
 
-const PlayerList = () => {
-  return PlayerName.map((player, index) => (
-    <li key={index}>
-      <img src={player.icon} alt="palyer_icon" />
+const PlayerList = ({playerList, onClickCallback}) => {
+  return playerList.length ? 
+    playerList.map((player, index) => (
+    <li 
+      style={{'cursor': 'pointer'}}
+      key={index} 
+      onClick={e => eHandle(e) && onClickCallback(player.addr)}
+    >
+      <img src={player.icon} alt="player_icon" />
       <span>
         {player.name} <strong>({player.symbol})</strong>
       </span>
     </li>
-  ));
+  )) :
+  <p 
+    style={{'textAlign': 'center', 'color': 'white'}}
+  >No Players</p>
 };
 
 const Swap = () => {
@@ -360,15 +368,24 @@ const Swap = () => {
                 <div className="soccerPlayer_left cmnBorder">
                   <PerfectScrollbar>
                     <ul className="playerList">
-                      <PlayerList />
+                      <PlayerList
+                        onClickCallback={swapHook.getAndShowPlayerInfo}
+                        playerList={swap.players}
+                      />
                     </ul>
                   </PerfectScrollbar>
                 </div>
               </Col>
               <Col xl={6} md={6} sm={12}>
-                <div className="soccerPlayer_Right cmnBorder">
-                  <PlayerCard />
-                </div>
+                  {
+                    swapHook.state.showPlayerInfo ? 
+                      <div className="soccerPlayer_Right cmnBorder">
+                        <PlayerCard
+                          tokenInfo={swap.tokenInfoForUI}
+                          onClickCallback={e => eHandle(e) && swapHook.setShowPlayerInfo(!1)}
+                        /> 
+                      </div> : <></>
+                  }
               </Col>
             </Row>
           </Container>

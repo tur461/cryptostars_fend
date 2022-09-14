@@ -6,6 +6,8 @@ import {
 	addToTokenList, 
 	changeTokenList, 
 	addTokensToTokenList,
+	addOnePlayer,
+	setTokenInfoForUI,
 } from "../swap";
 
 import { 
@@ -48,7 +50,8 @@ import {
 	INIT_VAL, 
 	TOKEN_INIT,
 	ERR,
-	LS_KEYS, 
+	LS_KEYS,
+	URL, 
 } from "../../../services/constants/common";
 
 import l_t from "../../../services/logging/l_t";
@@ -71,7 +74,7 @@ const useSwap = props => {
 		
     const swap = useSelector(s => s.swap);
     const wallet = useSelector(s => s.wallet);  
-		
+
 	const [pair, setPair] = useState([]);
 	const [isErr, setIsErr] = useState(!1);
 	const [errText, setErrText] = useState('');
@@ -88,6 +91,7 @@ const useSwap = props => {
 	const [showBalance2, setShowBalance2] = useState(!1);
 	const [isCSTClaimed, setIsCSTClaimed] = useState(!1);
 	const [tokenApproved, setTokenApproved] = useState(!0);
+	const [showPlayerInfo, setShowPlayerInfo] = useState(!1);
 	const [showXchangeRate, setShowXchangeRate] = useState(!1);
 	const [thresholdAmount, setThresholdAmount] = useState('0');
 	const [isInvalidNetwork, setIsInvalidNetwork] = useState(!1);
@@ -590,10 +594,45 @@ const useSwap = props => {
 	// 	}
 	// 	dispatch(changeTokenList(v));
 	// }
+
+	async function getAndShowPlayerInfo(addr) {
+		if(rEqual(swap.tokenInfoForUI.addr, addr)) return setShowPlayerInfo(!0);
+		
+		TokenContract.init(addr);
+
+		const name = await TokenContract.name();
+		const dec = await TokenContract.decimals();
+		const symbol = await TokenContract.symbol();
+		const totalSupply = await TokenContract.totalSupply();
+		const initialSupply = await TokenContract.initSupply();
+		const balance = await TokenContract.balanceOf(wallet.priAccount);
+		
+		const burntAmount = initialSupply.sub(totalSupply);
+
+		dispatch(setTokenInfoForUI({
+			addr,
+			name,
+			symbol,
+			balance: truncForUI(toDec(balance.toString(), dec)),
+			totalSupply: truncForUI(toDec(totalSupply.toString(), dec)),
+			burntAmount: truncForUI(toDec(burntAmount.toString(), dec)),
+			initialSupply: truncForUI(toDec(initialSupply.toString(), dec)),
+		}));
+
+		setShowPlayerInfo(!0);
+	}
+
 	async function searchOrImportToken(token) {
 			TokenContract.init(token.addr);
 			let bal = await TokenContract.balanceOf(wallet.priAccount);
 			bal = bal.toBigInt().toString();
+			const name = await TokenContract.name();
+			const symbol = await TokenContract.symbol();
+			const icon = URL.API_BACKEND_URL + '/uploads/' + token.icon;
+			const players = swap.players.filter(player => rEqual(player.addr, token.addr));
+			log.i('Players:', players);
+			rEqual(players.length, 0) && 
+			dispatch(addOnePlayer({ name, symbol, icon, addr: token.addr }));
 			return {
 				bal, 
 				imported: !0,
@@ -798,6 +837,7 @@ const useSwap = props => {
 		debouncedUpsideDown,
 		searchOrImportToken,
 		approveWithMaxAmount,
+		getAndShowPlayerInfo,
 		handleBalanceForSelectedToken,
 		// state variables
 		state: {
@@ -817,6 +857,7 @@ const useSwap = props => {
 			showBalance2,
 			isCSTClaimed,
 			tokenApproved,
+			showPlayerInfo,
 			showXchangeRate,
 			thresholdAmount,
 			isInvalidNetwork,
@@ -839,6 +880,7 @@ const useSwap = props => {
 		setShowBalance1,
 		setShowBalance2,
 		setTokenApproved,
+		setShowPlayerInfo,
 		setThresholdAmount,
 		setIsInvalidNetwork,
 		setXchangeEquivalent,
